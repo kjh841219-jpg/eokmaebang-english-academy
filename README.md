@@ -45,7 +45,7 @@ Vercel에서 API 키는 코드에 직접 쓰지 않고 환경변수에 저장합
 | Name | Value |
 |---|---|
 | `OPENAI_API_KEY` | OpenAI에서 발급받은 API 키 |
-| `OPENAI_MODEL` | `gpt-5.6-terra` |
+| `OPENAI_MODEL` | `gpt-5` |
 
 5. 저장 후 Vercel에서 다시 배포합니다.
 
