@@ -61,7 +61,7 @@ export default async function handler(req, res) {
 
     return json(res, 200, {
       reportType,
-      report: result.output_text || "보고서 내용을 불러오지 못했습니다."
+      report: extractResponseText(result) || "보고서 내용을 불러오지 못했습니다."
     });
   } catch (error) {
     return json(res, 500, {
@@ -133,6 +133,28 @@ function middleSchoolPrompt(data) {
 
 위 구성 제목을 그대로 사용하고, 학부모님께 바로 보낼 수 있는 완성 문장으로 작성하십시오.
 `;
+}
+
+function extractResponseText(result) {
+  if (typeof result?.output_text === "string" && result.output_text.trim()) {
+    return result.output_text.trim();
+  }
+
+  const parts = [];
+  for (const item of result?.output || []) {
+    if (typeof item?.text === "string") parts.push(item.text);
+    for (const content of item?.content || []) {
+      if (typeof content?.text === "string") parts.push(content.text);
+      if (typeof content?.content === "string") parts.push(content.content);
+    }
+  }
+
+  for (const choice of result?.choices || []) {
+    const text = choice?.message?.content || choice?.text;
+    if (typeof text === "string") parts.push(text);
+  }
+
+  return parts.join("\n").trim();
 }
 
 function readBody(req) {

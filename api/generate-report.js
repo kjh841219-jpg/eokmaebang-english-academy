@@ -78,11 +78,33 @@ export default async function handler(req, res) {
     }
 
     return json(res, 200, {
-      report: data.output_text || "보고서 내용을 불러오지 못했습니다."
+      report: extractResponseText(data) || "보고서 내용을 불러오지 못했습니다."
     });
   } catch (error) {
     return json(res, 500, { error: error.message || "서버 처리 중 오류가 발생했습니다." });
   }
+}
+
+function extractResponseText(result) {
+  if (typeof result?.output_text === "string" && result.output_text.trim()) {
+    return result.output_text.trim();
+  }
+
+  const parts = [];
+  for (const item of result?.output || []) {
+    if (typeof item?.text === "string") parts.push(item.text);
+    for (const content of item?.content || []) {
+      if (typeof content?.text === "string") parts.push(content.text);
+      if (typeof content?.content === "string") parts.push(content.content);
+    }
+  }
+
+  for (const choice of result?.choices || []) {
+    const text = choice?.message?.content || choice?.text;
+    if (typeof text === "string") parts.push(text);
+  }
+
+  return parts.join("\n").trim();
 }
 
 function readBody(req) {
