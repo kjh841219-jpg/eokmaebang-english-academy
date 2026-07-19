@@ -63,7 +63,10 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL || "gpt-5",
-        input: prompt
+        input: prompt,
+        max_output_tokens: 900,
+        reasoning: { effort: "minimal" },
+        text: { verbosity: "low" }
       })
     });
 

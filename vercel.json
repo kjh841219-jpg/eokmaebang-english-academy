@@ -1,10 +1,10 @@
 {
   "functions": {
     "api/generate-report.js": {
-      "maxDuration": 30
+      "maxDuration": 60
     },
     "api/student-growth-report.js": {
-      "maxDuration": 30
+      "maxDuration": 60
     }
   }
 }
