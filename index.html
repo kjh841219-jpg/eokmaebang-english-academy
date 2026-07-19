@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>억매방 영어학원 관리사이트</title>
+  <style>
+    :root {
+      --navy: #17324d;
+      --blue: #2563eb;
+      --sky: #eaf2ff;
+      --line: #d8e2ef;
+      --bg: #f5f7fb;
+      --text: #172033;
+      --muted: #667085;
+      --green: #0f8a5f;
+      --red: #d93025;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Malgun Gothic", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+    header {
+      background: linear-gradient(135deg, var(--navy), #24527a);
+      color: white;
+      padding: 26px 30px;
+    }
+    header h1 { margin: 0 0 8px; font-size: 28px; }
+    header p { margin: 0; opacity: .9; }
+    main { max-width: 1280px; margin: 0 auto; padding: 22px; }
+    .grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 18px; }
+    .section {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(16, 24, 40, .05);
+    }
+    .section h2 { margin: 0 0 14px; font-size: 20px; color: var(--navy); }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 11px 12px;
+      font: inherit;
+      background: #fff;
+    }
+    textarea { min-height: 92px; resize: vertical; }
+    label { display: grid; gap: 6px; font-size: 13px; font-weight: 700; color: #344054; }
+    .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-weight: 800;
+      cursor: pointer;
+      background: var(--blue);
+      color: white;
+    }
+    button.secondary { background: #eef3fa; color: var(--navy); border: 1px solid var(--line); }
+    button.green { background: var(--green); }
+    button.red { background: var(--red); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px; text-align: left; }
+    th { background: #f1f6fb; color: var(--navy); }
+    tr.selected { background: var(--sky); }
+    .pill {
+      display: inline-flex;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      background: #eaf7f2;
+      color: var(--green);
+    }
+    .pill.absent { background: #fff1f0; color: var(--red); }
+    .report {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 24px;
+      line-height: 1.75;
+      white-space: pre-wrap;
+      min-height: 360px;
+    }
+    .report-title {
+      border-bottom: 3px solid var(--navy);
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+    }
+    .report-title h2 { margin: 0; color: var(--navy); }
+    .status { color: var(--muted); font-size: 13px; }
+    .notice {
+      background: #fff8e6;
+      border: 1px solid #f2d58b;
+      color: #694c00;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+    @media (max-width: 900px) {
+      .grid, .form-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      body { background: white; }
+      header, .no-print, .section:not(.print-area) { display: none !important; }
+      main { padding: 0; max-width: none; }
+      .print-area { border: 0; box-shadow: none; padding: 0; }
+      .report { border: 0; padding: 18mm; min-height: auto; }
+      @page { size: A4 portrait; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="no-print">
+    <h1>억매방 영어학원 관리사이트</h1>
+    <p>초등 1~6학년 영어 학생관리 · 출결관리 · AI 학부모 보고서 생성</p>
+  </header>
+
+  <main>
+    <div class="grid no-print">
+      <section class="section">
+        <h2>학생 관리</h2>
+        <div class="notice">예시 학생 30명이 자동으로 들어 있습니다. 학생을 클릭하면 오른쪽 보고서 대상 학생으로 선택됩니다.</div>
+        <div class="toolbar">
+          <input id="searchStudent" placeholder="학생 이름 검색" oninput="renderStudents()" />
+          <button class="secondary" onclick="resetDemoData()">예시 데이터 초기화</button>
+        </div>
+        <div class="form-grid">
+          <label>이름<input id="studentName" placeholder="예: 김하윤" /></label>
+          <label>학년
+            <select id="studentGrade">
+              <option>초1</option><option>초2</option><option>초3</option>
+              <option>초4</option><option>초5</option><option>초6</option>
+            </select>
+          </label>
+          <label>레벨
+            <select id="studentLevel">
+              <option>입문</option><option>기초</option><option>초급</option>
+              <option>초중급</option><option>중급</option>
+            </select>
+          </label>
+        </div>
+        <div class="form-grid">
+          <label>반<input id="studentClass" placeholder="예: 월수금 3시반" /></label>
+          <label>보호자 연락처<input id="parentPhone" placeholder="010-0000-0000" /></label>
+          <label>학교<input id="schoolName" placeholder="예: 벌교초등학교" /></label>
+        </div>
+        <div class="toolbar">
+          <button class="green" onclick="addStudent()">학생 등록</button>
+          <button class="red" onclick="deleteSelectedStudent()">선택 학생 삭제</button>
+        </div>
+        <table>
+          <thead><tr><th>이름</th><th>학년</th><th>레벨</th><th>반</th><th>상태</th></tr></thead>
+          <tbody id="studentRows"></tbody>
+        </table>
+      </section>
+
+      <section class="section">
+        <h2>출결 관리</h2>
+        <div id="selectedBox" class="notice">학생을 선택해 주세요.</div>
+        <div class="form-grid">
+          <label>날짜<input id="attendanceDate" type="date" /></label>
+          <label>출결
+            <select id="attendanceStatus">
+              <option>출석</option>
+              <option>지각</option>
+              <option>결석</option>
+              <option>보강</option>
+            </select>
+          </label>
+          <label>메모<input id="attendanceMemo" placeholder="예: 숙제 완료, 단어 복습 필요" /></label>
+        </div>
+        <div class="toolbar">
+          <button onclick="saveAttendance()">출결 저장</button>
+          <button class="secondary" onclick="copyParentMessage()">학부모 안내문 복사</button>
+        </div>
+        <h2 style="margin-top:18px;">AI 보고서 생성</h2>
+        <label>보고서에 반영할 선생님 메모
+          <textarea id="teacherMemo">수업 참여도는 안정적이며, 파닉스와 기초 문장 읽기를 꾸준히 연습하고 있습니다.</textarea>
+        </label>
+        <div class="toolbar" style="margin-top:10px;">
+          <button onclick="generateReport()">학부모 보고서 생성</button>
+          <button class="secondary" onclick="printReport()">PDF 저장/인쇄</button>
+          <button class="secondary" onclick="saveReportImage()">이미지 저장</button>
+          <button class="secondary" onclick="shareReport()">휴대폰 공유</button>
+        </div>
+        <p id="apiStatus" class="status">OpenAI API 연결 전에도 화면 연습은 가능합니다. Vercel 환경변수 설정 후 실제 AI 보고서가 생성됩니다.</p>
+      </section>
+    </div>
+
+    <section class="section print-area" style="margin-top:18px;">
+      <div id="report" class="report">
+        <div class="report-title">
+          <h2>억매방 영어학원 학부모 보고서</h2>
+          <div>학생을 선택하고 [학부모 보고서 생성] 버튼을 눌러 주세요.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "eokmaebang-academy-v1";
+    const names = ["김하윤","이도윤","박서아","최민준","정지우","한서준","오유나","강민서","윤지호","임하람","송예준","장서윤","문도현","홍가은","신우진","조아린","백시우","남유찬","고서연","유태오","전하린","권민재","배지안","서로운","허윤재","노아영","차도겸","양채원","류건우","마시온"];
+    let state = loadState();
+    let selectedId = state.students[0]?.id || null;
+
+    function defaultStudents() {
+      return names.map((name, index) => ({
+        id: Date.now() + index,
+        name,
+        grade: `초${(index % 6) + 1}`,
+        level: ["입문","기초","초급","초중급","중급"][index % 5],
+        className: ["월수금 2시반","월수금 3시반","화목 4시반","화목 5시반"][index % 4],
+        phone: "010-0000-" + String(1000 + index),
+        school: "억매방초등학교",
+        status: "재원생"
+      }));
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+      return { students: defaultStudents(), attendance: [] };
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function today() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function selectedStudent() {
+      return state.students.find(s => s.id === selectedId) || state.students[0];
+    }
+
+    function renderStudents() {
+      const keyword = document.getElementById("searchStudent").value.trim();
+      const rows = document.getElementById("studentRows");
+      rows.innerHTML = state.students
+        .filter(s => !keyword || s.name.includes(keyword))
+        .map(s => `
+          <tr class="${s.id === selectedId ? "selected" : ""}" onclick="selectStudent(${s.id})">
+            <td><strong>${s.name}</strong></td>
+            <td>${s.grade}</td>
+            <td>${s.level}</td>
+            <td>${s.className}</td>
+            <td><span class="pill">${s.status}</span></td>
+          </tr>
+        `).join("");
+      renderSelected();
+    }
+
+    function selectStudent(id) {
+      selectedId = id;
+      renderStudents();
+    }
+
+    function renderSelected() {
+      const s = selectedStudent();
+      const box = document.getElementById("selectedBox");
+      if (!s) {
+        box.textContent = "학생을 선택해 주세요.";
+        return;
+      }
+      const recent = state.attendance.filter(a => a.studentId === s.id).slice(0, 3);
+      box.innerHTML = `<strong>${s.name}</strong> (${s.grade}, ${s.level})<br>${s.className} · ${s.school}<br>최근 출결: ${recent.length ? recent.map(a => `${a.date} ${a.status}`).join(" / ") : "아직 기록 없음"}`;
+    }
+
+    function addStudent() {
+      const name = document.getElementById("studentName").value.trim();
+      if (!name) return alert("학생 이름을 입력해 주세요.");
+      const student = {
+        id: Date.now(),
+        name,
+        grade: document.getElementById("studentGrade").value,
+        level: document.getElementById("studentLevel").value,
+        className: document.getElementById("studentClass").value.trim() || "미배정",
+        phone: document.getElementById("parentPhone").value.trim(),
+        school: document.getElementById("schoolName").value.trim(),
+        status: "재원생"
+      };
+      state.students.unshift(student);
+      selectedId = student.id;
+      saveState();
+      renderStudents();
+    }
+
+    function deleteSelectedStudent() {
+      const s = selectedStudent();
+      if (!s || !confirm(`${s.name} 학생을 삭제할까요?`)) return;
+      state.students = state.students.filter(item => item.id !== s.id);
+      state.attendance = state.attendance.filter(item => item.studentId !== s.id);
+      selectedId = state.students[0]?.id || null;
+      saveState();
+      renderStudents();
+    }
+
+    function saveAttendance() {
+      const s = selectedStudent();
+      if (!s) return alert("학생을 먼저 선택해 주세요.");
+      state.attendance.unshift({
+        studentId: s.id,
+        name: s.name,
+        date: document.getElementById("attendanceDate").value || today(),
+        status: document.getElementById("attendanceStatus").value,
+        memo: document.getElementById("attendanceMemo").value.trim()
+      });
+      saveState();
+      renderSelected();
+      alert("출결이 저장되었습니다.");
+    }
+
+    async function generateReport() {
+      const s = selectedStudent();
+      if (!s) return alert("학생을 먼저 선택해 주세요.");
+      const status = document.getElementById("apiStatus");
+      status.textContent = "AI가 학부모 보고서를 작성하는 중입니다...";
+      const attendance = state.attendance.filter(a => a.studentId === s.id).slice(0, 8);
+      try {
+        const res = await fetch("/api/generate-report", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            student: s,
+            attendance,
+            memo: document.getElementById("teacherMemo").value
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "API 오류");
+        setReport(s, data.report);
+        status.textContent = "AI 보고서 생성이 완료되었습니다.";
+      } catch (error) {
+        const fallback = makeDemoReport(s, attendance);
+        setReport(s, fallback);
+        status.textContent = "API 연결 전이라 예시 보고서를 표시했습니다. Vercel 환경변수 OPENAI_API_KEY를 설정하면 실제 AI 보고서가 생성됩니다.";
+      }
+    }
+
+    function setReport(student, text) {
+      document.getElementById("report").innerHTML = `
+        <div class="report-title">
+          <h2>억매방 영어학원 학부모 보고서</h2>
+          <div>학생: ${student.name} · 학년: ${student.grade} · 레벨: ${student.level}</div>
+          <div>작성일: ${today()}</div>
+        </div>
+        ${escapeHtml(text)}
+      `;
+    }
+
+    function makeDemoReport(student, attendance) {
+      return `1. 이번 주 학습 요약
+${student.name} 학생은 ${student.grade} 수준에 맞는 영어 기초 문장 읽기와 단어 복습을 꾸준히 진행하고 있습니다. 최근 출결은 ${attendance.length ? attendance.map(a => a.status).join(", ") : "아직 기록 전"} 상태입니다.
+
+2. 잘한 점 3가지
+- 수업 흐름을 잘 따라오며 기본 단어를 반복해서 읽으려는 태도가 좋습니다.
+- 모르는 표현이 나왔을 때 다시 확인하려는 습관이 생기고 있습니다.
+- 짧은 문장을 소리 내어 읽는 활동에 안정적으로 참여합니다.
+
+3. 보완할 점 2가지
+- 단어를 문장 안에서 바로 이해하는 연습이 조금 더 필요합니다.
+- 숙제 후 틀린 부분을 다시 고쳐 쓰는 과정이 필요합니다.
+
+4. 다음 주 학습 목표
+기초 단어 20개 복습, 짧은 문장 5개 읽기, 수업 후 오답 3개 다시 쓰기를 목표로 관리하겠습니다.
+
+5. 학부모님께 드리는 안내문
+${student.name} 학생은 현재 기본기를 차근차근 쌓아가는 단계입니다. 가정에서는 하루 10분 정도 오늘 배운 단어를 소리 내어 읽어보게 도와주시면 학습 효과가 더 좋아집니다.`;
+    }
+
+    function copyParentMessage() {
+      const text = document.getElementById("report").innerText;
+      navigator.clipboard.writeText(text);
+      alert("학부모님께 보낼 안내문이 복사되었습니다.");
+    }
+
+    function printReport() {
+      window.print();
+    }
+
+    function saveReportImage() {
+      const text = document.getElementById("report").innerText;
+      const canvas = document.createElement("canvas");
+      canvas.width = 900;
+      canvas.height = 1200;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#17324d";
+      ctx.font = "bold 28px Malgun Gothic";
+      ctx.fillText("억매방 영어학원 학부모 보고서", 50, 60);
+      ctx.fillStyle = "#172033";
+      ctx.font = "20px Malgun Gothic";
+      wrapText(ctx, text, 50, 110, 800, 34);
+      const link = document.createElement("a");
+      link.download = "억매방_학부모보고서.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.replace(/\n/g, " \n ").split(" ");
+      let line = "";
+      for (const word of words) {
+        if (word === "\n") {
+          ctx.fillText(line, x, y);
+          line = "";
+          y += lineHeight;
+          continue;
+        }
+        const testLine = line + word + " ";
+        if (ctx.measureText(testLine).width > maxWidth) {
+          ctx.fillText(line, x, y);
+          line = word + " ";
+          y += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, x, y);
+    }
+
+    async function shareReport() {
+      const text = document.getElementById("report").innerText;
+      if (navigator.share) {
+        await navigator.share({ title: "억매방 영어학원 학부모 보고서", text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        alert("이 브라우저는 휴대폰 공유창을 지원하지 않아 보고서 내용을 복사했습니다.");
+      }
+    }
+
+    function resetDemoData() {
+      if (!confirm("예시 학생 30명으로 다시 초기화할까요?")) return;
+      state = { students: defaultStudents(), attendance: [] };
+      selectedId = state.students[0].id;
+      saveState();
+      renderStudents();
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    document.getElementById("attendanceDate").value = today();
+    renderStudents();
+  </script>
+</body>
+</html>
