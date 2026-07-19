@@ -1,4 +1,4 @@
-# 억매방 영어학원 관리사이트 만들기
+# 벌교미래엔영어학원 관리사이트 만들기
 
 이 폴더는 초보자 강의용 완성 예제입니다.
 
@@ -6,7 +6,7 @@
 
 1. GitHub 새 계정으로 로그인합니다.
 2. 오른쪽 위 `+` 버튼을 누르고 `New repository`를 선택합니다.
-3. 저장소 이름을 `eokmaebang-english-academy`로 입력합니다.
+3. 저장소 이름은 현재 연결된 `eokmaebang-english-academy`를 그대로 사용합니다.
 4. `Public` 또는 `Private`를 선택합니다.
 5. `Create repository`를 누릅니다.
 6. 이 폴더의 파일을 GitHub 저장소에 올립니다.
@@ -16,7 +16,7 @@
 ```bash
 git init
 git add .
-git commit -m "억매방 영어학원 관리사이트 첫 업로드"
+git commit -m "벌교미래엔영어학원 관리사이트 첫 업로드"
 git branch -M main
 git remote add origin https://github.com/내아이디/eokmaebang-english-academy.git
 git push -u origin main
