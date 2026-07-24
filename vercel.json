@@ -1,5 +1,8 @@
 {
   "functions": {
+    "api/**/*.js": {
+      "maxDuration": 60
+    },
     "api/generate-report.js": {
       "maxDuration": 60
     },
