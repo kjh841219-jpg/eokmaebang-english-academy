@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
@@ -1625,11 +1625,33 @@
           </div>
           <div class="form-grid two-col">
             <label>상담/학습 메모<textarea id="newStudentMemo" placeholder="레벨, 학습 습관, 학부모 요청사항 등을 적어주세요."></textarea></label>
-            <label>첫 안내 메시지<textarea id="newWelcomeMessage">어머님, 안녕하세요. 벌교미래엔영어입니다. 신입생 등록 안내드립니다. 아이가 잘 적응할 수 있도록 꼼꼼히 살피겠습니다.</textarea></label>
+            <label>첫 안내 메시지<textarea id="newWelcomeMessage">안녕하세요^^
+벌교미래엔영어 원장입니다.
+
+#{학생명} 학생의 신입생 등록을 진심으로 환영합니다. #{학생명}이가 새로운 환경에 편안하게 적응하고 즐겁게 영어를 배울 수 있도록 따뜻하고 세심하게 살피며 책임감 있게 지도하겠습니다.
+
+[신입생 등록 안내]
+· #{과정원비명}: #{원비}
+· 교재비: #{교재비}
+· 총 납부 금액: #{총납부금액}
+
+[입금 계좌]
+#{입금계좌}
+
+결제는 #{결제수단}
+
+[초등 수업 선택]
+① 주 4회 월~목 / 1시간 20분 수업
+② 주 5회 월~금 / 1시간 수업
+
+금요일은 보강데이로 운영됩니다. 주 3회 이상 결석할 경우에는 원비 납부 날짜 딜레이 또는 보강 중에서 선택하실 수 있습니다.
+
+궁금하신 점은 언제든 편하게 말씀해 주세요. #{학생명}이가 영어에 자신감을 갖고 꾸준히 성장할 수 있도록 진심을 다해 지도하겠습니다. 감사합니다^^</textarea></label>
           </div>
           <div class="toolbar">
             <button class="btn" onclick="registerNewStudent()">신입생 등록</button>
-            <button class="btn blue" onclick="registerNewStudent(true)">등록 후 안내문 발송대기</button>
+            <button class="btn blue" onclick="registerNewStudent('queue')">등록 후 안내문 발송대기</button>
+            <button class="btn amber" onclick="registerNewStudent('send')">등록 후 안내문 즉시발송</button>
           </div>
         </div>
       </section>
@@ -2287,41 +2309,42 @@
     const today = new Date().toISOString().slice(0, 10);
     const thisMonth = new Date().toISOString().slice(0, 7);
     let students = [
-      ["Sample Student 01", "Sample Elementary", "010-0000-0001", "010-0000-0101", "Present", "15:30", "Class 1"],
-      ["Sample Student 02", "Sample Elementary", "010-0000-0002", "010-0000-0102", "Present", "16:00", "Class 1"],
-      ["Sample Student 03", "Sample Elementary", "010-0000-0003", "010-0000-0103", "Absent", "", "Makeup needed"],
-      ["Sample Student 04", "Sample Middle", "010-0000-0004", "010-0000-0104", "Present", "17:00", "Middle class"],
-      ["Sample Student 05", "Sample Middle", "010-0000-0005", "010-0000-0105", "Late", "17:20", "Middle class"],
-      ["Sample Student 06", "Sample High", "010-0000-0006", "010-0000-0106", "Present", "18:00", "High class"]
+      ["예시학생01", "벌교초등학교", "010-0000-0001", "010-0000-0101", "출석", "15:30", "1반"],
+      ["예시학생02", "동강초등학교", "010-0000-0002", "010-0000-0102", "출석", "16:00", "1반"],
+      ["예시학생03", "낙성초등학교", "010-0000-0003", "010-0000-0103", "결석", "", "보강 필요"],
+      ["예시학생04", "벌교중학교", "010-0000-0004", "010-0000-0104", "출석", "17:00", "중등반"],
+      ["예시학생05", "벌교여자중학교", "010-0000-0005", "010-0000-0105", "지각", "17:20", "중등반"],
+      ["예시학생06", "벌교고등학교", "010-0000-0006", "010-0000-0106", "출석", "18:00", "고등반"]
     ].map((row, index) => ({
       id: index + 1,
       name: row[0],
       school: row[1] === "-" ? "" : row[1],
       phone: row[2] === "-" ? "" : row[2],
       studentPhone: row[3] === "-" ? "" : row[3],
-      grade: index < 3 ? "Elementary" : (index < 5 ? "Middle" : "High"),
-      parentName: "Guardian",
-      classGroup: index < 3 ? "Elementary" : (index < 5 ? "Middle" : "High"),
+      grade: row[0] === "예시학생99" ? "초등 1학년" : "",
+      parentName: "보호자",
+      classGroup: row[0] === "예시학생99" ? "초등반" : (index < 35 ? "초등반" : (index < 45 ? "중등반" : "고등반")),
       enrollDate: "2026-06-25",
-      monthlyFee: index < 3 ? 150000 : (index < 5 ? 200000 : 250000),
+      monthlyFee: index < 35 ? 150000 : (index < 45 ? 200000 : 250000),
       payDay: 5,
       attendance: row[4],
       attendanceDate: today,
       attendanceTime: row[5] || "",
       reason: "",
       makeupDate: "",
-      parentSent: "Not sent",
+      parentSent: "미발송",
       attendanceMemo: row[6] && row[6] !== "-" ? row[6] : "",
-      type: index < 3 ? "New" : "Regular",
-      status: "Active",
-      book: index < 3 ? "Elementary basic" : "Middle basic"
+      type: row[0] === "예시학생99" ? "신입생" : (index < 35 ? "신입생" : "장기생"),
+      status: "재원",
+      book: row[0] === "예시학생99" ? "초등기본반" : "초중등반 1주차 기본반1"
     }));
 
     const messages = [];
     const smsContentTemplates = [
-      {id: "tpl-attendance", name: "Attendance Notice", category: "Attendance", body: "Hello, #{studentName}'s guardian. This is #{academyName}.\nWe are sending today's attendance notice for #{studentName}.\nPlease contact the academy if you have any questions."},
-      {id: "tpl-progress", name: "Progress Praise", category: "Learning", body: "Hello, #{studentName}'s guardian. This is #{academyName}.\n#{studentName} participated well and showed steady progress.\nWe will continue to guide the student carefully."},
-      {id: "tpl-payment", name: "Payment Notice", category: "Payment", body: "Hello. This is #{academyName}.\nThis is a tuition payment notice for #{studentName}.\nPlease check it when convenient. Thank you."}
+      {id: "tpl-attendance", name: "출결 안내", category: "출결", body: "안녕하세요, #{학생명} 학부모님. #{학원명}입니다.\n오늘 #{학생명} 학생의 출결 사항을 안내드립니다.\n확인 후 궁금한 점은 학원으로 연락주세요."},
+      {id: "tpl-progress", name: "학습 칭찬 안내", category: "학습", body: "안녕하세요, #{학생명} 학부모님. #{학원명}입니다.\n#{학생명} 학생이 이번 수업에서 성실하게 참여하며 좋은 성장을 보였습니다.\n앞으로도 자신감을 갖고 학습할 수 있도록 지도하겠습니다."},
+      {id: "tpl-payment", name: "상세 원비 안내", category: "수납", body: "안녕하세요^^ 벌교미래엔영어 원장입니다.\n\n#{학생명}의 수업 등록 및 원비 안내드립니다.\n\n[입금 계좌]\n#{입금계좌}\n\n#{결제수단}\n\n즐겁게 수업에 참여하고 잘 적응할 수 있도록 따뜻하고 세심하게 살피며 책임감 있게 지도하겠습니다. 믿고 맡겨주셔서 감사합니다^^"},
+      {id: "tpl-new-student", name: "신입생 등록 안내", category: "공지", body: "안녕하세요^^\n벌교미래엔영어 원장입니다.\n\n#{학생명} 학생의 신입생 등록을 진심으로 환영합니다.\n\n[신입생 등록 안내]\n· #{과정원비명}: #{원비}\n· 교재비: #{교재비}\n· 총 납부 금액: #{총납부금액}\n\n[입금 계좌]\n#{입금계좌}\n\n결제는 #{결제수단}\n\n궁금하신 점은 언제든 편하게 말씀해 주세요. 진심을 다해 지도하겠습니다. 감사합니다^^"}
     ];
     const dailyReports = JSON.parse(localStorage.getItem("beolgyo-daily-reports-v1") || "[]");
     const attendanceRecords = [];
@@ -3175,10 +3198,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       return String(template.body || "")
         .replaceAll("#{학생명}", student.name || "학생")
         .replaceAll("#{학원명}", "벌교미래엔영어학원")
-        .replaceAll("#{날짜}", today)
-        .replaceAll("#{studentName}", student.name || "Student")
-        .replaceAll("#{academyName}", "Beolgyo MiraeN English Academy")
-        .replaceAll("#{date}", today);
+        .replaceAll("#{날짜}", today);
     }
 
     async function sendKakaoToSolapi(phone, body, variables = {}, kind = "attendance") {
@@ -7304,6 +7324,81 @@ ${report.ai_generated_comment}
       return 150000;
     }
 
+    function academyPaymentMethodsText() {
+      return "계좌이체, 보성사랑상품권, 보성사랑카드, 현물카드, 카드링크결제 모두 가능합니다.";
+    }
+
+    function academyAccountText() {
+      return "우리은행 1002-642-233477 김정해";
+    }
+
+    function studentTuition(student) {
+      return Number(student?.monthlyFee || classFee(student?.classGroup || "초등반"));
+    }
+
+    function tuitionCourseLabel(student) {
+      const group = student?.classGroup || "";
+      if (group.includes("중등")) return "중등 원비";
+      if (group.includes("고등")) return "고등 원비";
+      return "초등 원비";
+    }
+
+    function selectedSmsStudentsForMessage() {
+      const selected = selectedSmsRecipients();
+      if (selected.length) return selected;
+      const student = students.find(s => String(s.id) === String(document.getElementById("smsStudent")?.value));
+      return student ? [student] : [];
+    }
+
+    function buildTuitionSmsMessage(selectedStudents = [], detail = "") {
+      const list = selectedStudents.length ? selectedStudents : selectedSmsStudentsForMessage();
+      const fallbackName = students.find(s => String(s.id) === String(document.getElementById("smsStudent")?.value))?.name || "학생";
+      const names = list.map(s => s.name).filter(Boolean);
+      const namesText = names.length ? names.join("·") : fallbackName;
+      const fees = list.length ? list.map(studentTuition) : [200000];
+      const total = fees.reduce((sum, fee) => sum + fee, 0);
+      const sameFee = fees.every(fee => fee === fees[0]);
+      const lessonCounts = fees.map(fee => Math.round(fee / 10000));
+      const sameLessonCount = lessonCounts.every(count => count === lessonCounts[0]);
+      const personLine = sameFee
+        ? `▷ 1인 원비: ${money(fees[0])}`
+        : `▷ 학생별 원비: ${list.map((s, index) => `${s.name} ${money(fees[index])}`).join(" / ")}`;
+      const lessonLine = list.length > 1
+        ? `▷ 수업일수: ${sameLessonCount ? `각 ${lessonCounts[0]}일` : list.map((s, index) => `${s.name} ${lessonCounts[index]}일`).join(" / ")}`
+        : `▷ 수업일수: ${lessonCounts[0]}일`;
+      const totalLine = list.length > 1
+        ? `▷ ${namesText} ${list.length}명 총 납부금액: ${money(total)}`
+        : `▷ 총 납부금액: ${money(total)}`;
+      const extra = detail ? `\n\n[추가 안내]\n${detail}` : "";
+      return `안녕하세요^^ 벌교미래엔영어 원장입니다.\n\n${namesText}의 수업 등록 및 원비 안내드립니다.\n\n${lessonLine}\n▷ 수업료: 1시간당 10,000원\n${personLine}\n${totalLine}\n\n[입금 계좌]\n${academyAccountText()}\n\n${academyPaymentMethodsText()}${extra}\n\n${namesText}가 즐겁게 수업에 참여하고 잘 적응할 수 있도록 따뜻하고 세심하게 살피며 책임감 있게 지도하겠습니다. 믿고 맡겨주셔서 감사합니다^^`;
+    }
+
+    function fillStudentMessageTemplate(template, student) {
+      const tuition = studentTuition(student);
+      const bookFee = 30000;
+      const total = tuition + bookFee;
+      return String(template || "")
+        .replaceAll("#{학생명}", student?.name || "학생")
+        .replaceAll("#{학원명}", "벌교미래엔영어")
+        .replaceAll("#{과정원비명}", tuitionCourseLabel(student))
+        .replaceAll("#{원비}", money(tuition))
+        .replaceAll("#{교재비}", money(bookFee))
+        .replaceAll("#{총납부금액}", money(total))
+        .replaceAll("#{입금계좌}", academyAccountText())
+        .replaceAll("#{결제수단}", academyPaymentMethodsText());
+    }
+
+    function buildNewStudentWelcomeMessage(student) {
+      const tuition = studentTuition(student);
+      const bookFee = 30000;
+      const total = tuition + bookFee;
+      const isElementary = tuitionCourseLabel(student) === "초등 원비";
+      const classGuide = isElementary
+        ? "[초등 수업 선택]\n① 주 4회 월~목 / 1시간 20분 수업\n② 주 5회 월~금 / 1시간 수업\n\n금요일은 보강데이로 운영됩니다. 주 3회 이상 결석할 경우에는 원비 납부 날짜 딜레이 또는 보강 중에서 선택하실 수 있습니다."
+        : "[중등 수업 안내]\n중등 과정은 학교별 내신 대비, 본문 암기, 서술형 문장 훈련을 함께 관리합니다. 정기 테스트와 오답 관리를 통해 실전 감각을 높이겠습니다.";
+      return `안녕하세요^^\n벌교미래엔영어 원장입니다.\n\n${student.name} 학생의 신입생 등록을 진심으로 환영합니다. ${student.name}이가 새로운 환경에 편안하게 적응하고 즐겁게 영어를 배울 수 있도록 따뜻하고 세심하게 살피며 책임감 있게 지도하겠습니다.\n\n[신입생 등록 안내]\n· ${tuitionCourseLabel(student)}: ${money(tuition)}\n· 교재비: ${money(bookFee)}\n· 총 납부 금액: ${money(total)}\n\n[입금 계좌]\n${academyAccountText()}\n\n결제는 ${academyPaymentMethodsText()}\n\n${classGuide}\n\n궁금하신 점은 언제든 편하게 말씀해 주세요. ${student.name}이가 영어에 자신감을 갖고 꾸준히 성장할 수 있도록 진심을 다해 지도하겠습니다. 감사합니다^^`;
+    }
+
     function selectStudentDetail(id) {
       const s = students.find(student => student.id === id);
       if (!s) return;
@@ -7407,7 +7502,7 @@ ${report.ai_generated_comment}
       if (selected) select.value = selected;
     }
 
-    function registerNewStudent(queueWelcome = false) {
+    async function registerNewStudent(action = false) {
       const name = document.getElementById("newStudentName").value.trim();
       if (!name) {
         alert("학생명을 입력해주세요.");
@@ -7444,7 +7539,7 @@ ${report.ai_generated_comment}
         name: student.name,
         level,
         tuition: student.monthlyFee,
-        bookFee: 20000,
+        bookFee: 30000,
         discount: 0,
         paidAmount: 0,
         payDate: "",
@@ -7455,16 +7550,33 @@ ${report.ai_generated_comment}
         bookMemo: "신입생 등록 후 교재비 확인",
         memo: `원비일 ${student.payDay}일`,
       });
-      if (queueWelcome) {
-        messages.unshift({
+      const welcomeBody = fillStudentMessageTemplate(document.getElementById("newWelcomeMessage").value.trim(), student) || buildNewStudentWelcomeMessage(student);
+      if (action === true || action === "queue" || action === "send") {
+        const record = {
           date: today,
           name: student.name,
           phone: student.phone,
           type: "신입생안내",
           title: "신입생 등록 안내",
-          body: document.getElementById("newWelcomeMessage").value.trim(),
-          status: "발송대기"
-        });
+          body: welcomeBody,
+          status: action === "send" ? "발송중" : "발송대기"
+        };
+        messages.unshift(record);
+        if (action === "send") {
+          if (!normalizePhone(student.phone)) {
+            record.status = "발송실패";
+            alert("신입생은 등록했지만 학부모 연락처가 없어 즉시발송은 하지 못했습니다.");
+          } else {
+            try {
+              const result = await sendSmsToSolapi(student.phone, welcomeBody);
+              record.status = "발송접수";
+              record.groupId = result?.result?.groupInfo?.groupId || result?.result?.groupId || "";
+            } catch (error) {
+              record.status = "발송실패";
+              alert(`신입생은 등록했지만 안내문 즉시발송은 실패했습니다.\n${error.message}`);
+            }
+          }
+        }
       }
       document.getElementById("newStudentName").value = "";
       document.getElementById("newStudentSchool").value = "";
@@ -7475,7 +7587,7 @@ ${report.ai_generated_comment}
       document.getElementById("newStudentMemo").value = "";
       fillStudentSelects();
       renderAll();
-      alert(`${name} 학생을 신입생으로 등록했습니다.`);
+      alert(`${name} 학생을 신입생으로 등록했습니다.${action === "queue" || action === true ? "\n안내문은 발송대기에 저장했습니다." : action === "send" ? "\n안내문 즉시발송 결과는 문자 발송내역에서 확인해주세요." : ""}`);
     }
 
     function renderWeekly() {
@@ -7605,6 +7717,11 @@ ${report.ai_generated_comment}
       const detail = document.getElementById("smsDetail").value.trim();
       const extra = detail ? `\n${detail}` : "";
       const status = student?.attendance || "출결";
+      if (purpose === "payment") {
+        document.getElementById("smsBody").value = buildTuitionSmsMessage(selectedSmsStudentsForMessage(), detail);
+        updateSmsCounter();
+        return;
+      }
       const templates = {
         warm: {
           attendance: `안녕하세요, ${name} 학부모님. 벌교미래엔영어입니다. 오늘 ${name} 학생은 ${status}으로 확인되어 안내드립니다.${extra}\n아이의 수업 일정에 불편함이 없도록 꼼꼼히 챙기겠습니다. 감사합니다.`,
@@ -7846,9 +7963,10 @@ ${report.ai_generated_comment}
         messages.unshift({
           date: today,
           name: s.name,
+          phone: s.phone,
           type: "수납안내",
           title: `${record.month} 수납 확인 안내`,
-          body: `어머님, 안녕하세요. 벌교미래엔영어입니다.\n\n${s.name} 학생의 ${record.month} 수업료 확인 안내드립니다. 확인 후 편하실 때 납부 부탁드립니다.`,
+          body: buildTuitionSmsMessage([{...s, monthlyFee: tuition, classGroup: record.level}], record.memo || record.bookMemo || ""),
           status: "발송대기"
         });
       }
