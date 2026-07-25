@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return sendJson(res, 405, {ok: false, error: "POST 요청만 사용할 수 있습니다."});
   try {
     const data = await readJson(req);
-    const result = await sendSolapiMessages(data.to || [], String(data.text || ""));
+    const result = await sendSolapiMessages(data.to || [], String(data.text || ""), null, String(data.scheduledDate || ""));
     return sendJson(res, 200, {ok: true, result});
   } catch (error) {
     return sendJson(res, 400, {ok: false, error: error.message || "단체문자 발송에 실패했습니다."});

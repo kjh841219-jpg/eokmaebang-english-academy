@@ -11,7 +11,7 @@ export default async function handler(req, res) {
         error: "Vercel 배포판에서는 이미지 MMS 업로드가 아직 제한됩니다. 텍스트 문자 또는 로컬 문자발송서버를 사용해주세요."
       });
     }
-    const result = await sendSolapiMessages(data.to || [], String(data.text || ""));
+    const result = await sendSolapiMessages(data.to || [], String(data.text || ""), null, String(data.scheduledDate || ""));
     return sendJson(res, 200, {ok: true, result});
   } catch (error) {
     return sendJson(res, 400, {ok: false, error: error.message || "MMS 발송에 실패했습니다."});

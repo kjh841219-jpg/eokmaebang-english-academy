@@ -71,7 +71,7 @@ async function solapiRequest(url, payload) {
   return data;
 }
 
-export async function sendSolapiMessages(recipients, text, kakaoOptions = null) {
+export async function sendSolapiMessages(recipients, text, kakaoOptions = null, scheduledDate = "") {
   const {sender} = solapiConfig();
   const phones = (Array.isArray(recipients) ? recipients : [recipients])
     .map(value => String(value || "").replace(/[^0-9]/g, ""))
@@ -90,14 +90,23 @@ export async function sendSolapiMessages(recipients, text, kakaoOptions = null) 
     return message;
   });
 
-  const result = await solapiRequest(SOLAPI_SEND_URL, {messages, allowDuplicates: false});
+  const payload = {messages, allowDuplicates: false};
+  if (scheduledDate) payload.scheduledDate = scheduledDate;
+  const result = await solapiRequest(SOLAPI_SEND_URL, payload);
   const failed = result.failedMessageList || [];
   const registeredSuccess = Number(result.groupInfo?.count?.registeredSuccess || 0);
   if (failed.length && registeredSuccess === 0) {
     const first = typeof failed[0] === "object" ? failed[0] : {};
-    throw new Error(`SOLAPI 발송 실패 ${first.statusCode || ""} ${first.statusMessage || ""}`.trim());
+    throw new Error(solapiFailureMessage(first.statusCode || "", first.statusMessage || ""));
   }
   return result;
+}
+
+function solapiFailureMessage(code, message) {
+  if (String(code) === "1041") {
+    return "카카오 알림톡 발송 실패: 카카오 채널 PFID 값이 올바르지 않습니다. SOLAPI 콘솔의 카카오 채널 설정 화면에서 PFID 값을 다시 복사해 Vercel 환경변수 SOLAPI_KAKAO_PFID에 넣어주세요. 카카오 채널명, 검색용 ID, 채널 URL은 PFID가 아닙니다.";
+  }
+  return `SOLAPI 발송 실패 [${code || "알 수 없음"}] ${message || "발송 가능한 메시지가 없습니다."}`;
 }
 
 export function kakaoOptions(kind, variables = null) {
@@ -105,7 +114,9 @@ export function kakaoOptions(kind, variables = null) {
   const templateKey = {
     leave: "SOLAPI_KAKAO_LEAVE_TEMPLATE_ID",
     daily: "SOLAPI_KAKAO_DAILY_TEMPLATE_ID",
-    weekly: "SOLAPI_KAKAO_DAILY_TEMPLATE_ID",
+    weekly: "SOLAPI_KAKAO_WEEKLY_TEMPLATE_ID",
+    monthly: "SOLAPI_KAKAO_MONTHLY_TEMPLATE_ID",
+    growth: "SOLAPI_KAKAO_GROWTH_TEMPLATE_ID",
     attendance: "SOLAPI_KAKAO_TEMPLATE_ID"
   }[kind] || "SOLAPI_KAKAO_TEMPLATE_ID";
   const templateId = process.env[templateKey]?.trim() || process.env.SOLAPI_KAKAO_TEMPLATE_ID?.trim();

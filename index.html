@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
@@ -1348,12 +1348,10 @@
             <div class="toolbar" style="margin-top:10px;">
               <button class="btn" onclick="saveAttendanceDetail()">상세 기록 저장</button>
               <button class="btn blue" onclick="makeAttendanceMessage()">학부모 안내문 발송대기</button>
-              <button class="btn amber" onclick="sendAttendanceSms()">📱 출결문자로 보내기</button>
+              <button class="btn amber" onclick="sendAttendanceSms()">📱 문자로 보내기</button>
+              <button class="btn blue" onclick="sendAttendanceKakao()">💬 카카오톡으로 보내기</button>
             </div>
-            <label class="switch-row" style="margin-top:10px;">
-              <span><strong>출결 버튼 클릭 시 카카오 자동발송</strong><br><small>솔라피에 카카오 채널 ID와 승인된 템플릿이 설정된 경우에만 발송됩니다.</small></span>
-              <span class="switch"><input id="attendanceAutoKakao" type="checkbox" /><span class="slider"></span></span>
-            </label>
+            <div class="notice" style="margin-top:10px;">출결 내용을 저장한 뒤 문자 또는 카카오톡 버튼 중 원하는 발송 방식을 선택할 수 있습니다.</div>
             <h2 style="margin-top:18px;">출결 주의 학생</h2>
             <div id="watchList"></div>
           </div>
@@ -1393,9 +1391,8 @@
               <button class="btn" onclick="makeWeeklyFeedback()">주간피드백 자동생성</button>
               <button class="btn blue" onclick="saveWeeklyFeedback()">주간피드백 발송대기 저장</button>
               <button class="btn secondary" onclick="openWeeklySmsComposer()">문자 작성창으로 보내기</button>
-              <button class="btn blue" onclick="sendWeeklyReport('sms')">문자 즉시발송</button>
-              <button class="btn amber" onclick="sendWeeklyReport('kakao')">카카오 알림톡 발송</button>
-              <button class="btn secondary" onclick="checkKakaoConnection()">카카오 연결확인</button>
+              <button class="btn blue" onclick="sendWeeklyReport()">자동생성 후 문자 즉시발송</button>
+              <button class="btn amber" onclick="sendWeeklyReportKakao()">자동생성 후 카카오 전송</button>
             </div>
             <textarea id="weeklyFeedback" placeholder="자동 생성된 주간피드백이 표시됩니다."></textarea>
             <div id="weeklySendStatus" class="notice">예시: 어머님, 이번 주 ○○이는 기본반1 수업에서 단어와 리딩 흐름이 안정적이었습니다. 문법은 반복 복습을 통해 정확도를 높여가겠습니다.</div>
@@ -1428,7 +1425,7 @@
             <div class="toolbar"><button id="dailyVideoUploadButton" class="btn secondary" type="button" onclick="uploadDailyVideo()">영상 업로드</button><span id="dailyVideoStatus" class="muted">선택된 영상이 없습니다.</span></div>
           </div>
           <label>학부모가 열 수 있는 영상 공개 링크<input id="dailyVideoUrl" type="url" placeholder="https://... (유튜브 일부공개·네이버 MYBOX·공개 저장소 링크)" /><small class="muted">서버에 VIDEO_PUBLIC_BASE_URL이 설정되면 업로드 후 자동 입력됩니다. 없으면 공개 공유 링크를 직접 붙여넣어 주세요.</small></label>
-          <div class="toolbar" style="margin-top:14px;"><button class="btn" type="button" onclick="generateDailyFeedback()">피드백 자동생성</button><button class="btn secondary" type="button" onclick="saveDailyReport()">리포트 저장</button><button class="btn blue" type="button" onclick="sendDailyReport('sms')">문자로 전송</button><button class="btn amber" type="button" onclick="sendDailyReport('kakao')">카카오 알림톡 전송</button></div>
+          <div class="toolbar" style="margin-top:14px;"><button class="btn" type="button" onclick="generateDailyFeedback()">피드백 자동생성</button><button class="btn secondary" type="button" onclick="saveDailyReport()">리포트 저장</button><button class="btn blue" type="button" onclick="sendDailyReport()">자동생성 후 문자 전송</button><button class="btn amber" type="button" onclick="sendDailyReportKakao()">자동생성 후 카카오 전송</button></div>
           <label>학부모 발송 문구<textarea id="dailyFeedback" rows="11" maxlength="2000" placeholder="자동 생성된 데일리 피드백이 표시됩니다."></textarea></label>
           <div id="dailySendStatus" class="notice">먼저 본인 번호로 시험 발송한 뒤 실제 학부모에게 사용하세요.</div>
         </div>
@@ -1486,12 +1483,14 @@
             <button class="btn amber" onclick="renderMonthlyReport()">월말평가지 자동생성</button>
             <button class="btn secondary" onclick="printMonthlyReport()">월말평가지 출력</button>
             <button class="btn blue" onclick="saveMonthlyFeedback()">월말평가 발송대기 저장</button>
+            <button class="btn blue" onclick="sendMonthlyReportSms()">자동생성 후 문자 즉시발송</button>
+            <button class="btn amber" onclick="sendMonthlyReportKakao()">자동생성 후 카카오 전송</button>
             <button class="btn secondary" onclick="downloadCsv('monthly')">월말평가 CSV</button>
           </div>
           <textarea id="monthlyFeedback" placeholder="자동 생성된 월말평가 피드백이 표시됩니다."></textarea>
           <textarea id="monthlyConsultation" placeholder="자동 생성된 상담내용이 표시됩니다."></textarea>
           <div id="monthlyReportPreview" class="report-preview hidden"></div>
-          <div class="notice">예시: 어머님, 이번 달 ○○이는 문법 80점, 리딩 85점, 단어 90점으로 평균 85점을 기록했습니다. 성장한 부분과 보완할 부분을 함께 안내드립니다.</div>
+          <div id="monthlySendStatus" class="notice">월간리포트는 자동 생성된 내용을 학부모 연락처로 문자 발송합니다.</div>
         </div>
         <div id="monthlyExamIntegrated"></div>
         <div class="section">
@@ -2010,7 +2009,7 @@
               <select id="levelStudent" onchange="syncLevelStudentInfo()"></select>
             </label>
             <label>학생명
-              <input id="levelStudentName" placeholder="예: 테스트학생" />
+              <input id="levelStudentName" placeholder="예: 예시학생01" />
             </label>
           </div>
           <div class="form-grid">
@@ -2126,6 +2125,8 @@
             <button class="btn secondary" onclick="copyGrowthReport()">보고서 복사</button>
             <button class="btn secondary" onclick="printGrowthReport()">보고서 인쇄</button>
             <button class="btn amber" onclick="saveGrowthReportMessage()">발송대기 저장</button>
+            <button class="btn blue" onclick="sendGrowthReportSms()">자동생성 후 문자 즉시발송</button>
+            <button class="btn amber" onclick="sendGrowthReportKakao()">자동생성 후 카카오 전송</button>
           </div>
           <div id="growthReportStatus" class="notice">보고서 생성 전입니다. API 주소를 비워두면 대시보드 내장 문구로 즉시 생성하고, Vercel 주소를 입력하면 ChatGPT API로 생성합니다.</div>
           <div id="growthReportOutput" class="growth-report-output">
@@ -2141,12 +2142,42 @@
       <section id="messages" class="page hidden">
         <div class="section">
           <h2>문자메시지 발송</h2>
-          <div class="notice">학부모 또는 학생 연락처를 선택하고, 발송할 회원을 한 명 이상 체크할 수 있습니다. 문자 작성 후 솔라피로 바로 발송하거나 발송대기에 저장할 수 있습니다.</div>
+          <div class="notice">학부모 또는 학생 연락처를 선택하고, 문자 작성·예약 발송·발송내역·문자내용 템플릿을 한 화면에서 관리합니다.</div>
           <div class="toolbar">
             <button class="btn blue" onclick="openSmsComposer()">문자메시지 작성</button>
             <button class="btn secondary" onclick="downloadCsv('messages')">발송대기 CSV</button>
           </div>
+          <h3>발송대기</h3>
           <div class="table-wrap"><table id="messagesTable"></table></div>
+          <h3>문자 예약관리</h3>
+          <div class="notice">예약 발송으로 솔라피에 접수된 문자와, 예약 시간이 지정된 발송대기 문자를 확인합니다.</div>
+          <div class="table-wrap"><table id="smsScheduleTable"></table></div>
+          <h3>문자 발송내역</h3>
+          <div class="notice">즉시 발송, 예약 접수, 실패 내역을 최근 순서로 확인합니다.</div>
+          <div class="table-wrap"><table id="smsHistoryTable"></table></div>
+          <h3>문자내용 템플릿관리</h3>
+          <div class="form-grid two-col">
+            <label>템플릿명
+              <input id="smsTemplateNameInput" placeholder="예: 결석 안내, 주간 리포트 안내" />
+            </label>
+            <label>분류
+              <select id="smsTemplateCategoryInput">
+                <option value="출결">출결</option>
+                <option value="학습">학습</option>
+                <option value="수납">수납</option>
+                <option value="상담">상담</option>
+                <option value="공지">공지</option>
+              </select>
+            </label>
+          </div>
+          <label>템플릿 내용
+            <textarea id="smsTemplateBodyInput" rows="5" placeholder="#{학생명}, #{학원명}, #{날짜}를 사용할 수 있습니다."></textarea>
+          </label>
+          <div class="toolbar">
+            <button class="btn" onclick="saveSmsContentTemplate()">템플릿 저장</button>
+            <button class="btn secondary" onclick="clearSmsTemplateForm()">입력칸 비우기</button>
+          </div>
+          <div class="table-wrap"><table id="smsTemplateTable"></table></div>
         </div>
       </section>
     </main>
@@ -2196,6 +2227,10 @@
         <img id="smsImagePreview" class="sms-image-preview" alt="첨부 이미지 미리보기" />
         <small id="smsImageStatus" class="muted">발송할 때 솔라피 MMS 규격(JPG 200KB 이하)으로 자동 최적화합니다.</small>
       </label>
+      <label>예약 발송 시간 (선택)
+        <input id="smsScheduleAt" type="datetime-local" />
+        <small class="muted">비워두면 즉시 발송됩니다. 예약은 현재 이후 시간으로만 설정해주세요.</small>
+      </label>
       <div class="sms-auto-box">
         <div class="sms-auto-title">✨ 문자 내용 자동생성</div>
         <div class="form-grid two-col">
@@ -2242,6 +2277,7 @@
       <div class="toolbar" style="margin-top:14px;">
         <button class="btn secondary" onclick="queueSmsMessage()">발송대기에 저장</button>
         <button class="btn blue" onclick="sendSmsMessage()">솔라피로 발송</button>
+        <button class="btn" onclick="sendSmsMessage(true)">예약 발송</button>
       </div>
       <div class="notice">전체 발송은 학생 수만큼 비용이 차감됩니다. 이미지가 있으면 MMS로 발송되며, 접수 후 실제 도착 여부는 솔라피 발송내역에서 확인할 수 있습니다.</div>
     </div>
@@ -2251,36 +2287,42 @@
     const today = new Date().toISOString().slice(0, 10);
     const thisMonth = new Date().toISOString().slice(0, 7);
     let students = [
-      ["테스트학생1", "벌교초등학교", "", "", "출석", "", "-"],
-      ["테스트학생2", "벌교초등학교", "", "", "출석", "", "-"],
-      ["테스트학생3", "벌교중학교", "", "", "출석", "", "-"],
-      ["테스트학생4", "벌교여자중학교", "", "", "출석", "", "-"],
-      ["테스트학생5", "벌교고등학교", "", "", "출석", "", "-"],
+      ["Sample Student 01", "Sample Elementary", "010-0000-0001", "010-0000-0101", "Present", "15:30", "Class 1"],
+      ["Sample Student 02", "Sample Elementary", "010-0000-0002", "010-0000-0102", "Present", "16:00", "Class 1"],
+      ["Sample Student 03", "Sample Elementary", "010-0000-0003", "010-0000-0103", "Absent", "", "Makeup needed"],
+      ["Sample Student 04", "Sample Middle", "010-0000-0004", "010-0000-0104", "Present", "17:00", "Middle class"],
+      ["Sample Student 05", "Sample Middle", "010-0000-0005", "010-0000-0105", "Late", "17:20", "Middle class"],
+      ["Sample Student 06", "Sample High", "010-0000-0006", "010-0000-0106", "Present", "18:00", "High class"]
     ].map((row, index) => ({
       id: index + 1,
       name: row[0],
       school: row[1] === "-" ? "" : row[1],
       phone: row[2] === "-" ? "" : row[2],
       studentPhone: row[3] === "-" ? "" : row[3],
-      grade: "",
-      parentName: "보호자",
-      classGroup: index < 35 ? "초등반" : (index < 45 ? "중등반" : "고등반"),
+      grade: index < 3 ? "Elementary" : (index < 5 ? "Middle" : "High"),
+      parentName: "Guardian",
+      classGroup: index < 3 ? "Elementary" : (index < 5 ? "Middle" : "High"),
       enrollDate: "2026-06-25",
-      monthlyFee: index < 35 ? 150000 : (index < 45 ? 200000 : 250000),
+      monthlyFee: index < 3 ? 150000 : (index < 5 ? 200000 : 250000),
       payDay: 5,
       attendance: row[4],
       attendanceDate: today,
       attendanceTime: row[5] || "",
       reason: "",
       makeupDate: "",
-      parentSent: "미발송",
+      parentSent: "Not sent",
       attendanceMemo: row[6] && row[6] !== "-" ? row[6] : "",
-      type: index < 35 ? "신입생" : "장기생",
-      status: "재원",
-      book: "초중등반 1주차 기본반1"
+      type: index < 3 ? "New" : "Regular",
+      status: "Active",
+      book: index < 3 ? "Elementary basic" : "Middle basic"
     }));
 
     const messages = [];
+    const smsContentTemplates = [
+      {id: "tpl-attendance", name: "Attendance Notice", category: "Attendance", body: "Hello, #{studentName}'s guardian. This is #{academyName}.\nWe are sending today's attendance notice for #{studentName}.\nPlease contact the academy if you have any questions."},
+      {id: "tpl-progress", name: "Progress Praise", category: "Learning", body: "Hello, #{studentName}'s guardian. This is #{academyName}.\n#{studentName} participated well and showed steady progress.\nWe will continue to guide the student carefully."},
+      {id: "tpl-payment", name: "Payment Notice", category: "Payment", body: "Hello. This is #{academyName}.\nThis is a tuition payment notice for #{studentName}.\nPlease check it when convenient. Thank you."}
+    ];
     const dailyReports = JSON.parse(localStorage.getItem("beolgyo-daily-reports-v1") || "[]");
     const attendanceRecords = [];
     const weeklyRecords = [];
@@ -2526,12 +2568,13 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       return {
         savedAt: new Date().toISOString(),
         students: students.map(student => ({...student})),
-        messages: messages.map(message => ({...message}))
+        messages: messages.map(message => ({...message})),
+        smsContentTemplates: smsContentTemplates.map(template => ({...template}))
       };
     }
 
     function dashboardSignature(state) {
-      return JSON.stringify({students: state.students || [], messages: state.messages || []});
+      return JSON.stringify({students: state.students || [], messages: state.messages || [], smsContentTemplates: state.smsContentTemplates || []});
     }
 
     function applyDashboardState(state) {
@@ -2545,6 +2588,14 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       }
       if (Array.isArray(state?.messages)) {
         messages.splice(0, messages.length, ...state.messages.map(ensureMessageClientId));
+      }
+      if (Array.isArray(state?.smsContentTemplates) && state.smsContentTemplates.length) {
+        smsContentTemplates.splice(0, smsContentTemplates.length, ...state.smsContentTemplates.map(template => ({
+          id: template.id || `tpl-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          name: template.name || "문자 템플릿",
+          category: template.category || "공지",
+          body: template.body || ""
+        })));
       }
     }
 
@@ -2560,6 +2611,10 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
         const response = await fetch(dashboardApiUrl("/api/dashboard/state"), {cache: "no-store"});
         const data = await response.json();
         if (!response.ok || !data.ok) throw new Error(data.error || "저장 데이터를 불러오지 못했습니다.");
+        if (!Array.isArray(data.students) || !data.students.length) {
+          setDashboardSyncStatus("초기 학생명단 서버 저장 준비", "blue");
+          return false;
+        }
         applyDashboardState(data);
         lastDashboardSignature = dashboardSignature(data);
         localStorage.setItem(DASHBOARD_LOCAL_KEY, JSON.stringify(dashboardSnapshot()));
@@ -2725,7 +2780,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
     function pill(value) {
       if (value === "결석" || value === "미납" || value === "발송실패") return `<span class="pill red">${value}</span>`;
       if (value === "지각" || value === "보강" || value === "보완필요") return `<span class="pill amber">${value}</span>`;
-      if (["발송대기", "발송중", "발송접수"].includes(value)) return `<span class="pill blue">${value}</span>`;
+      if (["발송대기", "발송중", "발송접수", "예약대기", "예약접수중", "예약접수"].includes(value)) return `<span class="pill blue">${value}</span>`;
       return `<span class="pill">${value}</span>`;
     }
 
@@ -2948,7 +3003,8 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
             <button class="btn small ghost" onclick="setAttendance(${s.id}, '보강')">보강</button>
             <button class="btn small ghost" onclick="setAttendance(${s.id}, '하원')">하원</button>
             <button class="btn small" onclick="loadAttendanceDetail(${s.id})">상세</button>
-            <button class="btn small amber" onclick="sendAttendanceSms(${s.id})">문자 보내기</button>
+            <button class="btn small amber" onclick="sendAttendanceSms(${s.id})">문자로 보내기</button>
+            <button class="btn small blue" onclick="sendAttendanceKakao(${s.id})">카카오톡으로 보내기</button>
           </div>
         </div>
       `).join("") || '<div class="notice">조건에 맞는 학생이 없습니다.</div>';
@@ -2962,7 +3018,8 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
           </div>
           <div class="attendance-actions">
             <button class="btn small" onclick="quickAttendanceMessage(${s.id})">안내문 생성</button>
-            <button class="btn small amber" onclick="sendAttendanceSms(${s.id})">문자 보내기</button>
+            <button class="btn small amber" onclick="sendAttendanceSms(${s.id})">문자로 보내기</button>
+            <button class="btn small blue" onclick="sendAttendanceKakao(${s.id})">카카오톡으로 보내기</button>
           </div>
         </div>
       `).join("") || '<div class="notice">현재 출결 특이 학생이 없습니다.</div>';
@@ -3002,9 +3059,6 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       });
       fillStudentSelects();
       renderAll();
-      if (document.getElementById("attendanceAutoKakao")?.checked) {
-        sendAttendanceKakao(student.id);
-      }
     }
 
     function loadAttendanceDetail(id) {
@@ -3064,13 +3118,13 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       return path;
     }
 
-    async function sendSmsToSolapi(phone, body) {
+    async function sendSmsToSolapi(phone, body, scheduledDate = "") {
       let response;
       try {
         response = await fetch(apiEndpoint("/api/sms/send"), {
           method: "POST",
           headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({to: phone, text: body})
+          body: JSON.stringify({to: phone, text: body, scheduledDate})
         });
       } catch (error) {
         throw new Error("문자 발송 서버가 실행 중이 아닙니다. 문자발송서버_실행.bat을 먼저 실행해주세요.");
@@ -3080,14 +3134,14 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       return data;
     }
 
-    async function sendBulkSmsToSolapi(phones, body, imageData = "", fileName = "") {
+    async function sendBulkSmsToSolapi(phones, body, imageData = "", fileName = "", scheduledDate = "") {
       const hasImage = Boolean(imageData);
       let response;
       try {
         response = await fetch(apiEndpoint(hasImage ? "/api/mms/send-bulk" : "/api/sms/send-bulk"), {
           method: "POST",
           headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({to: phones, text: body, imageData, fileName})
+          body: JSON.stringify({to: phones, text: body, imageData, fileName, scheduledDate})
         });
       } catch (error) {
         throw new Error("문자 발송 서버가 실행 중이 아닙니다. 실행하기.bat을 다시 실행해주세요.");
@@ -3095,6 +3149,36 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.ok) throw new Error(data.error || "단체문자 발송에 실패했습니다.");
       return data;
+    }
+
+    function smsScheduleValue(requireSchedule = false) {
+      const input = document.getElementById("smsScheduleAt");
+      const raw = input?.value || "";
+      if (!raw) {
+        if (requireSchedule) alert("예약 발송 시간을 선택해주세요.");
+        return null;
+      }
+      const scheduled = new Date(raw);
+      if (Number.isNaN(scheduled.getTime())) {
+        alert("예약 발송 시간을 다시 확인해주세요.");
+        return false;
+      }
+      if (scheduled.getTime() <= Date.now() + 60000) {
+        alert("예약 발송 시간은 현재보다 최소 1분 이후로 설정해주세요.");
+        return false;
+      }
+      return {raw, iso: scheduled.toISOString(), label: raw.replace("T", " ")};
+    }
+
+    function smsTemplateText(template) {
+      const student = students.find(s => String(s.id) === String(document.getElementById("smsStudent")?.value)) || {};
+      return String(template.body || "")
+        .replaceAll("#{학생명}", student.name || "학생")
+        .replaceAll("#{학원명}", "벌교미래엔영어학원")
+        .replaceAll("#{날짜}", today)
+        .replaceAll("#{studentName}", student.name || "Student")
+        .replaceAll("#{academyName}", "Beolgyo MiraeN English Academy")
+        .replaceAll("#{date}", today);
     }
 
     async function sendKakaoToSolapi(phone, body, variables = {}, kind = "attendance") {
@@ -3111,6 +3195,61 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.ok) throw new Error(data.error || "카카오 채널 발송에 실패했습니다.");
       return data;
+    }
+
+    function compactKakaoValue(value, maxLength = 180) {
+      const compact = String(value || "").replace(/\[[^\]]+\]/g, " ").replace(/\s+/g, " ").trim();
+      return compact.length > maxLength ? `${compact.slice(0, maxLength - 1)}…` : (compact || "학원에서 자세히 안내드리겠습니다.");
+    }
+
+    function reportKakaoMessage(title, studentName, period, summary, improve, next) {
+      const values = {
+        studentName: compactKakaoValue(studentName, 20),
+        period: compactKakaoValue(period, 30),
+        summary: compactKakaoValue(summary, 180),
+        improve: compactKakaoValue(improve, 150),
+        next: compactKakaoValue(next, 150)
+      };
+      return {
+        body: `[벌교미래엔영어학원 ${title}]\n${values.studentName} 학생의 ${values.period} 학습 평가입니다.\n\n[핵심 평가]\n${values.summary}\n\n[보완할 점]\n${values.improve}\n\n[다음 목표]\n${values.next}\n\n상세한 내용은 학원에서 안내드리겠습니다. 감사합니다.`,
+        variables: {
+          "#{학생명}": values.studentName,
+          "#{평가기간}": values.period,
+          "#{핵심평가}": values.summary,
+          "#{보완점}": values.improve,
+          "#{다음목표}": values.next
+        }
+      };
+    }
+
+    async function sendReportKakaoWithSmsFallback({phone, kind, title, studentName, period, summary, improve, next, fullSmsBody, status}) {
+      const message = reportKakaoMessage(title, studentName, period, summary, improve, next);
+      status.textContent = `${title} 카카오 알림톡을 발송 접수 중입니다...`;
+      try {
+        const result = await sendKakaoToSolapi(phone, message.body, message.variables, kind);
+        messages.unshift({date:today,name:studentName,phone,type:`${title} 카카오`,title,body:message.body,status:"알림톡 접수",groupId:result?.result?.groupInfo?.groupId || result?.result?.groupId || ""});
+        renderAll();
+        status.textContent = `${studentName} 학생 ${title}가 카카오 알림톡으로 접수되었습니다. 실제 도착 여부는 SOLAPI 발송내역에서 확인해주세요.`;
+        return true;
+      } catch (kakaoError) {
+        status.textContent = "알림톡 발송이 되지 않아 같은 내용을 문자로 자동 전환 중입니다...";
+        try {
+          const result = await sendSmsToSolapi(phone, fullSmsBody || message.body);
+          messages.unshift({date:today,name:studentName,phone,type:`${title} 문자대체`,title,body:fullSmsBody || message.body,status:"문자 대체접수",groupId:result?.result?.groupInfo?.groupId || result?.result?.groupId || ""});
+          renderAll();
+          status.textContent = `${studentName} 학생 ${title}는 알림톡 실패 후 문자로 자동 전환되어 접수되었습니다.`;
+          return false;
+        } catch (smsError) {
+          status.textContent = `알림톡과 문자 대체발송이 모두 실패했습니다: ${smsError.message}`;
+          alert(status.textContent);
+          return false;
+        }
+      }
+    }
+
+    function isKakaoPfidError(error) {
+      const message = String(error?.message || error || "");
+      return message.includes("1041") || message.includes("플러스 친구") || message.includes("PFID");
     }
 
     function selectedSmsRecipients() {
@@ -3322,8 +3461,15 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
     }
 
     async function sendAttendanceKakao(id) {
-      const student = students.find(s => s.id === id);
-      if (!student?.phone) return;
+      const student = id ? students.find(s => s.id === id) : selectedStudent("attendanceStudent");
+      if (!student) return alert("카카오톡을 보낼 학생을 선택해주세요.");
+      if (!id) {
+        student.attendance = document.getElementById("attendanceDetailStatus").value;
+        student.attendanceTime = document.getElementById("attendanceTime").value || currentTime();
+        student.reason = document.getElementById("attendanceReason").value.trim() || `${student.attendance} 사유 확인 필요`;
+        student.makeupDate = document.getElementById("attendanceMakeupDate").value;
+      }
+      if (!student.phone) return alert(`${student.name} 학생의 학부모 연락처가 없습니다.`);
       const {body, phone} = attendanceMessageData(student);
       const variables = {
         "#{학생명}": student.name,
@@ -4002,40 +4148,28 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       document.getElementById("weeklySendStatus").textContent = "주간리포트 내용을 문자 작성창으로 옮겼습니다. 내용을 확인한 뒤 발송해주세요.";
     }
 
-    async function sendWeeklyReport(channel) {
+    async function sendWeeklyReport() {
       const draft = weeklyReportDraft();
       if (!draft) return;
       const status = document.getElementById("weeklySendStatus");
-      const isKakao = channel === "kakao";
-      if (!confirm(`${draft.student.name} 학생 학부모님께 주간리포트를 ${isKakao ? "카카오 알림톡" : "문자"}으로 발송 접수할까요?`)) return;
+      if (!confirm(`${draft.student.name} 학생 학부모님께 자동 생성된 주간리포트를 문자로 발송할까요?`)) return;
       const record = {
         date: today,
         name: draft.student.name,
         phone: draft.phone,
         recipientType: "parent",
-        type: isKakao ? "카카오 주간리포트" : "주간리포트 문자",
+        type: "주간리포트 문자",
         title: draft.title,
         body: draft.feedback,
         status: "발송중"
       };
       messages.unshift(record);
       renderAll();
-      status.textContent = isKakao ? "카카오 알림톡으로 주간리포트를 발송 접수 중입니다..." : "문자로 주간리포트를 발송 접수 중입니다...";
+      status.textContent = "자동 생성된 주간리포트를 문자로 발송 접수 중입니다...";
       try {
-        if (isKakao) {
-          const result = await sendKakaoToSolapi(draft.phone, draft.feedback, {
-            "#{학생명}": draft.student.name,
-            "#{수업일}": draft.reportDate,
-            "#{피드백}": draft.feedback,
-            "#{영상링크}": "없음"
-          }, "daily");
-          record.status = "알림톡 접수";
-          record.groupId = result?.result?.groupInfo?.groupId || result?.result?.groupId || "";
-        } else {
-          const result = await sendSmsToSolapi(draft.phone, draft.feedback);
-          record.status = "문자 접수";
-          record.groupId = result?.result?.groupInfo?.groupId || result?.result?.groupId || "";
-        }
+        const result = await sendSmsToSolapi(draft.phone, draft.feedback);
+        record.status = "문자 접수";
+        record.groupId = result?.result?.groupInfo?.groupId || result?.result?.groupId || "";
         weeklyRecords.unshift({
           date: draft.reportDate,
           name: draft.student.name,
@@ -4048,7 +4182,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
           feedback: draft.feedback
         });
         renderAll();
-        status.textContent = `${draft.student.name} 학생 주간리포트가 ${isKakao ? "카카오 알림톡" : "문자"} 발송 접수되었습니다. 실제 도착 여부는 SOLAPI 발송내역에서 확인해주세요.`;
+        status.textContent = `${draft.student.name} 학생 주간리포트가 문자 발송 접수되었습니다. 실제 도착 여부는 SOLAPI 발송내역에서 확인해주세요.`;
       } catch (error) {
         record.status = "발송실패";
         renderAll();
@@ -4072,10 +4206,23 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
           status.textContent = "SOLAPI 문자 설정은 확인됐지만 카카오 채널/PFID 또는 승인 템플릿 ID가 부족합니다. .kakao.env 또는 .env의 카카오 설정을 확인해주세요.";
           return;
         }
-        status.textContent = "카카오 연결 확인 완료: 문자 서버, SOLAPI 기본 설정, 카카오 채널/템플릿 설정이 감지되었습니다. 실제 도착 여부는 테스트 발송 후 SOLAPI 발송내역에서 확인해주세요.";
+        status.textContent = "카카오 설정값 확인 완료: 문자 서버, SOLAPI 기본 설정, 카카오 채널/PFID와 템플릿 ID가 입력되어 있습니다. 단, PFID가 실제로 유효한지는 테스트 발송 때 SOLAPI가 확인합니다. [1041] 오류가 나오면 SOLAPI 콘솔에서 PFID를 다시 복사해 넣어주세요.";
       } catch (error) {
         status.textContent = "카카오 연결 안 됨: 문자발송서버_실행.bat 또는 실행하기.bat을 먼저 실행한 뒤 다시 확인해주세요.";
       }
+    }
+
+    async function sendWeeklyReportKakao() {
+      const draft = weeklyReportDraft();
+      if (!draft) return;
+      if (!confirm(`${draft.student.name} 학생 학부모님께 주간리포트를 카카오 알림톡으로 발송할까요?`)) return;
+      await sendReportKakaoWithSmsFallback({
+        phone:draft.phone, kind:"weekly", title:"주간 학습 리포트", studentName:draft.student.name,
+        period:draft.reportDate, summary:document.getElementById("weeklyProgress").value,
+        improve:`단어 ${document.getElementById("weeklyVocab").value}, 리딩 ${document.getElementById("weeklyReading").value}, 문법 ${document.getElementById("weeklyGrammar").value}`,
+        next:document.getElementById("weeklyNext").value, fullSmsBody:draft.feedback,
+        status:document.getElementById("weeklySendStatus")
+      });
     }
 
     function syncDailyReportStudent() {
@@ -4140,22 +4287,52 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       messages.unshift({date:record.date,name:record.name,phone:record.phone,type:"데일리리포트",title:"데일리 학습 피드백",body:record.body,status:"발송대기"}); renderAll(); alert("데일리리포트를 저장했습니다.");
     }
 
-    async function sendDailyReport(channel) {
+    async function sendDailyReport() {
       const record = dailyReportRecord("발송중"); const phone = normalizePhone(record.phone);
       if (!/^01\d{8,9}$/.test(phone)) return alert("올바른 학부모 연락처를 입력해주세요.");
-      const status = document.getElementById("dailySendStatus"); status.textContent = channel === "kakao" ? "카카오 알림톡 발송 중..." : "문자 발송 중...";
+      const status = document.getElementById("dailySendStatus"); status.textContent = "자동 생성된 데일리리포트 문자 발송 중...";
       try {
-        if (channel === "kakao") await sendKakaoToSolapi(phone, record.body, {"#{학생명}":record.name,"#{수업일}":record.date,"#{피드백}":record.body,"#{영상링크}":record.videoUrl || "영상 없음"}, "daily");
-        else await sendSmsToSolapi(phone, record.body);
-        record.status = channel === "kakao" ? "알림톡 접수" : "문자 접수"; dailyReports.unshift(record); persistDailyReports();
-        messages.unshift({date:record.date,name:record.name,phone,type:channel === "kakao" ? "카카오 데일리" : "데일리 문자",title:"데일리 학습 피드백",body:record.body,status:"발송접수"}); renderAll();
+        await sendSmsToSolapi(phone, record.body);
+        record.status = "문자 접수"; dailyReports.unshift(record); persistDailyReports();
+        messages.unshift({date:record.date,name:record.name,phone,type:"데일리 문자",title:"데일리 학습 피드백",body:record.body,status:"발송접수"}); renderAll();
         status.textContent = `${record.name} 학생 데일리리포트가 발송 접수되었습니다. 실제 도착 여부는 SOLAPI 발송내역에서 확인해주세요.`;
-      } catch (error) { status.textContent = `발송 실패: ${error.message}`; alert(error.message); }
+      } catch (error) {
+        if (channel === "kakao" && isKakaoPfidError(error)) {
+          try {
+            status.textContent = "카카오 채널 PFID 오류로 알림톡 접수가 실패했습니다. 같은 내용을 일반 문자로 대체 발송 중입니다...";
+            await sendSmsToSolapi(phone, record.body);
+            record.status = "문자 대체접수"; dailyReports.unshift(record); persistDailyReports();
+            messages.unshift({date:record.date,name:record.name,phone,type:"데일리 문자",title:"데일리 학습 피드백",body:record.body,status:"문자 대체접수"}); renderAll();
+            status.textContent = `${record.name} 학생 데일리리포트는 카카오 PFID 오류로 알림톡 대신 일반 문자로 접수되었습니다.`;
+            alert("카카오 PFID 오류가 있어 일반 문자로 대체 접수했습니다.\n실제 도착 여부는 SOLAPI 발송내역에서 확인해주세요.");
+            return;
+          } catch (smsError) {
+            status.textContent = `카카오 실패 후 문자 대체발송도 실패했습니다: ${smsError.message}`;
+            alert(smsError.message);
+            return;
+          }
+        }
+        status.textContent = `발송 실패: ${error.message}`; alert(error.message);
+      }
     }
 
     function renderDailyReports() {
       if (!document.getElementById("dailyReportTable")) return;
       table("dailyReportTable",["수업일","학생","학습 내용","영상","상태"],dailyReports.map(r => [r.date,r.name,escapeHtml(r.learning || "-"),r.videoUrl ? `<a href="${escapeHtml(r.videoUrl)}" target="_blank" rel="noreferrer">영상 보기</a>` : "-",pill(r.status)]));
+    }
+
+    async function sendDailyReportKakao() {
+      const record = dailyReportRecord("발송중");
+      const phone = normalizePhone(record.phone);
+      if (!/^01\d{8,9}$/.test(phone)) return alert("올바른 학부모 연락처를 입력해주세요.");
+      if (!confirm(`${record.name} 학생 학부모님께 데일리리포트를 카카오 알림톡으로 발송할까요?`)) return;
+      await sendReportKakaoWithSmsFallback({
+        phone, kind:"daily", title:"데일리 학습 리포트", studentName:record.name, period:record.date,
+        summary:document.getElementById("dailyStrength").value || document.getElementById("dailyLearning").value,
+        improve:document.getElementById("dailyImprove").value,
+        next:document.getElementById("dailyNext").value + (record.videoUrl ? ` / 영상: ${record.videoUrl}` : ""),
+        fullSmsBody:record.body, status:document.getElementById("dailySendStatus")
+      });
     }
 
     function downloadDailyReports() {
@@ -4413,6 +4590,41 @@ ${s.name} 학생은 이번 달 평균 ${average}점(${gradeLabel(average)})으�
       alert("월말평가 피드백을 발송대기에 저장했습니다.");
     }
 
+    async function sendMonthlyReportSms() {
+      const student = selectedStudent("monthlyStudent");
+      if (!student) return alert("학생을 선택해주세요.");
+      const phone = normalizePhone(student.phone || "");
+      if (!/^01\d{8,9}$/.test(phone)) return alert(`${student.name} 학생의 학부모 연락처를 학생관리에서 확인해주세요.`);
+      const feedback = (document.getElementById("monthlyFeedback").value.trim() || makeMonthlyFeedback()) + injectedLectureGuide("monthly");
+      const status = document.getElementById("monthlySendStatus");
+      if (!confirm(`${student.name} 학생 학부모님께 자동 생성된 월간리포트를 문자로 발송할까요?`)) return;
+      const messageRecord = {date:today,name:student.name,phone,type:"월간리포트 문자",title:"월간 학습 리포트",body:feedback,status:"발송중"};
+      messages.unshift(messageRecord);
+      renderAll();
+      status.textContent = "자동 생성된 월간리포트를 문자로 발송 접수 중입니다...";
+      try {
+        const result = await sendSmsToSolapi(phone, feedback);
+        messageRecord.status = "문자 접수";
+        messageRecord.groupId = result?.result?.groupInfo?.groupId || result?.result?.groupId || "";
+        monthlyRecords.unshift({
+          month: document.getElementById("monthValue").value,
+          name: student.name,
+          grammar: document.getElementById("grammarScore").value,
+          reading: document.getElementById("readingScore").value,
+          vocab: document.getElementById("vocabScore").value,
+          feedback
+        });
+        renderAll();
+        renderMonthlyReport();
+        status.textContent = `${student.name} 학생 월간리포트가 문자 발송 접수되었습니다. 실제 도착 여부는 SOLAPI 발송내역에서 확인해주세요.`;
+      } catch (error) {
+        messageRecord.status = "발송실패";
+        renderAll();
+        status.textContent = `발송 실패: ${error.message}`;
+        alert(error.message);
+      }
+    }
+
     function escapeHtml(value) {
       return String(value ?? "")
         .replaceAll("&", "&amp;")
@@ -4420,6 +4632,23 @@ ${s.name} 학생은 이번 달 평균 ${average}점(${gradeLabel(average)})으�
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#39;");
+    }
+
+    async function sendMonthlyReportKakao() {
+      const student = selectedStudent("monthlyStudent");
+      if (!student) return alert("학생을 선택해주세요.");
+      const phone = normalizePhone(student.phone || "");
+      if (!/^01\d{8,9}$/.test(phone)) return alert(`${student.name} 학생의 학부모 연락처를 학생관리에서 확인해주세요.`);
+      const feedback = (document.getElementById("monthlyFeedback").value.trim() || makeMonthlyFeedback()) + injectedLectureGuide("monthly");
+      if (!confirm(`${student.name} 학생 학부모님께 월간리포트를 카카오 알림톡으로 발송할까요?`)) return;
+      await sendReportKakaoWithSmsFallback({
+        phone, kind:"monthly", title:"월간 학습 리포트", studentName:student.name,
+        period:document.getElementById("monthValue").value,
+        summary:`문법 ${document.getElementById("grammarScore").value}점, 리딩 ${document.getElementById("readingScore").value}점, 단어 ${document.getElementById("vocabScore").value}점. ${document.getElementById("monthlyGrowth").value}`,
+        improve:document.getElementById("monthlyWeakness").value,
+        next:document.getElementById("monthlyGoal").value,
+        fullSmsBody:feedback, status:document.getElementById("monthlySendStatus")
+      });
     }
 
     let growthReportState = {
@@ -4804,9 +5033,61 @@ ${data.directorMemo || "다음 기간에는 학교별 출제 유형에 맞춰 �
       alert("성장보고서를 발송대기에 저장했습니다.");
     }
 
+    async function sendGrowthReportSms() {
+      if (!growthReportState.body) {
+        await generateGrowthReport(false);
+      }
+      if (!growthReportState.body) return;
+      const selected = selectedStudent("growthStudent");
+      const student = selected || students.find(item => item.name === growthReportState.studentName);
+      const phone = normalizePhone(student?.phone || "");
+      if (!student || !/^01\d{8,9}$/.test(phone)) return alert("선택한 학생의 학부모 연락처를 학생관리에서 확인해주세요.");
+      const title = growthReportState.type === "middle" ? "중등부 학습보고서" : "초등부 성장보고서";
+      const fullBody = `[벌교미래엔영어 ${title}]\n${growthReportState.body}`;
+      const smsBody = fullBody.length > 1800 ? `${fullBody.slice(0, 1760)}\n\n※ 자세한 내용은 학원 상담 시 안내드리겠습니다.` : fullBody;
+      const status = document.getElementById("growthReportStatus");
+      if (!confirm(`${student.name} 학생 학부모님께 자동 생성된 성장리포트를 문자로 발송할까요?`)) return;
+      const record = {date:today,name:student.name,phone,type:"성장리포트 문자",title,body:smsBody,status:"발송중"};
+      messages.unshift(record);
+      renderAll();
+      status.textContent = "자동 생성된 성장리포트를 문자로 발송 접수 중입니다...";
+      try {
+        const result = await sendSmsToSolapi(phone, smsBody);
+        record.status = "문자 접수";
+        record.groupId = result?.result?.groupInfo?.groupId || result?.result?.groupId || "";
+        renderAll();
+        status.textContent = `${student.name} 학생 성장리포트가 문자 발송 접수되었습니다. 실제 도착 여부는 SOLAPI 발송내역에서 확인해주세요.`;
+      } catch (error) {
+        record.status = "발송실패";
+        renderAll();
+        status.textContent = `발송 실패: ${error.message}`;
+        alert(error.message);
+      }
+    }
+
     function normalizedBaseUrl() {
       const raw = document.getElementById("examBaseUrl").value.trim() || "https://academy.com/";
       return raw.endsWith("/") ? raw : raw + "/";
+    }
+
+    async function sendGrowthReportKakao() {
+      if (!growthReportState.body) await generateGrowthReport(false);
+      if (!growthReportState.body) return;
+      const selected = selectedStudent("growthStudent");
+      const student = selected || students.find(item => item.name === growthReportState.studentName);
+      const phone = normalizePhone(student?.phone || "");
+      if (!student || !/^01\d{8,9}$/.test(phone)) return alert("선택한 학생의 학부모 연락처를 학생관리에서 확인해주세요.");
+      const payload = growthReportState.payload || growthPayload();
+      const title = "성장 리포트";
+      if (!confirm(`${student.name} 학생 학부모님께 성장리포트를 카카오 알림톡으로 발송할까요?`)) return;
+      await sendReportKakaoWithSmsFallback({
+        phone, kind:"growth", title, studentName:student.name, period:payload.reportPeriod || thisMonth,
+        summary:growthReportState.type === "middle" ? `${payload.testScores || ""} ${payload.directorMemo || ""}` : `${payload.vocabResult || ""} ${payload.readingGrammar || ""} ${payload.studyAttitude || ""}`,
+        improve:growthReportState.type === "middle" ? payload.weakArea : payload.readingGrammar,
+        next:payload.directorMemo || "현재의 성장 흐름을 이어가도록 세심하게 지도하겠습니다.",
+        fullSmsBody:`[벌교미래엔영어 성장 리포트]\n${growthReportState.body}`,
+        status:document.getElementById("growthReportStatus")
+      });
     }
 
     function injectedLectureSourceText(prefer = "monthly") {
@@ -7062,7 +7343,7 @@ ${report.ai_generated_comment}
       document.getElementById("editMonthlyFee").value = classFee(document.getElementById("editClassGroup").value);
     }
 
-    function saveStudentEdit() {
+    async function saveStudentEdit() {
       if (!selectedStudentEditId) {
         alert("먼저 학생관리 목록에서 학생 이름을 클릭해주세요.");
         return;
@@ -7086,7 +7367,8 @@ ${report.ai_generated_comment}
       fillStudentSelects();
       renderAll();
       selectStudentDetail(s.id);
-      alert("학생 기본사항을 수정했습니다.");
+      await persistDashboardState();
+      alert("학생 기본사항을 수정하고 서버에 바로 저장했습니다.");
     }
 
     function clearStudentEdit() {
@@ -7208,16 +7490,71 @@ ${report.ai_generated_comment}
     }
 
     function renderMessages() {
-      table("messagesTable", ["생성일", "학생명", "받는 번호", "유형", "내용", "상태", "보내기"],
-        messages.map((m, index) => [
+      const pending = messages
+        .map((message, index) => ({message, index}))
+        .filter(item => ["발송대기", "예약대기", "발송중"].includes(item.message.status || ""));
+      table("messagesTable", ["생성일", "학생명", "받는 번호", "예약시간", "유형", "내용", "상태", "보내기"],
+        pending.map(({message: m, index}) => [
           m.date,
           m.name,
           m.phone || students.find(s => s.name === m.name)?.phone || "-",
+          m.scheduledLabel || "-",
           m.type,
           m.body,
           pill(m.status),
           `<button class="btn blue" onclick="openQueuedSms(${index})">열기</button>`
         ]));
+      const schedules = messages
+        .map((message, index) => ({message, index}))
+        .filter(item => item.message.scheduledAt || ["예약대기", "예약접수"].includes(item.message.status || ""));
+      table("smsScheduleTable", ["예약시간", "학생명", "받는 번호", "유형", "상태", "관리"],
+        schedules.map(({message: m, index}) => [
+          m.scheduledLabel || formatSmsScheduleLabel(m.scheduledAt) || "-",
+          m.name,
+          m.phone || "-",
+          m.type,
+          pill(m.status || "예약대기"),
+          `<button class="btn blue" onclick="openQueuedSms(${index})">열기</button> <button class="btn red" onclick="cancelScheduledMessage(${index})">취소</button>`
+        ]));
+      const history = messages
+        .map((message, index) => ({message, index}))
+        .filter(item => !["발송대기", "예약대기"].includes(item.message.status || ""));
+      table("smsHistoryTable", ["일자", "학생명", "받는 번호", "유형", "상태", "접수번호", "내용"],
+        history.map(({message: m}) => [
+          m.date,
+          m.name,
+          m.phone || "-",
+          m.type,
+          pill(m.status || "-"),
+          m.groupId || "-",
+          m.body || ""
+        ]));
+      table("smsTemplateTable", ["분류", "템플릿명", "내용", "관리"],
+        smsContentTemplates.map(template => [
+          template.category,
+          template.name,
+          template.body,
+          `<button class="btn blue" onclick="applySmsContentTemplate('${template.id}')">작성창에 적용</button> <button class="btn secondary" onclick="editSmsContentTemplate('${template.id}')">수정</button> <button class="btn red" onclick="deleteSmsContentTemplate('${template.id}')">삭제</button>`
+        ]));
+    }
+
+    function formatSmsScheduleLabel(value) {
+      if (!value) return "";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return String(value).replace("T", " ").slice(0, 16);
+      const pad = n => String(n).padStart(2, "0");
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+
+    function cancelScheduledMessage(index) {
+      const message = messages[index];
+      if (!message) return;
+      if (message.status === "예약접수") {
+        alert("이미 솔라피에 접수된 예약 문자는 대시보드에서만 취소할 수 없습니다. 솔라피 발송내역에서 예약 취소를 확인해주세요.");
+        return;
+      }
+      message.status = "예약취소";
+      renderAll();
     }
 
     function openSmsComposer() {
@@ -7241,6 +7578,7 @@ ${report.ai_generated_comment}
       document.getElementById("smsAllStudents").checked = false;
       document.getElementById("smsRecipientType").value = "parent";
       document.getElementById("smsMemberSearch").value = "";
+      document.getElementById("smsScheduleAt").value = "";
     }
 
     function syncSmsRecipient() {
@@ -7294,6 +7632,60 @@ ${report.ai_generated_comment}
       updateSmsCounter();
     }
 
+    function saveSmsContentTemplate() {
+      const name = document.getElementById("smsTemplateNameInput").value.trim();
+      const category = document.getElementById("smsTemplateCategoryInput").value;
+      const body = document.getElementById("smsTemplateBodyInput").value.trim();
+      if (!name) return alert("템플릿명을 입력해주세요.");
+      if (!body) return alert("템플릿 내용을 입력해주세요.");
+      const existing = smsContentTemplates.find(template => template.name === name);
+      if (existing) {
+        existing.category = category;
+        existing.body = body;
+      } else {
+        smsContentTemplates.unshift({
+          id: `tpl-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          name,
+          category,
+          body
+        });
+      }
+      clearSmsTemplateForm();
+      renderAll();
+      alert("문자내용 템플릿을 저장했습니다.");
+    }
+
+    function clearSmsTemplateForm() {
+      document.getElementById("smsTemplateNameInput").value = "";
+      document.getElementById("smsTemplateCategoryInput").value = "출결";
+      document.getElementById("smsTemplateBodyInput").value = "";
+    }
+
+    function editSmsContentTemplate(id) {
+      const template = smsContentTemplates.find(item => item.id === id);
+      if (!template) return;
+      document.getElementById("smsTemplateNameInput").value = template.name;
+      document.getElementById("smsTemplateCategoryInput").value = template.category;
+      document.getElementById("smsTemplateBodyInput").value = template.body;
+      document.getElementById("smsTemplateNameInput").focus();
+    }
+
+    function deleteSmsContentTemplate(id) {
+      const index = smsContentTemplates.findIndex(item => item.id === id);
+      if (index < 0) return;
+      if (!confirm("이 문자내용 템플릿을 삭제할까요?")) return;
+      smsContentTemplates.splice(index, 1);
+      renderAll();
+    }
+
+    function applySmsContentTemplate(id) {
+      const template = smsContentTemplates.find(item => item.id === id);
+      if (!template) return;
+      openSmsComposer();
+      document.getElementById("smsBody").value = smsTemplateText(template);
+      updateSmsCounter();
+    }
+
     function updateSmsCounter() {
       const body = document.getElementById("smsBody")?.value || "";
       const bytes = new TextEncoder().encode(body).length;
@@ -7315,6 +7707,8 @@ ${report.ai_generated_comment}
     function queueSmsMessage(showAlert = true) {
       const recipients = selectedSmsRecipients();
       const body = document.getElementById("smsBody").value.trim();
+      const schedule = smsScheduleValue(false);
+      if (schedule === false) return null;
       if (!recipients.length) return alert("발송대기에 저장할 회원을 선택해주세요."), null;
       if (!body) return alert("문자 내용을 입력해주세요."), null;
       messages.unshift(...recipients.map(student => ({
@@ -7322,23 +7716,28 @@ ${report.ai_generated_comment}
         name: student.name,
         phone: student.phone,
         recipientType: document.getElementById("smsRecipientType")?.value || "parent",
-        type: "문자메시지",
+        type: schedule ? "예약 문자" : "문자메시지",
         title: recipients.length > 1 ? "단체문자" : "직접 작성 문자",
         body,
-        status: "발송대기"
+        scheduledAt: schedule?.iso || "",
+        scheduledLabel: schedule?.label || "",
+        status: schedule ? "예약대기" : "발송대기"
       })));
       renderAll();
-      if (showAlert) alert(`${recipients.length}명의 문자메시지를 발송대기에 저장했습니다.`);
+      if (showAlert) alert(`${recipients.length}명의 문자메시지를 ${schedule ? "예약대기" : "발송대기"}에 저장했습니다.`);
       return recipients;
     }
 
-    async function sendSmsMessage() {
+    async function sendSmsMessage(requireSchedule = false) {
       const recipients = selectedSmsRecipients();
       const body = document.getElementById("smsBody").value.trim();
       const imageFile = document.getElementById("smsImage").files?.[0];
+      const schedule = smsScheduleValue(requireSchedule);
+      if (schedule === false || (requireSchedule && !schedule)) return;
       if (!recipients.length) return alert("발송할 학생 또는 연락처를 선택해주세요.");
       if (!body) return alert("문자 내용을 입력해주세요.");
-      if (recipients.length > 1 && !confirm(`${recipients.length}명에게 단체문자를 발송합니다. 발송 비용이 학생 수만큼 차감됩니다. 계속할까요?`)) return;
+      const actionLabel = schedule ? `${schedule.label} 예약 발송` : "즉시 발송";
+      if (recipients.length > 1 && !confirm(`${recipients.length}명에게 단체문자를 ${actionLabel}합니다. 발송 비용이 학생 수만큼 차감됩니다. 계속할까요?`)) return;
       let imageData = "";
       let imageName = "";
       if (imageFile) {
@@ -7355,15 +7754,15 @@ ${report.ai_generated_comment}
         }
       }
       const recipientType = document.getElementById("smsRecipientType")?.value || "parent";
-      const records = recipients.map(student => ({date: today, name: student.name, phone: student.phone, recipientType, type: imageFile ? "MMS 문자" : "문자메시지", title: recipients.length > 1 ? "단체문자" : "직접 작성 문자", body, status: "발송중"}));
+      const records = recipients.map(student => ({date: today, name: student.name, phone: student.phone, recipientType, type: schedule ? (imageFile ? "예약 MMS" : "예약 문자") : (imageFile ? "MMS 문자" : "문자메시지"), title: recipients.length > 1 ? "단체문자" : "직접 작성 문자", body, scheduledAt: schedule?.iso || "", scheduledLabel: schedule?.label || "", status: schedule ? "예약접수중" : "발송중"}));
       messages.unshift(...records);
       renderAll();
       try {
-        const result = await sendBulkSmsToSolapi(recipients.map(student => student.phone), body, imageData, imageName);
+        const result = await sendBulkSmsToSolapi(recipients.map(student => student.phone), body, imageData, imageName, schedule?.iso || "");
         const groupId = result?.result?.groupInfo?.groupId || result?.result?.groupId || "";
-        records.forEach(record => { record.status = "발송접수"; record.groupId = groupId; });
+        records.forEach(record => { record.status = schedule ? "예약접수" : "발송접수"; record.groupId = groupId; });
         renderAll();
-        alert(`${recipients.length}명에게 문자를 솔라피에 접수했습니다.\n실제 도착 여부는 솔라피 발송내역에서 확인해주세요.`);
+        alert(`${recipients.length}명에게 문자를 솔라피에 ${schedule ? "예약 접수" : "접수"}했습니다.\n실제 도착 여부와 예약 취소는 솔라피 발송내역에서 확인해주세요.`);
       } catch (error) {
         records.forEach(record => { record.status = "발송실패"; });
         renderAll();
@@ -7382,6 +7781,7 @@ ${report.ai_generated_comment}
       document.getElementById("smsStudent").value = selectedId;
       document.getElementById("smsPhone").value = message.phone || student?.phone || student?.studentPhone || "";
       document.getElementById("smsBody").value = message.body || "";
+      document.getElementById("smsScheduleAt").value = message.scheduledLabel ? message.scheduledLabel.replace(" ", "T") : "";
       updateSmsCounter();
     }
 
