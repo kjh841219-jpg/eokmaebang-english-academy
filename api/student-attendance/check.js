@@ -20,6 +20,16 @@ async function notifyParent(student, status, timeText, dateText) {
     return {sent: false, channel: "없음", status: "보호자 연락처 없음"};
   }
 
+  const senderPhone = digits(process.env.SOLAPI_FROM || "");
+  if (senderPhone && senderPhone === parentPhone) {
+    return {
+      sent: false,
+      channel: "",
+      status: "\ubc1c\uc2e0\ubc88\ud638\uc640 \uc218\uc2e0\ubc88\ud638 \ub3d9\uc77c",
+      error: "SOLAPI \ubc1c\uc2e0\ubc88\ud638\uc640 \ubcf4\ud638\uc790 \uc218\uc2e0\ubc88\ud638\uac00 \uac19\uc2b5\ub2c8\ub2e4. \uac19\uc740 \ubc88\ud638\ub85c\ub294 \uc2e4\uc81c \ub3c4\ucc29 \ud14c\uc2a4\ud2b8\uac00 \uc2e4\ud328\ud560 \uc218 \uc788\uc73c\ub2c8 \ub2e4\ub978 \ubcf4\ud638\uc790 \ubc88\ud638\ub85c \ud655\uc778\ud574\uc8fc\uc138\uc694."
+    };
+  }
+
   const body = attendanceMessage(student.name || "학생", status, timeText, dateText);
   const variables = {
     "#{학생명}": student.name || "학생",
