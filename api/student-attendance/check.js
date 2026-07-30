@@ -51,7 +51,7 @@ export default async function handler(req, res) {
   try {
     const data = await readJson(req);
     const last4 = digits(data.last4).slice(-4);
-    const selectedStudentId = String(data.selectedStudentId || "");
+    const selectedStudentId = String(data.selectedStudentId || data.studentId || "");
     const status = String(data.status || "출석");
 
     if (last4.length !== 4) {
@@ -70,14 +70,24 @@ export default async function handler(req, res) {
     }
 
     if (matches.length > 1 && !selectedStudentId) {
+      const choices = matches.map(student => ({
+        id: student.id,
+        studentId: student.id,
+        name: student.name,
+        classGroup: student.classGroup || student.grade || "",
+        school: student.school || ""
+      }));
       return sendJson(res, 200, {
         ok: true,
         needSelect: true,
-        choices: matches.map(student => ({
-          id: student.id,
-          name: student.name,
-          classGroup: student.classGroup || student.grade || ""
-        }))
+        needsSelection: true,
+        choices,
+        result: {
+          needsSelection: true,
+          last4,
+          status,
+          choices
+        }
       });
     }
 
@@ -124,11 +134,22 @@ export default async function handler(req, res) {
 
     await writePersistentState({...state, students: updatedStudents, attendanceRecords});
 
+    const result = {
+      studentId: student.id,
+      name: student.name,
+      status,
+      date,
+      time: already ? (student.attendanceTime || time) : time,
+      already,
+      notification
+    };
+
     return sendJson(res, 200, {
       ok: true,
       message: `${student.name} 학생 ${status} 처리되었습니다.`,
-      student: {id: student.id, name: student.name, status, time},
-      notification
+      student: {id: student.id, name: student.name, status, time: result.time},
+      notification,
+      result
     });
   } catch (error) {
     return sendJson(res, 500, {ok: false, error: error.message || "출결 처리에 실패했습니다."});
