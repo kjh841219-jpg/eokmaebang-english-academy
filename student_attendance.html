@@ -267,7 +267,7 @@
           return;
         }
         const already = result.already ? "<br>이미 같은 상태로 처리되어 중복 기록은 만들지 않았습니다." : "";
-        const notice = result.notification?.status ? `<br>보호자 알림: ${escapeHtml(result.notification.status)}` : "";
+        const notice = attendanceNotice(result.notification);
         setResult("ok", `<b>${escapeHtml(result.name)}</b> 학생 ${escapeHtml(result.status)} 처리 완료<br>${escapeHtml(result.date)} ${escapeHtml(result.time)}${already}${notice}`);
       } catch (error) {
         setResult("err", error.message || "출결 처리에 실패했습니다. 학원에 확인해 주세요.");
@@ -290,6 +290,16 @@
         본인 이름을 선택하면 ${escapeHtml(statusLabels[selectedStatus])} 처리됩니다.
         <div class="choice-list">${buttons}</div>
       `);
+    }
+
+
+    function attendanceNotice(notification) {
+      if (!notification?.status) return "";
+      const detail = notification.error || notification.kakaoError || "";
+      const guide = detail.includes("Vercel 환경변수")
+        ? "배포 주소에서 문자/카카오를 보내려면 Vercel 환경변수에 SOLAPI 키를 넣어야 합니다. 문자카카오 실행파일로 연 로컬 출결앱에서는 발송됩니다."
+        : detail;
+      return `<br>보호자 알림: ${escapeHtml(notification.status)}${guide ? `<br><small>${escapeHtml(guide)}</small>` : ""}`;
     }
 
     function escapeHtml(value) {

@@ -37,7 +37,9 @@ async function notifyParent(student, status, timeText, dateText) {
       const result = await sendSolapiMessages(parentPhone, body);
       return {sent: true, channel: "문자", status: "문자 대체접수", kakaoError: kakaoError.message, result};
     } catch (smsError) {
-      return {sent: false, channel: "실패", status: "발송실패", error: smsError.message, kakaoError: kakaoError.message};
+      const combined = `${kakaoError.message || ""} ${smsError.message || ""}`;
+      const status = combined.includes("Vercel 환경변수") ? "Vercel SOLAPI 설정 필요" : "발송실패";
+      return {sent: false, channel: "??", status, error: smsError.message, kakaoError: kakaoError.message};
     }
   }
 }
