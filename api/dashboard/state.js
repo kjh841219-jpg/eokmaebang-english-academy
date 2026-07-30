@@ -5,7 +5,9 @@ const emptyState = () => ({
   savedAt: new Date().toISOString(),
   students: [],
   messages: [],
-  smsContentTemplates: []
+  smsContentTemplates: [],
+  attendanceRecords: [],
+  academySchedules: []
 });
 
 const STATE_PATH = "academy/dashboard-state.json";
@@ -54,7 +56,9 @@ export default async function handler(req, res) {
         savedAt: new Date().toISOString(),
         students: Array.isArray(data.students) ? data.students : [],
         messages: Array.isArray(data.messages) ? data.messages : [],
-        smsContentTemplates: Array.isArray(data.smsContentTemplates) ? data.smsContentTemplates : []
+        smsContentTemplates: Array.isArray(data.smsContentTemplates) ? data.smsContentTemplates : [],
+        attendanceRecords: Array.isArray(data.attendanceRecords) ? data.attendanceRecords : [],
+        academySchedules: Array.isArray(data.academySchedules) ? data.academySchedules : []
       };
       await writePersistentState(state);
       const messageIds = {};

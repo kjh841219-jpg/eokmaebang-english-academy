@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     const data = await readJson(req);
     const kind = String(data.kind || "attendance");
     const options = kakaoOptions(kind, data.variables || null);
-    const result = await sendSolapiMessages(data.to, String(data.text || ""), options);
+    const result = await sendSolapiMessages(data.to, String(data.text || ""), options, String(data.scheduledDate || ""));
     return sendJson(res, 200, {ok: true, result});
   } catch (error) {
     return sendJson(res, 400, {ok: false, error: error.message || "카카오 알림톡 발송에 실패했습니다."});

@@ -44,6 +44,26 @@ function solapiConfig() {
   return {apiKey, apiSecret, sender};
 }
 
+export function solapiStatus() {
+  const solapiConfigured = Boolean(
+    process.env.SOLAPI_API_KEY?.trim() &&
+    process.env.SOLAPI_API_SECRET?.trim() &&
+    (process.env.SOLAPI_FROM || "").replace(/[^0-9]/g, "")
+  );
+  const kakaoConfigured = Boolean(
+    process.env.SOLAPI_KAKAO_PFID?.trim() &&
+    (
+      process.env.SOLAPI_KAKAO_TEMPLATE_ID?.trim() ||
+      process.env.SOLAPI_KAKAO_LEAVE_TEMPLATE_ID?.trim() ||
+      process.env.SOLAPI_KAKAO_DAILY_TEMPLATE_ID?.trim() ||
+      process.env.SOLAPI_KAKAO_WEEKLY_TEMPLATE_ID?.trim() ||
+      process.env.SOLAPI_KAKAO_MONTHLY_TEMPLATE_ID?.trim() ||
+      process.env.SOLAPI_KAKAO_GROWTH_TEMPLATE_ID?.trim()
+    )
+  );
+  return {ok: true, solapiConfigured, kakaoConfigured};
+}
+
 async function solapiRequest(url, payload) {
   const {apiKey, apiSecret} = solapiConfig();
   const date = new Date().toISOString();
