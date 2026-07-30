@@ -52,10 +52,20 @@ export default async function handler(req, res) {
     const data = await readJson(req);
     const last4 = digits(data.last4).slice(-4);
     const selectedStudentId = String(data.selectedStudentId || data.studentId || "");
-    const status = String(data.status || "출석");
+    const rawStatus = String(data.statusCode || data.status || "출석").trim();
+    const status = {
+      present: "출석",
+      leave: "하원",
+      late: "지각",
+      absent: "결석",
+      makeup: "보강"
+    }[rawStatus] || rawStatus;
 
     if (last4.length !== 4) {
       return sendJson(res, 400, {ok: false, error: "휴대폰 번호 뒷자리 4자리를 입력해주세요."});
+    }
+    if (!["출석", "하원", "지각", "결석", "보강"].includes(status)) {
+      return sendJson(res, 400, {ok: false, error: "출석, 하원, 지각, 결석, 보강 중 하나를 선택해주세요."});
     }
 
     const state = await readPersistentState();

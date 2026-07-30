@@ -14,6 +14,7 @@
       --text: #16261e;
       --muted: #66786e;
       --red: #c2413b;
+      --amber: #b7791f;
       --blue: #2563eb;
       --white: #fff;
     }
@@ -42,7 +43,7 @@
       border-radius: 999px;
       background: #dff5eb;
       color: var(--green);
-      font-weight: 800;
+      font-weight: 900;
       font-size: 12px;
       margin-bottom: 12px;
     }
@@ -69,7 +70,7 @@
       display: block;
       margin-bottom: 14px;
       color: #244437;
-      font-weight: 800;
+      font-weight: 900;
       font-size: 13px;
     }
     input {
@@ -88,17 +89,17 @@
     }
     .segmented {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 7px;
       margin: 8px 0 16px;
     }
     .segmented button {
       border: 1px solid #bfdace;
       border-radius: 12px;
       background: #f7fcfa;
-      padding: 14px 10px;
+      padding: 13px 4px;
       font-weight: 900;
-      font-size: 16px;
+      font-size: 15px;
       color: #23483a;
     }
     .segmented button.active {
@@ -118,66 +119,66 @@
       box-shadow: 0 10px 18px rgba(15, 93, 65, .2);
     }
     .submit:disabled {
-      opacity: .6;
-      box-shadow: none;
+      opacity: .65;
     }
     .result {
-      margin-top: 14px;
-      padding: 14px;
-      border-radius: 14px;
-      line-height: 1.55;
-      font-size: 14px;
       display: none;
+      margin-top: 14px;
+      border-radius: 14px;
+      padding: 13px;
+      font-size: 14px;
+      line-height: 1.65;
     }
     .result.ok {
       display: block;
-      background: #e9f8ef;
-      border: 1px solid #bfe8cf;
-      color: #0f5d41;
+      border: 1px solid #b7e4c8;
+      background: #effaf3;
+      color: #115e35;
     }
     .result.err {
       display: block;
-      background: #fff1f1;
       border: 1px solid #fecaca;
+      background: #fff1f2;
       color: var(--red);
-    }
-    .choice-list {
-      display: grid;
-      gap: 8px;
-      margin-top: 10px;
-    }
-    .choice-list button {
-      width: 100%;
-      border: 1px solid #bfe0d0;
-      border-radius: 12px;
-      background: white;
-      color: #164a37;
-      padding: 12px;
-      text-align: left;
-      font-size: 15px;
-      font-weight: 900;
-    }
-    .choice-list small {
-      display: block;
-      margin-top: 3px;
-      color: #66786e;
-      font-weight: 700;
     }
     .notice {
       margin-top: 14px;
-      padding: 13px;
-      border-radius: 14px;
+      padding: 12px;
+      border-radius: 12px;
       background: #f8fbff;
       border: 1px solid #dbeafe;
       color: #23405f;
       font-size: 13px;
       line-height: 1.55;
     }
+    .choice-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .choice-list button {
+      border: 1px solid #bdd9cd;
+      border-radius: 12px;
+      background: white;
+      padding: 13px;
+      text-align: left;
+      color: var(--text);
+      font-weight: 900;
+    }
+    .choice-list small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-weight: 700;
+    }
     .footer {
       margin-top: 18px;
       text-align: center;
       color: #7a8a82;
       font-size: 12px;
+    }
+    @media (max-width: 420px) {
+      .segmented { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
   </style>
 </head>
@@ -186,23 +187,26 @@
     <section class="hero">
       <div class="badge">벌교미래엔영어</div>
       <h1>학생 출결체크</h1>
-      <div class="sub">휴대폰 번호 뒷자리 4자리만 입력해 출석/하원을 눌러 주세요.</div>
+      <div class="sub">휴대폰 번호 뒷자리 4자리만 입력하고 오늘 상태를 눌러 주세요.</div>
     </section>
 
     <section class="card">
       <label>학생 휴대폰 번호 뒷자리 4자리
-        <input id="last4" inputmode="numeric" maxlength="4" placeholder="예: 3144" />
+        <input id="last4" inputmode="numeric" maxlength="4" placeholder="예: 2588" autocomplete="one-time-code" />
       </label>
       <div class="segmented">
-        <button id="presentBtn" class="active" type="button" onclick="setStatus('출석')">출석</button>
-        <button id="leaveBtn" type="button" onclick="setStatus('하원')">하원</button>
+        <button id="status-present" class="active" type="button" onclick="setStatus('present')">출석</button>
+        <button id="status-leave" type="button" onclick="setStatus('leave')">하원</button>
+        <button id="status-late" type="button" onclick="setStatus('late')">지각</button>
+        <button id="status-absent" type="button" onclick="setStatus('absent')">결석</button>
+        <button id="status-makeup" type="button" onclick="setStatus('makeup')">보강</button>
       </div>
 
       <button id="submitBtn" class="submit" type="button" onclick="submitAttendance()">출결 처리하기</button>
       <div id="result" class="result"></div>
 
       <div class="notice">
-        휴대폰 뒷자리는 학생 확인용으로만 사용됩니다. 같은 뒷자리가 2명 이상이면 본인 이름을 선택한 뒤 처리됩니다.
+        휴대폰 뒷자리는 학생 확인용으로만 사용됩니다. 같은 뒷자리가 2명 이상이면 본인 이름을 선택한 뒤 처리됩니다. 처리 후 학원 대시보드 출결 달력에 바로 반영됩니다.
       </div>
     </section>
 
@@ -210,12 +214,20 @@
   </main>
 
   <script>
-    let selectedStatus = "출석";
+    const statusLabels = {
+      present: "출석",
+      leave: "하원",
+      late: "지각",
+      absent: "결석",
+      makeup: "보강"
+    };
+    let selectedStatus = "present";
 
-    function setStatus(status) {
-      selectedStatus = status;
-      document.getElementById("presentBtn").classList.toggle("active", status === "출석");
-      document.getElementById("leaveBtn").classList.toggle("active", status === "하원");
+    function setStatus(statusCode) {
+      selectedStatus = statusCode;
+      Object.keys(statusLabels).forEach(code => {
+        document.getElementById(`status-${code}`).classList.toggle("active", code === statusCode);
+      });
     }
 
     function setResult(type, html) {
@@ -229,7 +241,7 @@
       document.getElementById("last4").value = last4;
 
       if (last4.length !== 4) {
-        setResult("err", "휴대폰 뒷자리 4자리를 입력해 주세요.");
+        setResult("err", "휴대폰 번호 뒷자리 4자리를 입력해 주세요.");
         return;
       }
 
@@ -240,18 +252,25 @@
         const res = await fetch("/api/student-attendance/check", {
           method: "POST",
           headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({last4, status: selectedStatus, studentId})
+          body: JSON.stringify({
+            last4,
+            statusCode: selectedStatus,
+            status: statusLabels[selectedStatus],
+            studentId
+          })
         });
         const data = await res.json();
         if (!res.ok || !data.ok) throw new Error(data.error || "출결 처리에 실패했습니다.");
-        if (data.result.needsSelection) {
-          renderChoices(data.result);
+        const result = data.result || data;
+        if (result.needsSelection || data.needsSelection || data.needSelect) {
+          renderChoices(result.choices ? result : data);
           return;
         }
-        const already = data.result.already ? "<br>이미 같은 상태로 처리되어 중복 기록은 만들지 않았습니다." : "";
-        setResult("ok", `<b>${data.result.name}</b> 학생 ${data.result.status} 처리 완료<br>${data.result.date} ${data.result.time}${already}`);
+        const already = result.already ? "<br>이미 같은 상태로 처리되어 중복 기록은 만들지 않았습니다." : "";
+        const notice = result.notification?.status ? `<br>보호자 알림: ${escapeHtml(result.notification.status)}` : "";
+        setResult("ok", `<b>${escapeHtml(result.name)}</b> 학생 ${escapeHtml(result.status)} 처리 완료<br>${escapeHtml(result.date)} ${escapeHtml(result.time)}${already}${notice}`);
       } catch (error) {
-        setResult("err", error.message || "출결 처리에 실패했습니다. 원장님께 확인해 주세요.");
+        setResult("err", error.message || "출결 처리에 실패했습니다. 학원에 확인해 주세요.");
       } finally {
         button.disabled = false;
         button.textContent = "출결 처리하기";
@@ -259,15 +278,16 @@
     }
 
     function renderChoices(result) {
-      const buttons = (result.choices || []).map(choice => `
-        <button type="button" onclick="submitAttendance(${Number(choice.studentId)})">
+      const choices = result.choices || [];
+      const buttons = choices.map(choice => `
+        <button type="button" onclick="submitAttendance(${Number(choice.studentId || choice.id)})">
           ${escapeHtml(choice.name)}
           <small>${escapeHtml(choice.classGroup || "")}${choice.school ? " · " + escapeHtml(choice.school) : ""}</small>
         </button>
       `).join("");
       setResult("ok", `
         <b>같은 뒷자리 학생이 있습니다.</b><br>
-        본인 이름을 선택하면 ${escapeHtml(result.status)} 처리됩니다.
+        본인 이름을 선택하면 ${escapeHtml(statusLabels[selectedStatus])} 처리됩니다.
         <div class="choice-list">${buttons}</div>
       `);
     }
