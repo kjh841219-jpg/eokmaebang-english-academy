@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f5d41" />
+  <title>벌교미래엔영어 학생 출결체크</title>
+  <style>
+    :root {
+      --green: #0f5d41;
+      --green2: #17845f;
+      --bg: #f3faf7;
+      --line: #d5e8df;
+      --text: #16261e;
+      --muted: #66786e;
+      --red: #c2413b;
+      --blue: #2563eb;
+      --white: #fff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
+      background: linear-gradient(180deg, #e9f7f0 0%, var(--bg) 45%, #ffffff 100%);
+      color: var(--text);
+    }
+    .wrap {
+      width: min(520px, 100%);
+      margin: 0 auto;
+      padding: 18px;
+    }
+    .hero {
+      padding: 28px 4px 18px;
+      text-align: center;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 11px;
+      border-radius: 999px;
+      background: #dff5eb;
+      color: var(--green);
+      font-weight: 800;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 27px;
+      letter-spacing: 0;
+      line-height: 1.25;
+    }
+    .sub {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(15, 93, 65, .12);
+    }
+    label {
+      display: block;
+      margin-bottom: 14px;
+      color: #244437;
+      font-weight: 800;
+      font-size: 13px;
+    }
+    input {
+      width: 100%;
+      margin-top: 7px;
+      border: 1px solid #c8ddd3;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 18px;
+      background: #fbfffd;
+      outline: none;
+    }
+    input:focus {
+      border-color: var(--green2);
+      box-shadow: 0 0 0 4px rgba(23, 132, 95, .12);
+    }
+    .segmented {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 8px 0 16px;
+    }
+    .segmented button {
+      border: 1px solid #bfdace;
+      border-radius: 12px;
+      background: #f7fcfa;
+      padding: 14px 10px;
+      font-weight: 900;
+      font-size: 16px;
+      color: #23483a;
+    }
+    .segmented button.active {
+      background: var(--green);
+      border-color: var(--green);
+      color: white;
+    }
+    .submit {
+      width: 100%;
+      border: 0;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--green), var(--green2));
+      color: white;
+      font-weight: 900;
+      font-size: 18px;
+      padding: 16px;
+      box-shadow: 0 10px 18px rgba(15, 93, 65, .2);
+    }
+    .submit:disabled {
+      opacity: .6;
+      box-shadow: none;
+    }
+    .result {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 14px;
+      line-height: 1.55;
+      font-size: 14px;
+      display: none;
+    }
+    .result.ok {
+      display: block;
+      background: #e9f8ef;
+      border: 1px solid #bfe8cf;
+      color: #0f5d41;
+    }
+    .result.err {
+      display: block;
+      background: #fff1f1;
+      border: 1px solid #fecaca;
+      color: var(--red);
+    }
+    .choice-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .choice-list button {
+      width: 100%;
+      border: 1px solid #bfe0d0;
+      border-radius: 12px;
+      background: white;
+      color: #164a37;
+      padding: 12px;
+      text-align: left;
+      font-size: 15px;
+      font-weight: 900;
+    }
+    .choice-list small {
+      display: block;
+      margin-top: 3px;
+      color: #66786e;
+      font-weight: 700;
+    }
+    .notice {
+      margin-top: 14px;
+      padding: 13px;
+      border-radius: 14px;
+      background: #f8fbff;
+      border: 1px solid #dbeafe;
+      color: #23405f;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .footer {
+      margin-top: 18px;
+      text-align: center;
+      color: #7a8a82;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="badge">벌교미래엔영어</div>
+      <h1>학생 출결체크</h1>
+      <div class="sub">휴대폰 번호 뒷자리 4자리만 입력해 출석/하원을 눌러 주세요.</div>
+    </section>
+
+    <section class="card">
+      <label>학생 휴대폰 번호 뒷자리 4자리
+        <input id="last4" inputmode="numeric" maxlength="4" placeholder="예: 3144" />
+      </label>
+      <div class="segmented">
+        <button id="presentBtn" class="active" type="button" onclick="setStatus('출석')">출석</button>
+        <button id="leaveBtn" type="button" onclick="setStatus('하원')">하원</button>
+      </div>
+
+      <button id="submitBtn" class="submit" type="button" onclick="submitAttendance()">출결 처리하기</button>
+      <div id="result" class="result"></div>
+
+      <div class="notice">
+        휴대폰 뒷자리는 학생 확인용으로만 사용됩니다. 같은 뒷자리가 2명 이상이면 본인 이름을 선택한 뒤 처리됩니다.
+      </div>
+    </section>
+
+    <div class="footer">Beolgyo MiraeN English Academy</div>
+  </main>
+
+  <script>
+    let selectedStatus = "출석";
+
+    function setStatus(status) {
+      selectedStatus = status;
+      document.getElementById("presentBtn").classList.toggle("active", status === "출석");
+      document.getElementById("leaveBtn").classList.toggle("active", status === "하원");
+    }
+
+    function setResult(type, html) {
+      const el = document.getElementById("result");
+      el.className = `result ${type}`;
+      el.innerHTML = html;
+    }
+
+    async function submitAttendance(studentId = 0) {
+      const last4 = document.getElementById("last4").value.replace(/[^0-9]/g, "").slice(0, 4);
+      document.getElementById("last4").value = last4;
+
+      if (last4.length !== 4) {
+        setResult("err", "휴대폰 뒷자리 4자리를 입력해 주세요.");
+        return;
+      }
+
+      const button = document.getElementById("submitBtn");
+      button.disabled = true;
+      button.textContent = "처리 중입니다...";
+      try {
+        const res = await fetch("/api/student-attendance/check", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({last4, status: selectedStatus, studentId})
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.error || "출결 처리에 실패했습니다.");
+        if (data.result.needsSelection) {
+          renderChoices(data.result);
+          return;
+        }
+        const already = data.result.already ? "<br>이미 같은 상태로 처리되어 중복 기록은 만들지 않았습니다." : "";
+        setResult("ok", `<b>${data.result.name}</b> 학생 ${data.result.status} 처리 완료<br>${data.result.date} ${data.result.time}${already}`);
+      } catch (error) {
+        setResult("err", error.message || "출결 처리에 실패했습니다. 원장님께 확인해 주세요.");
+      } finally {
+        button.disabled = false;
+        button.textContent = "출결 처리하기";
+      }
+    }
+
+    function renderChoices(result) {
+      const buttons = (result.choices || []).map(choice => `
+        <button type="button" onclick="submitAttendance(${Number(choice.studentId)})">
+          ${escapeHtml(choice.name)}
+          <small>${escapeHtml(choice.classGroup || "")}${choice.school ? " · " + escapeHtml(choice.school) : ""}</small>
+        </button>
+      `).join("");
+      setResult("ok", `
+        <b>같은 뒷자리 학생이 있습니다.</b><br>
+        본인 이름을 선택하면 ${escapeHtml(result.status)} 처리됩니다.
+        <div class="choice-list">${buttons}</div>
+      `);
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    document.getElementById("last4").addEventListener("input", event => {
+      event.target.value = event.target.value.replace(/[^0-9]/g, "").slice(0, 4);
+    });
+  </script>
+</body>
+</html>

@@ -1,39 +1,5 @@
 import {handleOptions, readJson, sendJson} from "../_solapi.js";
-import {get, put} from "@vercel/blob";
-
-const emptyState = () => ({
-  savedAt: new Date().toISOString(),
-  students: [],
-  messages: [],
-  smsContentTemplates: [],
-  attendanceRecords: [],
-  academySchedules: []
-});
-
-const STATE_PATH = "academy/dashboard-state.json";
-
-async function readPersistentState() {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    globalThis.__beolgyoDashboardState ||= emptyState();
-    return globalThis.__beolgyoDashboardState;
-  }
-  const result = await get(STATE_PATH, {access: "private"});
-  if (!result?.stream) return emptyState();
-  return JSON.parse(await new Response(result.stream).text());
-}
-
-async function writePersistentState(state) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    globalThis.__beolgyoDashboardState = state;
-    return;
-  }
-  await put(STATE_PATH, JSON.stringify(state), {
-    access: "private",
-    allowOverwrite: true,
-    contentType: "application/json",
-    cacheControlMaxAge: 60
-  });
-}
+import {emptyState, readPersistentState, writePersistentState} from "../_dashboard-state.js";
 
 export default async function handler(req, res) {
   if (handleOptions(req, res)) return;
