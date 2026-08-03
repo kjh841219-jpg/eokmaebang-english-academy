@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
@@ -1276,6 +1276,25 @@
     .daily-video-box p { margin: 5px 0 14px; color: #6b7a72; font-size: 12px; line-height: 1.55; }
     .daily-video-preview { width: min(520px, 100%); max-height: 310px; margin-top: 12px; border-radius: 14px; display: none; background: #101a15; }
 
+    .share-sync-panel {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 80;
+      display: grid;
+      gap: 8px;
+      width: min(270px, calc(100vw - 28px));
+      padding: 12px;
+      border: 1px solid #cfe5da;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 14px 34px rgba(14, 60, 42, 0.16);
+    }
+    .share-sync-panel strong { font-size: 13px; color: var(--green); }
+    .share-sync-panel .mini-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .share-sync-panel button { padding: 8px 9px; font-size: 12px; border-radius: 9px; }
+    .share-sync-panel small { color: #5b7469; line-height: 1.4; }
+
     @media print {
       aside, header, nav, .toolbar, .notice, .exam-report-actions, .no-print { display: none !important; }
       .app { display: block !important; min-height: auto !important; }
@@ -1349,6 +1368,20 @@
     <main>
       <datalist id="schoolAutocomplete"></datalist>
       <datalist id="textbookAutocomplete"></datalist>
+      <div class="share-sync-panel no-print">
+        <strong>학생 공유 HTML / 결과 반영</strong>
+        <div class="mini-row">
+          <button class="btn small secondary" type="button" onclick="openShareHtml('homework')">숙제 열기</button>
+          <button class="btn small secondary" type="button" onclick="openShareHtml('daily')">CBT 열기</button>
+        </div>
+        <div class="mini-row">
+          <button class="btn small" type="button" onclick="downloadShareHtml('homework')">숙제 HTML 저장</button>
+          <button class="btn small" type="button" onclick="downloadShareHtml('daily')">CBT HTML 저장</button>
+        </div>
+        <button class="btn small blue" type="button" onclick="document.getElementById('offlineResultImportInput').click()">학생 결과 JSON 가져오기</button>
+        <input id="offlineResultImportInput" class="hidden" type="file" accept=".json,application/json" multiple onchange="importOfflineResultFiles(event)" />
+        <small>서버 저장소가 막힐 때도 학생 결과 파일을 가져오면 대시보드에 바로 반영됩니다.</small>
+      </div>
       <header>
         <div class="header-title">
           <img class="character-img" src="academy-character.png" alt="벌교미래엔영어 캐릭터" />
@@ -1412,8 +1445,8 @@
           <div class="calendar-toolbar">
             <div>
               <h2 style="margin-bottom:4px;">데일리리포트 통합 Daily CBT</h2>
-              <div class="muted">학생별로 듣기 5문항, 단어 5문항, 리딩 5문항을 생성하고 영역별 결과를 데일리리포트 메시지에 자동 반영합니다.</div>
-              <div class="pill blue" style="margin-top:8px;">Daily CBT v3 · 영역별 5문항 · 리포트 자동합성</div>
+              <div class="muted">학생별로 단어·문법·듣기·리딩 각 5문항을 생성하고, 영역별 맞힌 개수와 틀린 개수를 문자에 자동 반영합니다.</div>
+              <div class="pill blue" style="margin-top:8px;">Daily CBT v4 · 4영역 각 5문항 · 정답/오답 문자 자동합성</div>
             </div>
             <div class="toolbar">
               <label>학생<select id="dailyMiniStudent" onchange="syncDailyMiniStudentToReport()"></select></label>
@@ -1432,6 +1465,7 @@
                 <select id="dailyMiniType" onchange="renderDailyMiniTest()">
                   <option value="listening">듣기</option>
                   <option value="vocab">단어</option>
+                  <option value="grammar">문법</option>
                   <option value="reading">리딩</option>
                   <option value="daily">Daily 통합</option>
                 </select>
@@ -2492,6 +2526,7 @@
               <select id="dailyMiniAdminType" onchange="loadDailyMiniAdminEditor()">
                 <option value="listening">듣기</option>
                 <option value="vocab">단어</option>
+                <option value="grammar">문법</option>
                 <option value="reading">리딩</option>
               </select>
             </label>
@@ -2699,8 +2734,8 @@
     const homeworkSubmissions = JSON.parse(localStorage.getItem("beolgyo-homework-submissions-v1") || "[]");
     const dailyMiniTests = [];
     const dailyMiniLevels = ["초저", "초중", "초고", "중1", "중2", "중3", "고등"];
-    const dailyMiniTypes = ["listening", "vocab", "reading"];
-    const dailyMiniTypeLabels = {listening: "듣기", vocab: "단어", reading: "리딩", daily: "Daily 통합"};
+    const dailyMiniTypes = ["vocab", "grammar", "listening", "reading"];
+    const dailyMiniTypeLabels = {listening: "듣기", vocab: "단어", grammar: "문법", reading: "리딩", daily: "Daily 통합"};
     const dailyMiniBankStorageKey = "beolgyo-daily-mini-bank-v1";
     const attendanceRecords = [];
     const academySchedules = [];
@@ -2933,10 +2968,124 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       return date.toISOString().slice(0, 10);
     }
 
+    function shareHtmlFileName(kind) {
+      return kind === "daily" ? "daily_cbt.html" : "homework_submit.html";
+    }
+
+    function openShareHtml(kind) {
+      window.open(shareHtmlFileName(kind), "_blank", "noopener,noreferrer");
+    }
+
+    function downloadShareHtml(kind) {
+      const filename = shareHtmlFileName(kind);
+      const anchor = document.createElement("a");
+      anchor.href = filename;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+    }
+
+    function studentByImportedRecord(record = {}) {
+      const clean = value => String(value || "").replace(/\D/g, "");
+      const last4 = clean(record.last4 || record.phoneLast4 || record.studentPhoneLast4).slice(-4);
+      return students.find(student => String(student.id) === String(record.studentId || record.id)) ||
+        students.find(student => student.name && student.name === record.name) ||
+        students.find(student => last4 && [student.phone, student.studentPhone, student.parentPhone, student.guardianPhone].some(phone => clean(phone).slice(-4) === last4)) ||
+        null;
+    }
+
+    function normalizeImportedHomework(payload) {
+      const source = payload.record || payload.submission || payload.homework || payload;
+      const student = studentByImportedRecord(source) || {};
+      const now = new Date();
+      return {
+        id: source.id || `hw_import_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+        date: source.date || now.toLocaleDateString("en-CA", {timeZone: "Asia/Seoul"}),
+        time: source.time || currentTime(),
+        createdAt: source.createdAt || now.toISOString(),
+        studentId: source.studentId || student.id || "",
+        name: source.name || student.name || "학생",
+        phone: source.phone || student.phone || "",
+        last4: source.last4 || source.phoneLast4 || "",
+        className: source.className || student.classGroup || student.className || "",
+        title: source.title || "숙제 사진 제출",
+        subject: source.subject || "",
+        memo: source.memo || "",
+        score: Number(source.score ?? 0),
+        correctCount: Number(source.correctCount ?? 0),
+        totalQuestions: Number(source.totalQuestions ?? 0),
+        status: source.status || "제출완료",
+        summary: source.summary || "학생이 공유 HTML에서 숙제를 제출했습니다.",
+        feedback: source.feedback || source.studentFeedback || "숙제 제출을 확인했습니다. 선생님 확인 후 세부 피드백을 안내합니다.",
+        parentFeedback: source.parentFeedback || "",
+        imageNames: source.imageNames || source.photos || [],
+        needsReview: Boolean(source.needsReview),
+        feedbackSent: source.feedbackSent || "미발송",
+        source: source.source || "html-json-import"
+      };
+    }
+
+    function normalizeImportedDailyMini(payload) {
+      const source = payload.record || payload.dailyMiniResult || payload.dailyCbt || payload;
+      const student = studentByImportedRecord(source) || {};
+      const now = new Date();
+      return {
+        id: source.id || `daily_import_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+        date: source.date || now.toLocaleDateString("en-CA", {timeZone: "Asia/Seoul"}),
+        time: source.time || currentTime(),
+        studentId: source.studentId || student.id || "",
+        name: source.name || student.name || "학생",
+        phone: source.phone || student.phone || "",
+        level: source.level || "초저",
+        type: source.type || source.typeLabel || "Daily 통합",
+        typeKey: source.typeKey || "daily",
+        score: Number(source.score ?? 0),
+        correct: Number(source.correct ?? 0),
+        total: Number(source.total ?? 0),
+        areas: source.areas || {},
+        memo: source.memo || (Number(source.score || 0) >= 80 ? "안정" : "보완필요"),
+        source: source.source || "html-json-import"
+      };
+    }
+
+    async function importOfflineResultFiles(event) {
+      const files = Array.from(event.target.files || []);
+      if (!files.length) return;
+      let homeworkCount = 0;
+      let dailyCount = 0;
+      const errors = [];
+      for (const file of files) {
+        try {
+          const payload = JSON.parse(await file.text());
+          const type = String(payload.type || payload.kind || payload.recordType || "").toLowerCase();
+          if (type.includes("daily") || payload.dailyMiniResult || payload.dailyCbt || payload.record?.typeKey) {
+            const record = normalizeImportedDailyMini(payload);
+            dailyMiniTests.unshift(record);
+            dailyCount += 1;
+          } else {
+            const record = normalizeImportedHomework(payload);
+            const existing = homeworkSubmissions.findIndex(item => item.id === record.id);
+            if (existing >= 0) homeworkSubmissions.splice(existing, 1, record);
+            else homeworkSubmissions.unshift(record);
+            homeworkCount += 1;
+          }
+        } catch (error) {
+          errors.push(`${file.name}: ${error.message}`);
+        }
+      }
+      if (homeworkCount) persistHomeworkSubmissions(false);
+      if (dailyCount) localStorage.setItem("beolgyo-daily-cbt-submissions", JSON.stringify(dailyMiniTests.slice(0, 300)));
+      renderAll();
+      scheduleDashboardPersistence();
+      event.target.value = "";
+      alert(`가져오기 완료\n숙제 ${homeworkCount}건, Daily CBT ${dailyCount}건 반영${errors.length ? `\n\n확인 필요:\n${errors.join("\n")}` : ""}`);
+    }
+
     const DASHBOARD_LOCAL_KEY = "beolgyo-academy-dashboard-state-v2";
     const PUBLIC_API_BASE = "https://beolgyo-miraen-growth-api.vercel.app";
     const LOCAL_API_BASE = "http://127.0.0.1:8789";
-    const APP_VERSION = "2026-08-03-supabase-realtime-v4";
+    const APP_VERSION = "2026-08-03-html-share-json-v5";
     let dashboardStateReady = false;
     let dashboardPersistTimer = null;
     let dashboardDirty = false;
@@ -3420,9 +3569,31 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
         고등: {word: "analyze", meaning: "분석하다", sentence: "Students should analyze the writer's purpose.", word2: "significant", meaning2: "중요한, 상당한", sentence2: "The policy produced a significant change.", script: "The teacher asked us to analyze the writer's purpose and evidence.", script2: "The speaker emphasized that reliable evidence is more significant than a popular opinion.", reading: "When readers analyze an article, they should not only find the main idea but also examine how each detail supports the writer's purpose.", reading2: "Technological convenience can reduce the effort required for routine tasks. Yet when people rely on automated suggestions without questioning them, they may gradually lose opportunities to practice independent judgment.", detail: "the writer's purpose", detail2: "independent judgment"}
       };
       const bank = {};
+      const grammarProfiles = {
+        초저: {subject:"She", be:"is", verb:"likes", object:"apples", plural:"books", prep:"on", past:"played", modal:"can read", compare:"bigger", connector:"because"},
+        초중: {subject:"Mina", be:"is", verb:"goes", object:"to the library", plural:"stories", prep:"after", past:"visited", modal:"can borrow", compare:"more interesting", connector:"because"},
+        초고: {subject:"Kevin", be:"is", verb:"checks", object:"his homework", plural:"projects", prep:"before", past:"prepared", modal:"should practice", compare:"more carefully", connector:"although"},
+        중1: {subject:"Jisu", be:"is", verb:"helps", object:"her group", plural:"plans", prep:"before", past:"promised", modal:"must finish", compare:"more responsible", connector:"because"},
+        중2: {subject:"Our class", be:"is", verb:"reduces", object:"plastic waste", plural:"solutions", prep:"during", past:"collected", modal:"should protect", compare:"more effective", connector:"although"},
+        중3: {subject:"Eric", be:"is", verb:"contributes", object:"useful ideas", plural:"responsibilities", prep:"before", past:"completed", modal:"should consider", compare:"more reliable", connector:"while"},
+        고등: {subject:"The researcher", be:"is", verb:"analyzes", object:"the evidence", plural:"assumptions", prep:"before", past:"evaluated", modal:"must distinguish", compare:"more significant", connector:"whereas"}
+      };
       dailyMiniLevels.forEach(level => {
         const p = profiles[level];
+        const g = grammarProfiles[level];
         bank[level] = {
+          grammar: [
+            {prompt:`빈칸에 알맞은 be동사를 고르세요.\n${g.subject} _____ ready for class.`,choices:[g.be,"are","am","be"],answer:"1",explanation:"주어의 수와 인칭에 맞는 be동사를 고릅니다."},
+            {prompt:`주어와 동사의 수가 바르게 연결된 문장을 고르세요.`,choices:[`${g.subject} ${g.verb} ${g.object}.`,`${g.subject} go ${g.object}.`,`${g.subject} are ${g.object}.`,`${g.subject} liking ${g.object} yesterday.`],answer:"1",explanation:"주어에 맞는 동사 형태를 확인합니다."},
+            {prompt:`복수 명사의 형태가 바른 것을 고르세요.`,choices:[g.plural,`${g.plural}s`,`${g.plural}es`,`a ${g.plural}`],answer:"1",explanation:"문맥에 맞는 복수 명사 형태를 고릅니다."},
+            {prompt:`빈칸에 알맞은 전치사 또는 접속 표현을 고르세요.\nWe checked the plan _____ the lesson.`,choices:[g.prep,"very","many","does"],answer:"1",explanation:"시간과 문장 관계에 맞는 연결 표현을 확인합니다."},
+            {prompt:`과거의 일을 나타내는 동사로 알맞은 것은?`,choices:[g.past,g.verb,"will","being"],answer:"1",explanation:"과거 시점을 나타내는 동사 형태를 고릅니다."},
+            {prompt:`조동사 뒤에 올 표현으로 가장 알맞은 것은?\nThe student ${g.modal.split(" ")[0]} _____.`,choices:[g.modal.split(" ").slice(1).join(" "),`${g.verb}s`,`to ${g.past}`,"was doinged"],answer:"1",explanation:"조동사 뒤에는 알맞은 동사원형 표현이 옵니다."},
+            {prompt:`두 대상을 비교하는 표현으로 알맞은 것은?`,choices:[g.compare,"most carefully than","more good","very bigger than all"],answer:"1",explanation:"비교급의 올바른 형태와 쓰임을 확인합니다."},
+            {prompt:`빈칸에 알맞은 연결어를 고르세요.\n${g.subject} kept working _____ the task required careful thought.`,choices:[g.connector,"and because but","to","than"],answer:"1",explanation:"앞뒤 문장의 의미 관계에 맞는 연결어를 고릅니다."},
+            {prompt:`어순이 가장 자연스러운 문장을 고르세요.`,choices:[`${g.subject} ${g.verb} ${g.object}.`,`${g.object} ${g.subject} ${g.verb}.`,`${g.verb} ${g.object} is ${g.subject}.`,`${g.subject} ${g.object} very ${g.verb}.`],answer:"1",explanation:"영어의 기본 어순인 주어-동사-목적어를 확인합니다."},
+            {prompt:`문법적으로 올바른 문장을 고르세요.`,choices:[`${g.subject} ${g.past} the work and checked it again.`,`${g.subject} did ${g.past} the work.`,`${g.subject} ${g.past}ed the work yesterday.`,`${g.subject} has ${g.past} the work tomorrow yesterday.`],answer:"1",explanation:"시제와 동사 형태가 일관된 문장을 고릅니다."}
+          ],
           listening: [
             {script: p.script, prompt: "들은 내용의 핵심 정보로 알맞은 것은?", choices: ["말하는 사람이 가진 물건이나 한 행동", "취소된 수업 안내", "잃어버린 표 이야기", "주말 날씨 예보"], answer: "1", explanation: "들은 문장에서 실제로 언급된 행동이나 대상을 확인합니다."},
             {script: p.script, prompt: "들은 문장의 핵심 단어로 알맞은 것은?", choices: [p.word, "ticket", "weather", "kitchen"], answer: "1", explanation: `핵심 단어는 ${p.word}입니다.`},
@@ -3511,7 +3682,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
         dailyMiniRecentQuestionKeys[`${level}:${area}`] = selected.map(item => item.questionKey);
         return selected;
       };
-      if (type === "daily") return [...areaQuestions("listening"), ...areaQuestions("vocab"), ...areaQuestions("reading")];
+      if (type === "daily") return [...areaQuestions("vocab"), ...areaQuestions("grammar"), ...areaQuestions("listening"), ...areaQuestions("reading")];
       return areaQuestions(type);
     }
 
@@ -3630,10 +3801,10 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
 
     function dailyMiniAreaSummary(result) {
       const areas = result?.areas || {};
-      const lines = ["listening", "vocab", "reading"]
+      const lines = ["vocab", "grammar", "listening", "reading"]
         .filter(key => areas[key])
-        .map(key => `· ${dailyMiniTypeLabels[key]}: ${areas[key].score}점 (${areas[key].correct}/${areas[key].total})`);
-      return lines.length ? lines.join("\n") : `· 전체: ${result?.score || 0}점 (${result?.correct || 0}/${result?.total || 0})`;
+        .map(key => `· ${dailyMiniTypeLabels[key]}: 맞힌 개수 ${areas[key].correct}개 / 틀린 개수 ${Math.max(areas[key].total - areas[key].correct, 0)}개 (${areas[key].score}점)`);
+      return lines.length ? lines.join("\n") : `· 전체: 맞힌 개수 ${result?.correct || 0}개 / 틀린 개수 ${Math.max((result?.total || 0) - (result?.correct || 0), 0)}개`;
     }
 
     function dailyMiniResultMessage(result = dailyMiniLastResult) {
@@ -3641,7 +3812,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       const guide = Number(result.score || 0) >= 80
         ? "오늘 Daily 미니테스트 이해도가 안정적입니다. 같은 흐름으로 꾸준히 복습하겠습니다."
         : "오늘 Daily 미니테스트에서 보완이 필요한 문항이 확인되었습니다. 오답 유형을 다시 짚고 짧은 복습으로 정확도를 높이겠습니다.";
-      return `안녕하세요^^ 벌교미래엔영어입니다.\n\n${result.name} 학생 Daily 미니테스트 결과 안내드립니다.\n\n· 수준: ${result.level}\n· 유형: ${result.type}\n\n[영역별 결과]\n${dailyMiniAreaSummary(result)}\n· 종합: ${result.score}점 (${result.correct}/${result.total})\n· 결과: ${result.memo}\n\n${guide}\n\n오늘도 성실히 학습할 수 있도록 따뜻하게 지도하겠습니다. 감사합니다^^`;
+      return `안녕하세요^^ 벌교미래엔영어입니다.\n\n${result.name} 학생 미니 데일리테스트 결과 안내드립니다.\n\n· 수준: ${result.level}\n· 유형: ${result.type}\n\n[영역별 정답·오답 결과]\n${dailyMiniAreaSummary(result)}\n\n[전체 결과]\n· 맞힌 개수: ${result.correct}개\n· 틀린 개수: ${Math.max(result.total - result.correct, 0)}개\n· 종합점수: ${result.score}점\n· 평가: ${result.memo}\n\n${guide}\n\n오늘도 성실히 학습할 수 있도록 따뜻하게 지도하겠습니다. 감사합니다^^`;
     }
 
     async function dailyMiniPublicBaseUrl() {
@@ -5951,7 +6122,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       const videoUrl = document.getElementById("dailyVideoUrl").value.trim();
       const testResult = latestDailyMiniResultForStudent(student.id, date);
       const testSection = testResult
-        ? `\n\n[Daily CBT 영역별 결과]\n· 수준: ${testResult.level}\n· 유형: ${testResult.type}\n${dailyMiniAreaSummary(testResult)}\n· 종합: ${testResult.score}점 (${testResult.correct}/${testResult.total})\n· 평가: ${testResult.memo}`
+        ? `\n\n[Daily CBT 영역별 결과]\n· 수준: ${testResult.level}\n· 유형: ${testResult.type}\n${dailyMiniAreaSummary(testResult)}\n· 전체 맞힌 개수: ${testResult.correct}개\n· 전체 틀린 개수: ${Math.max(testResult.total - testResult.correct, 0)}개\n· 종합점수: ${testResult.score}점\n· 평가: ${testResult.memo}`
         : "\n\n[Daily CBT 영역별 결과]\n오늘 저장된 테스트 결과가 없습니다.";
       const homeworkSection = `\n\n[숙제 제출 여부]\n${dailyHomeworkLine(student.id, date)}`;
       const body = `안녕하세요. 벌교미래엔영어입니다.\n\n${date} ${student.name} 학생 데일리리포트입니다.\n\n[오늘의 학습]\n${learning}\n\n[잘한 점]\n${strength}\n\n[보완할 점]\n${improve}\n\n[과제·다음 계획]\n${next}${homeworkSection}${testSection}${videoUrl ? `\n\n[수업 영상 보기]\n${videoUrl}` : ""}\n\n오늘도 아이의 작은 성장을 꼼꼼히 살피겠습니다. 감사합니다.`;
@@ -9826,4 +9997,5 @@ ${report.ai_generated_comment}
   </script>
 </body>
 </html>
+
 
