@@ -2841,13 +2841,14 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
     }
 
     const DASHBOARD_LOCAL_KEY = "beolgyo-academy-dashboard-state-v2";
+    const PUBLIC_API_BASE = "https://beolgyo-miraen-growth-api.vercel.app";
     let dashboardStateReady = false;
     let dashboardPersistTimer = null;
     let dashboardDirty = false;
     let lastDashboardSignature = "";
 
     function dashboardApiUrl(path) {
-      return window.location.protocol === "file:" ? `http://127.0.0.1:8789${path}` : path;
+      return window.location.hostname.endsWith("vercel.app") ? path : `${PUBLIC_API_BASE}${path}`;
     }
 
     function ensureMessageClientId(message) {
@@ -4209,8 +4210,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
     }
 
     function apiEndpoint(path) {
-      if (window.location.protocol === "file:") return `http://127.0.0.1:8789${path}`;
-      return path;
+      return window.location.hostname.endsWith("vercel.app") ? path : `${PUBLIC_API_BASE}${path}`;
     }
 
     async function sendSmsToSolapi(phone, body, scheduledDate = "") {

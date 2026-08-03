@@ -92,7 +92,8 @@
   </main>
 
   <script>
-    const API_BASE = location.protocol === "file:" ? "https://beolgyo-miraen-growth-api.vercel.app" : "";
+    const PUBLIC_API_BASE = "https://beolgyo-miraen-growth-api.vercel.app";
+    const API_BASE = location.hostname.endsWith("vercel.app") ? "" : PUBLIC_API_BASE;
     const params = new URLSearchParams(location.search);
     const levelLabels = ["초저", "초중", "초고", "중1", "중2", "중3", "고등"];
     const typeLabels = {listening: "듣기", vocab: "단어", reading: "리딩", daily: "Daily 통합"};

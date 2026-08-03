@@ -103,7 +103,8 @@
   </main>
 
   <script>
-    const API_BASE = location.protocol === "file:" ? "https://beolgyo-miraen-growth-api.vercel.app" : "";
+    const PUBLIC_API_BASE = "https://beolgyo-miraen-growth-api.vercel.app";
+    const API_BASE = location.hostname.endsWith("vercel.app") ? "" : PUBLIC_API_BASE;
     const statusLabels = {present: "출석", leave: "하원", late: "지각", absent: "결석", makeup: "보강"};
     let selectedStatus = "present";
 
