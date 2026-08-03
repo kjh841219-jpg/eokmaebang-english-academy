@@ -94,14 +94,15 @@ export async function readPersistentState() {
     return globalThis.__beolgyoDashboardState;
   }
   try {
-    const result = await get(STATE_PATH, {access: "private"});
+    const result = await get(STATE_PATH, {access: "private", useCache: false});
     if (!result?.stream) return emptyState();
     const stored = JSON.parse(await new Response(result.stream).text());
     return {...emptyState(), ...stored, students: normalizeStudents(stored.students)};
   } catch (error) {
     const message = String(error?.message || "");
     const status = Number(error?.status || error?.statusCode || error?.response?.status || 0);
-    if (status === 404 || message.toLowerCase().includes("not found")) {
+    const lowerMessage = message.toLowerCase();
+    if (status === 404 || lowerMessage.includes("not found") || status === 403 || lowerMessage.includes("403 forbidden")) {
       return emptyState();
     }
     throw new Error(`Vercel Blob 저장소 읽기 실패: ${message || "알 수 없는 오류"}`);
@@ -141,7 +142,7 @@ export async function writePersistentState(state) {
     access: "private",
     allowOverwrite: true,
     contentType: "application/json",
-    cacheControlMaxAge: 0
+    cacheControlMaxAge: 60
   });
   return merged;
 }
