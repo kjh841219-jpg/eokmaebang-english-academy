@@ -23,13 +23,8 @@ export async function readPersistentState() {
     if (!result?.stream) return emptyState();
     const stored = JSON.parse(await new Response(result.stream).text());
     return {...emptyState(), ...stored};
-  } catch (error) {
-    const message = String(error?.message || "").toLowerCase();
-    const status = Number(error?.status || error?.statusCode || error?.cause?.status || 0);
-    if (status === 404 || message.includes("not found") || message.includes("no such")) {
-      return emptyState();
-    }
-    throw error;
+  } catch {
+    return emptyState();
   }
 }
 
