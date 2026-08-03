@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>벌교미래엔영어 숙제 제출</title>
+  <title>벌교미래엔영어 숙제 사진 제출</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -12,9 +12,10 @@
       background: linear-gradient(180deg, #eaf8f2 0%, #f8fbff 100%);
       color: #09231b;
     }
-    main { width: min(680px, 100%); margin: 0 auto; padding: 28px 18px 48px; }
+    main { width: min(780px, 100%); margin: 0 auto; padding: 28px 18px 48px; }
     .brand { display: inline-flex; padding: 8px 14px; border-radius: 999px; background: #dff8ea; color: #076046; font-weight: 900; font-size: 13px; }
     h1 { margin: 14px 0 8px; font-size: clamp(28px, 8vw, 42px); letter-spacing: 0; }
+    h2 { margin: 0 0 12px; font-size: 20px; }
     .sub { margin: 0 0 18px; color: #52665e; line-height: 1.55; }
     .panel, .result {
       background: #fff;
@@ -25,7 +26,7 @@
       margin: 14px 0;
     }
     label { display: block; font-size: 13px; color: #375a4c; font-weight: 900; margin: 12px 0; }
-    input, select, textarea {
+    input, textarea {
       width: 100%;
       margin-top: 7px;
       border: 1px solid #c9e2d7;
@@ -49,16 +50,16 @@
     }
     .drop strong { display: block; font-size: 18px; margin-bottom: 8px; }
     .drop p { margin: 0; color: #547065; line-height: 1.55; }
-    .previews {
+    .previews, .status-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 10px;
       margin: 12px 0;
     }
-    .preview {
+    .preview, .student-card {
       border: 1px solid #dbece4;
       border-radius: 14px;
-      padding: 8px;
+      padding: 10px;
       background: #fbfffd;
     }
     .preview img {
@@ -69,8 +70,14 @@
       border-radius: 10px;
     }
     .preview div { font-size: 12px; color: #547065; word-break: break-all; margin-top: 5px; }
+    .student-card strong { display: block; font-size: 15px; margin-bottom: 6px; }
+    .student-card small { display: block; color: #5f746b; line-height: 1.45; }
+    .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 5px 9px; font-size: 12px; font-weight: 900; margin-bottom: 7px; }
+    .done { background: #dff8ea; color: #075e42; }
+    .wait { background: #f1f5f9; color: #475569; }
+    .review { background: #fff4d6; color: #92400e; }
     .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
-    button {
+    button, a.button {
       border: 0;
       border-radius: 15px;
       padding: 14px 16px;
@@ -78,10 +85,14 @@
       font-size: 16px;
       cursor: pointer;
       min-height: 52px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
     .primary { background: #08764f; color: #fff; flex: 1; }
     .ghost { background: #edf7f3; color: #073f2d; border: 1px solid #bcded0; }
-    .choice { width: 100%; margin-top: 8px; text-align: left; background: #eefbf3; color: #064e3b; border: 1px solid #b8e6c8; }
+    .choice { width: 100%; margin-top: 8px; text-align: left; background: #eefbf3; color: #064e3b; border: 1px solid #b8e6c8; justify-content: flex-start; }
     .notice { margin-top: 14px; padding: 14px; border-radius: 14px; background: #fff8dd; border: 1px solid #ead083; color: #6b4e03; line-height: 1.55; }
     .ok { background: #eefbf3; border-color: #b8e6c8; color: #065f46; }
     .error { color: #b42318; background: #fff1f0; border-color: #ffb4ad; }
@@ -97,7 +108,7 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     @media (max-width: 560px) {
       .row, .toolbar { grid-template-columns: 1fr; flex-direction: column; }
-      button { width: 100%; }
+      button, a.button { width: 100%; }
     }
   </style>
 </head>
@@ -105,7 +116,7 @@
   <main>
     <span class="brand">벌교미래엔영어</span>
     <h1>숙제 사진 제출</h1>
-    <p class="sub">휴대폰 번호 뒷자리 4자리를 입력하고 숙제 사진을 올려 주세요. 제출하면 학원 대시보드에 바로 반영됩니다.</p>
+    <p class="sub">휴대폰 번호 뒷자리 4자리를 입력하고 숙제 사진을 올려 주세요. 제출하면 학원 대시보드와 아래 제출 현황에 바로 반영됩니다.</p>
 
     <section class="panel">
       <label>학생 또는 보호자 휴대폰 번호 뒷자리 4자리
@@ -138,17 +149,40 @@
     </section>
 
     <section id="result" class="result hidden"></section>
+
+    <section class="panel">
+      <div class="toolbar" style="align-items:center;justify-content:space-between;">
+        <h2>오늘 숙제 제출 현황</h2>
+        <button class="ghost" type="button" onclick="loadHomeworkStatus()">새로고침</button>
+      </div>
+      <div id="summary" class="notice">제출 현황을 불러오는 중입니다.</div>
+      <div id="statusGrid" class="status-grid"></div>
+    </section>
   </main>
 
   <script>
     const PUBLIC_API_BASE = "https://beolgyo-miraen-growth-api.vercel.app";
     const API_BASE = location.hostname.endsWith("vercel.app") ? "" : PUBLIC_API_BASE;
+    const DASHBOARD_URL = `${PUBLIC_API_BASE}/?page=homeworkSubmit`;
     const params = new URLSearchParams(location.search);
     let selectedStudentId = params.get("studentId") || "";
     let photoItems = [];
 
     function apiUrl(path) {
       return `${API_BASE}${path}`;
+    }
+
+    function todayKorea() {
+      return new Date().toLocaleDateString("en-CA", {timeZone: "Asia/Seoul"});
+    }
+
+    function timeText(value) {
+      if (!value) return "";
+      try {
+        return new Date(value).toLocaleTimeString("ko-KR", {hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Seoul"});
+      } catch {
+        return "";
+      }
     }
 
     function escapeHtml(value) {
@@ -200,14 +234,14 @@
           const img = new Image();
           img.onerror = () => reject(new Error("사진 파일을 열지 못했습니다."));
           img.onload = () => {
-            const max = 1200;
+            const max = 900;
             const ratio = Math.min(1, max / Math.max(img.width, img.height));
             const canvas = document.createElement("canvas");
             canvas.width = Math.max(1, Math.round(img.width * ratio));
             canvas.height = Math.max(1, Math.round(img.height * ratio));
             const ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL("image/jpeg", 0.72));
+            resolve(canvas.toDataURL("image/jpeg", 0.62));
           };
           img.src = reader.result;
         };
@@ -236,7 +270,7 @@
       box.className = "";
       box.innerHTML = `
         <div class="notice">같은 뒷자리 학생이 있습니다. 본인 이름을 선택해 주세요.</div>
-        ${choices.map(choice => `<button type="button" class="choice" onclick="selectStudent('${choice.id}', '${escapeHtml(choice.name)}')">${escapeHtml(choice.name)} · ${escapeHtml(choice.classGroup || "반 미지정")}</button>`).join("")}
+        ${choices.map(choice => `<button type="button" class="choice" onclick="selectStudent('${choice.id}', '${escapeHtml(choice.name)}')">${escapeHtml(choice.name)} · ${escapeHtml(choice.classGroup || "반 미입력")}</button>`).join("")}
       `;
     }
 
@@ -244,7 +278,7 @@
       selectedStudentId = String(id);
       const box = document.getElementById("studentChoiceBox");
       box.className = "";
-      box.innerHTML = `<div class="notice ok">${escapeHtml(name)} 학생으로 선택되었습니다.</div>`;
+      box.innerHTML = `<div class="notice ok">${escapeHtml(name)} 학생으로 선택했습니다. 이제 다시 제출해 주세요.</div>`;
     }
 
     async function submitHomework() {
@@ -255,7 +289,7 @@
       if (last4.length !== 4) return setStatus("휴대폰 번호 뒷자리 4자리를 입력해 주세요.", "error");
       if (!photoItems.length) return setStatus("제출할 숙제 사진을 선택해 주세요.", "error");
 
-      setStatus(`<div style="display:flex;gap:12px;align-items:center;"><div class="spinner"></div><div><strong>숙제를 제출하고 AI가 사진을 확인하는 중입니다.</strong><br>잠시만 기다려 주세요.</div></div>`);
+      setStatus(`<div style="display:flex;gap:12px;align-items:center;"><div class="spinner"></div><div><strong>숙제를 제출하고 있습니다.</strong><br>완료 여부와 제출시간이 곧 표시됩니다.</div></div>`);
       document.querySelectorAll("button").forEach(button => button.disabled = true);
 
       try {
@@ -264,23 +298,25 @@
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({studentSubmit: true, last4, selectedStudentId, title, subject, memo, images: photoItems})
         });
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
         if (data.needsSelection || data.needSelect) {
-          document.querySelectorAll("button").forEach(button => button.disabled = false);
           showChoices(data.choices || data.result?.choices || []);
           setStatus("학생 이름을 선택한 뒤 다시 제출해 주세요.");
           return;
         }
         if (!response.ok || !data.ok) throw new Error(data.error || "숙제 제출에 실패했습니다.");
         const record = data.result?.record || {};
-        setStatus("숙제가 정상 제출되었습니다. 원장님 대시보드에 곧 반영됩니다.", "ok");
+        const submittedTime = record.time || timeText(record.createdAt) || "방금";
+        setStatus(`숙제 제출 완료 · ${submittedTime}`, "ok");
         document.getElementById("result").classList.remove("hidden");
         document.getElementById("result").innerHTML = `
           <h2>제출 완료</h2>
           <p><strong>${escapeHtml(data.student?.name || record.name || "학생")}</strong> 학생 숙제가 제출되었습니다.</p>
-          <p>상태: ${escapeHtml(record.status || "제출완료")} · 점수: ${Number(record.score || 0)}점</p>
+          <p>완료여부: ${escapeHtml(record.status || "제출완료")} · 제출시간: ${escapeHtml(submittedTime)} · 점수: ${Number(record.score || 0)}점</p>
           <p>${escapeHtml(record.summary || "선생님이 확인 후 피드백을 안내합니다.")}</p>
+          <div class="toolbar"><a class="button ghost" href="${DASHBOARD_URL}" target="_blank" rel="noreferrer">학원 대시보드 숙제관리 열기</a></div>
         `;
+        await loadHomeworkStatus();
       } catch (error) {
         setStatus(`숙제 제출 실패: ${escapeHtml(error.message)}`, "error");
       } finally {
@@ -288,7 +324,51 @@
       }
     }
 
+    function latestRecordForStudent(records, student) {
+      return records.find(record => String(record.studentId) === String(student.id) || record.name === student.name) || null;
+    }
+
+    async function loadHomeworkStatus() {
+      const summary = document.getElementById("summary");
+      const grid = document.getElementById("statusGrid");
+      try {
+        const response = await fetch(apiUrl("/api/dashboard/state"), {cache: "no-store"});
+        const data = await response.json();
+        if (!response.ok || !data.ok) throw new Error(data.error || "제출 현황을 불러오지 못했습니다.");
+        const date = todayKorea();
+        const students = Array.isArray(data.students) ? data.students.filter(student => student.status !== "퇴원생") : [];
+        const records = (Array.isArray(data.homeworkSubmissions) ? data.homeworkSubmissions : [])
+          .filter(record => String(record.date || "").startsWith(date))
+          .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+        const submitted = new Set(records.map(record => String(record.studentId || record.name))).size;
+        summary.className = "notice";
+        summary.innerHTML = `${date} 오늘 숙제 제출 현황: <strong>${submitted}/${students.length}명 제출</strong><br>학생이 제출하면 이 화면과 원장님 대시보드가 함께 갱신됩니다.`;
+        grid.innerHTML = students.map(student => {
+          const record = latestRecordForStudent(records, student);
+          const isDone = Boolean(record);
+          const needsReview = Boolean(record?.needsReview || record?.status === "보완필요" || record?.status === "확인필요");
+          const pillClass = isDone ? (needsReview ? "review" : "done") : "wait";
+          const label = isDone ? (needsReview ? "제출완료 · 확인필요" : "제출완료") : "미제출";
+          const submittedTime = record ? (record.time || timeText(record.createdAt) || "-") : "-";
+          return `
+            <div class="student-card">
+              <span class="pill ${pillClass}">${label}</span>
+              <strong>${escapeHtml(student.name || "학생")}</strong>
+              <small>제출시간: ${escapeHtml(submittedTime)}</small>
+              <small>숙제명: ${escapeHtml(record?.title || "-")}</small>
+            </div>
+          `;
+        }).join("");
+      } catch (error) {
+        summary.className = "notice error";
+        summary.textContent = `제출 현황 불러오기 실패: ${error.message}`;
+        grid.innerHTML = "";
+      }
+    }
+
     if (params.get("last4")) document.getElementById("last4").value = params.get("last4").replace(/[^0-9]/g, "").slice(-4);
+    loadHomeworkStatus();
+    window.setInterval(loadHomeworkStatus, 10000);
   </script>
 </body>
 </html>

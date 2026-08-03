@@ -4,6 +4,12 @@ import {analyzeHomeworkPayload, fallbackHomeworkResult} from "../../lib/homework
 
 const digits = value => String(value || "").replace(/[^0-9]/g, "");
 const koreaDate = () => new Date().toLocaleDateString("en-CA", {timeZone: "Asia/Seoul"});
+const koreaTime = () => new Date().toLocaleTimeString("ko-KR", {
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+  timeZone: "Asia/Seoul"
+});
 
 function phoneCandidates(student) {
   return [
@@ -17,6 +23,7 @@ function phoneCandidates(student) {
 }
 
 function normalizeRecord(result, payload, student) {
+  const now = new Date().toISOString();
   const items = Array.isArray(result.items) ? result.items.map((item, index) => ({
     number: item.number || index + 1,
     question_type: item.question_type || "기타",
@@ -32,7 +39,8 @@ function normalizeRecord(result, payload, student) {
   return {
     id: globalThis.crypto?.randomUUID?.() || `homework-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     date: String(payload.date || koreaDate()),
-    createdAt: new Date().toISOString(),
+    time: koreaTime(),
+    createdAt: now,
     studentId: student.id,
     name: student.name,
     classGroup: student.classGroup || student.grade || "",

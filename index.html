@@ -4902,6 +4902,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       return {
         id: globalThis.crypto?.randomUUID?.() || `homework-${Date.now()}-${Math.random().toString(16).slice(2)}`,
         date: document.getElementById("homeworkDate").value || today,
+        time: currentTime(),
         createdAt: new Date().toISOString(),
         studentId: fallback.student.id,
         name: fallback.student.name,
@@ -4950,6 +4951,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
           <div class="ai-score-box"><div class="label">점수</div><strong>${record.score}점</strong></div>
           <div class="ai-score-box"><div class="label">정답</div><strong>${record.correctCount}/${record.totalQuestions}</strong></div>
           <div class="ai-score-box"><div class="label">확인</div><strong>${record.needsReview ? "필요" : "완료"}</strong></div>
+          <div class="ai-score-box"><div class="label">제출시간</div><strong>${escapeHtml(homeworkRecordTime(record))}</strong></div>
         </div>
         <p style="line-height:1.7;">${escapeHtml(record.summary || "숙제 사진 분석 결과입니다.")}</p>
         ${imageHtml}
@@ -5000,6 +5002,17 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
 
     function homeworkStudentFor(record) {
       return students.find(s => String(s.id) === String(record.studentId)) || students.find(s => s.name === record.name) || {};
+    }
+
+    function homeworkRecordTime(record) {
+      if (!record) return "-";
+      if (record.time) return record.time;
+      if (!record.createdAt) return "-";
+      try {
+        return new Date(record.createdAt).toLocaleTimeString("ko-KR", {hour: "2-digit", minute: "2-digit", hour12: false});
+      } catch {
+        return "-";
+      }
     }
 
     function homeworkCompletionLabel(record) {
@@ -5085,7 +5098,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
           escapeHtml(student.name),
           `${list.length}건`,
           avg === "-" ? "-" : `${avg}점`,
-          latest ? `${escapeHtml(latest.date || "-")} · ${escapeHtml(latest.title || "-")}` : "-",
+          latest ? `${escapeHtml(latest.date || "-")} ${escapeHtml(homeworkRecordTime(latest))} · ${escapeHtml(latest.title || "-")}` : "-",
           escapeHtml(String(feedback).slice(0, 110)),
           pill(label),
           actions
@@ -5164,9 +5177,10 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
     function renderHomeworkSubmissions() {
       const tableEl = document.getElementById("homeworkFeedbackTable");
       if (!tableEl) return;
-      table("homeworkFeedbackTable", ["제출일", "학생", "숙제명", "교재/과목", "점수", "정답", "피드백", "확인", "발송", "관리"],
+      table("homeworkFeedbackTable", ["제출일", "제출시간", "학생", "숙제명", "교재/과목", "점수", "정답", "피드백", "확인", "발송", "관리"],
         homeworkSubmissions.map(record => [
           record.date || "-",
+          homeworkRecordTime(record),
           escapeHtml(record.name || "-"),
           escapeHtml(record.title || "-"),
           escapeHtml(record.subject || "-"),
@@ -5881,6 +5895,20 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       return sameStudent.find(record => !date || record.date === date) || sameStudent[0] || null;
     }
 
+    function latestHomeworkForStudent(studentId, date) {
+      const sameStudent = homeworkSubmissions
+        .filter(record => String(record.studentId) === String(studentId))
+        .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+      return sameStudent.find(record => !date || record.date === date) || null;
+    }
+
+    function dailyHomeworkLine(studentId, date) {
+      const record = latestHomeworkForStudent(studentId, date);
+      if (!record) return "오늘 숙제 제출 기록이 아직 없습니다.";
+      const label = homeworkCompletionLabel(record);
+      return `${label} · ${record.title || "숙제"} · 제출시간 ${homeworkRecordTime(record)}${record.score || record.score === 0 ? ` · ${record.score}점` : ""}`;
+    }
+
     function generateDailyFeedback() {
       const student = selectedStudent("dailyReportStudent");
       if (!student) return "";
@@ -5894,7 +5922,8 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       const testSection = testResult
         ? `\n\n[Daily CBT 영역별 결과]\n· 수준: ${testResult.level}\n· 유형: ${testResult.type}\n${dailyMiniAreaSummary(testResult)}\n· 종합: ${testResult.score}점 (${testResult.correct}/${testResult.total})\n· 평가: ${testResult.memo}`
         : "\n\n[Daily CBT 영역별 결과]\n오늘 저장된 테스트 결과가 없습니다.";
-      const body = `안녕하세요. 벌교미래엔영어입니다.\n\n${date} ${student.name} 학생 데일리리포트입니다.\n\n[오늘의 학습]\n${learning}\n\n[잘한 점]\n${strength}\n\n[보완할 점]\n${improve}\n\n[과제·다음 계획]\n${next}${testSection}${videoUrl ? `\n\n[수업 영상 보기]\n${videoUrl}` : ""}\n\n오늘도 아이의 작은 성장을 꼼꼼히 살피겠습니다. 감사합니다.`;
+      const homeworkSection = `\n\n[숙제 제출 여부]\n${dailyHomeworkLine(student.id, date)}`;
+      const body = `안녕하세요. 벌교미래엔영어입니다.\n\n${date} ${student.name} 학생 데일리리포트입니다.\n\n[오늘의 학습]\n${learning}\n\n[잘한 점]\n${strength}\n\n[보완할 점]\n${improve}\n\n[과제·다음 계획]\n${next}${homeworkSection}${testSection}${videoUrl ? `\n\n[수업 영상 보기]\n${videoUrl}` : ""}\n\n오늘도 아이의 작은 성장을 꼼꼼히 살피겠습니다. 감사합니다.`;
       document.getElementById("dailyFeedback").value = body;
       return body;
     }
@@ -5932,7 +5961,8 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
     function dailyReportRecord(status = "저장") {
       const student = selectedStudent("dailyReportStudent");
       const body = document.getElementById("dailyFeedback").value.trim() || generateDailyFeedback();
-      return {id: globalThis.crypto?.randomUUID?.() || String(Date.now()),date:document.getElementById("dailyReportDate").value || today,studentId:student.id,name:student.name,phone:document.getElementById("dailyReportPhone").value.trim(),learning:document.getElementById("dailyLearning").value.trim(),body,videoUrl:document.getElementById("dailyVideoUrl").value.trim(),status};
+      const date = document.getElementById("dailyReportDate").value || today;
+      return {id: globalThis.crypto?.randomUUID?.() || String(Date.now()),date,studentId:student.id,name:student.name,phone:document.getElementById("dailyReportPhone").value.trim(),learning:document.getElementById("dailyLearning").value.trim(),homeworkStatus:dailyHomeworkLine(student.id, date),body,videoUrl:document.getElementById("dailyVideoUrl").value.trim(),status};
     }
 
     function saveDailyReport() {
@@ -5950,28 +5980,13 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
         messages.unshift({date:record.date,name:record.name,phone,type:"데일리 문자",title:"데일리 학습 피드백",body:record.body,status:"발송접수"}); renderAll();
         status.textContent = `${record.name} 학생 데일리리포트가 발송 접수되었습니다. 실제 도착 여부는 SOLAPI 발송내역에서 확인해주세요.`;
       } catch (error) {
-        if (channel === "kakao" && isKakaoPfidError(error)) {
-          try {
-            status.textContent = "카카오 채널 PFID 오류로 알림톡 접수가 실패했습니다. 같은 내용을 일반 문자로 대체 발송 중입니다...";
-            await sendSmsToSolapi(phone, record.body);
-            record.status = "문자 대체접수"; dailyReports.unshift(record); persistDailyReports();
-            messages.unshift({date:record.date,name:record.name,phone,type:"데일리 문자",title:"데일리 학습 피드백",body:record.body,status:"문자 대체접수"}); renderAll();
-            status.textContent = `${record.name} 학생 데일리리포트는 카카오 PFID 오류로 알림톡 대신 일반 문자로 접수되었습니다.`;
-            alert("카카오 PFID 오류가 있어 일반 문자로 대체 접수했습니다.\n실제 도착 여부는 SOLAPI 발송내역에서 확인해주세요.");
-            return;
-          } catch (smsError) {
-            status.textContent = `카카오 실패 후 문자 대체발송도 실패했습니다: ${smsError.message}`;
-            alert(smsError.message);
-            return;
-          }
-        }
         status.textContent = `발송 실패: ${error.message}`; alert(error.message);
       }
     }
 
     function renderDailyReports() {
       if (!document.getElementById("dailyReportTable")) return;
-      table("dailyReportTable",["수업일","학생","학습 내용","영상","상태"],dailyReports.map(r => [r.date,r.name,escapeHtml(r.learning || "-"),r.videoUrl ? `<a href="${escapeHtml(r.videoUrl)}" target="_blank" rel="noreferrer">영상 보기</a>` : "-",pill(r.status)]));
+      table("dailyReportTable",["수업일","학생","학습 내용","숙제 제출", "영상","상태"],dailyReports.map(r => [r.date,r.name,escapeHtml(r.learning || "-"),escapeHtml(r.homeworkStatus || "-"),r.videoUrl ? `<a href="${escapeHtml(r.videoUrl)}" target="_blank" rel="noreferrer">영상 보기</a>` : "-",pill(r.status)]));
     }
 
     async function sendDailyReportKakao() {
@@ -5983,13 +5998,13 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
         phone, kind:"daily", title:"데일리 학습 리포트", studentName:record.name, period:record.date,
         summary:document.getElementById("dailyStrength").value || document.getElementById("dailyLearning").value,
         improve:document.getElementById("dailyImprove").value,
-        next:document.getElementById("dailyNext").value + (record.videoUrl ? ` / 영상: ${record.videoUrl}` : ""),
+        next:`${document.getElementById("dailyNext").value}\n숙제: ${record.homeworkStatus || "-"}${record.videoUrl ? `\n영상: ${record.videoUrl}` : ""}`,
         fullSmsBody:record.body, status:document.getElementById("dailySendStatus")
       });
     }
 
     function downloadDailyReports() {
-      const rows = [["수업일","학생명","연락처","학습내용","피드백","영상링크","상태"],...dailyReports.map(r => [r.date,r.name,r.phone,r.learning,r.body,r.videoUrl,r.status])];
+      const rows = [["수업일","학생명","연락처","학습내용","숙제제출여부","피드백","영상링크","상태"],...dailyReports.map(r => [r.date,r.name,r.phone,r.learning,r.homeworkStatus || "",r.body,r.videoUrl,r.status])];
       const csv = rows.map(row => row.map(cell => `"${String(cell || "").replaceAll('"','""')}"`).join(",")).join("\n");
       const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"})); a.download="데일리리포트.csv"; a.click(); URL.revokeObjectURL(a.href);
     }
@@ -9721,9 +9736,10 @@ ${report.ai_generated_comment}
           : students.map(s => [document.getElementById("attendanceDate")?.value || today, s.attendanceTime, s.name, s.attendance, s.reason, s.makeupDate, s.parentSent, s.attendanceMemo]);
         filename = "출결관리.csv";
       } else if (kind === "homework") {
-        headers = ["제출일","학생명","반","숙제명","교재/과목","점수","정답수","총문항","완료상태","발송상태","학생피드백","학부모피드백","사진파일","확인필요"];
+        headers = ["제출일","제출시간","학생명","반","숙제명","교재/과목","점수","정답수","총문항","완료상태","발송상태","학생피드백","학부모피드백","사진파일","확인필요"];
         rows = homeworkSubmissions.map(r => [
           r.date,
+          homeworkRecordTime(r),
           r.name,
           r.classGroup,
           r.title,
