@@ -4897,6 +4897,14 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
     function renderHomeworkResult(record) {
       const wrap = document.getElementById("homeworkResult");
       if (!wrap) return;
+      const imageHtml = Array.isArray(record.imageDataUrls) && record.imageDataUrls.length
+        ? `<h3>제출 사진</h3><div class="preview-grid">${record.imageDataUrls.map((src, index) => `
+            <div class="preview-card">
+              <div class="label">${index + 1}. ${escapeHtml(record.imageNames?.[index] || "숙제사진")}</div>
+              <img src="${src}" alt="제출 숙제 사진 ${index + 1}" />
+            </div>
+          `).join("")}</div>`
+        : "";
       const itemRows = record.items.length ? record.items.map(item => `
         <tr>
           <td>${escapeHtml(item.number)}</td>
@@ -4916,6 +4924,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
           <div class="ai-score-box"><div class="label">확인</div><strong>${record.needsReview ? "필요" : "완료"}</strong></div>
         </div>
         <p style="line-height:1.7;">${escapeHtml(record.summary || "숙제 사진 분석 결과입니다.")}</p>
+        ${imageHtml}
         <div class="table-wrap" style="max-height:340px;">
           <table>
             <thead><tr><th>문항</th><th>유형</th><th>학생 답</th><th>예상 정답</th><th>결과</th><th>해설</th><th>피드백</th></tr></thead>

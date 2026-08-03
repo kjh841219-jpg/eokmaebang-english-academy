@@ -2,6 +2,8 @@
   "rewrites": [
     {"source": "/student-attendance", "destination": "/student_attendance.html"},
     {"source": "/attendance-app", "destination": "/student_attendance.html"},
+    {"source": "/homework-submit", "destination": "/homework_submit.html"},
+    {"source": "/student-homework", "destination": "/homework_submit.html"},
     {"source": "/daily-cbt", "destination": "/daily_cbt.html"},
     {"source": "/daily-report-cbt", "destination": "/daily_cbt.html"}
   ],
