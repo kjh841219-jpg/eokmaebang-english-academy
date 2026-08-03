@@ -1643,6 +1643,32 @@
         <div class="section">
           <h2>학원숙제제출 · 사진 AI 피드백</h2>
           <div class="notice">학생의 숙제 사진을 업로드하면 AI가 문제와 답안을 판독해 예상 정답, 채점 결과, 학생별 피드백을 생성합니다. 사진이 흐리거나 답안이 불명확한 문항은 “추가 확인 필요”로 표시됩니다.</div>
+          <div class="toolbar">
+            <label style="max-width:220px;">현황 기준 월<input id="homeworkMonth" type="month" onchange="renderHomeworkDashboard()" /></label>
+            <button class="btn secondary" type="button" onclick="renderHomeworkDashboard()">숙제현황 새로고침</button>
+          </div>
+          <div class="chart-grid">
+            <div class="chart-card">
+              <div class="chart-title">이번 달 숙제 완료율</div>
+              <div id="homeworkMonthlyDonut"></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">이번 달 숙제량 TOP</div>
+              <div id="homeworkVolumeBars"></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">피드백 처리 현황</div>
+              <div id="homeworkFeedbackDonut"></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">월간 요약</div>
+              <div id="homeworkMonthlySummary" class="notice" style="margin:0;">숙제 제출 현황을 불러오는 중입니다.</div>
+            </div>
+          </div>
+          <div class="section" style="padding:14px; margin:14px 0; box-shadow:none;">
+            <div class="toolbar"><h3 style="margin-right:auto;">학생별 숙제 현황 한눈에 보기</h3></div>
+            <div class="table-wrap"><table id="homeworkOverviewTable"></table></div>
+          </div>
           <div class="form-grid">
             <label>제출일<input id="homeworkDate" type="date" /></label>
             <label>학생<select id="homeworkStudent"></select></label>
@@ -3091,6 +3117,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       document.getElementById("scheduleEndDate").value = today;
       document.getElementById("weeklyDate").value = today;
       document.getElementById("homeworkDate").value = today;
+      document.getElementById("homeworkMonth").value = thisMonth;
       document.getElementById("dailyReportDate").value = today;
       document.getElementById("monthValue").value = thisMonth;
       document.getElementById("payMonth").value = thisMonth;
@@ -4816,6 +4843,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
     function persistHomeworkSubmissions(shouldSchedule = true) {
       localStorage.setItem("beolgyo-homework-submissions-v1", JSON.stringify(homeworkSubmissions.slice(0, 300)));
       renderHomeworkSubmissions();
+      renderHomeworkDashboard();
       if (shouldSchedule) scheduleDashboardPersistence();
     }
 
@@ -4962,10 +4990,181 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       }
     }
 
+    function homeworkMonthValue() {
+      return document.getElementById("homeworkMonth")?.value || thisMonth;
+    }
+
+    function homeworkRecordsForMonth(month = homeworkMonthValue()) {
+      return homeworkSubmissions.filter(record => String(record.date || "").startsWith(month));
+    }
+
+    function homeworkStudentFor(record) {
+      return students.find(s => String(s.id) === String(record.studentId)) || students.find(s => s.name === record.name) || {};
+    }
+
+    function homeworkCompletionLabel(record) {
+      if (!record) return "미제출";
+      if (record.needsReview || record.status === "보완필요") return "보완필요";
+      if (record.status === "완료" || Number(record.score || 0) >= 80) return "완료";
+      return "진행중";
+    }
+
+    function homeworkFeedbackReady(record) {
+      return Boolean(record && !record.needsReview && (record.parentFeedback || record.feedback || record.summary));
+    }
+
+    function homeworkMessageBody(record) {
+      const label = homeworkCompletionLabel(record);
+      const feedback = record.parentFeedback || record.feedback || record.summary || "숙제 제출 내용을 확인했습니다.";
+      return `안녕하세요^^ 벌교미래엔영어 원장입니다.\n\n${record.name} 학생의 숙제 확인 결과 안내드립니다.\n\n[숙제 확인]\n- 날짜: ${record.date || today}\n- 숙제명: ${record.title || "숙제"}\n- 교재/과목: ${record.subject || "영어"}\n- 결과: ${label}\n- 점수: ${Number(record.score || 0)}점 (${Number(record.correctCount || 0)}/${Number(record.totalQuestions || 0)})\n\n[피드백]\n${feedback}\n\n가정에서도 오늘 숙제한 부분을 한 번만 칭찬해주시면 아이가 더 자신 있게 이어갈 수 있습니다. 감사합니다^^`;
+    }
+
+    function homeworkKakaoVariables(record) {
+      return {
+        "#{학생명}": compactKakaoValue(record.name, 20),
+        "#{날짜}": compactKakaoValue(record.date || today, 30),
+        "#{내용}": compactKakaoValue(record.title || "숙제 확인", 80),
+        "#{학습내용}": compactKakaoValue(record.subject || record.summary || "영어 숙제", 120),
+        "#{결과}": compactKakaoValue(`${homeworkCompletionLabel(record)} · ${record.score || 0}점`, 80)
+      };
+    }
+
+    function renderHomeworkDashboard() {
+      const month = homeworkMonthValue();
+      const records = homeworkRecordsForMonth(month);
+      const activeStudents = students.filter(s => normalizeStudentStatus(s.status) !== "퇴원생");
+      const submittedKeys = new Set(records.map(record => String(record.studentId || record.name)));
+      const completed = records.filter(record => homeworkCompletionLabel(record) === "완료").length;
+      const needsReview = records.filter(record => homeworkCompletionLabel(record) === "보완필요").length;
+      const inProgress = Math.max(records.length - completed - needsReview, 0);
+      const missing = Math.max(activeStudents.length - submittedKeys.size, 0);
+      renderDonut("homeworkMonthlyDonut", [
+        {label: "완료", value: completed, color: "#12805c"},
+        {label: "진행", value: inProgress, color: "#3b82f6"},
+        {label: "보완", value: needsReview, color: "#f59e0b"},
+        {label: "미제출", value: missing, color: "#e5e7eb"}
+      ], `${submittedKeys.size}/${activeStudents.length}명`);
+
+      const feedbackReady = records.filter(homeworkFeedbackReady).length;
+      const feedbackNeeds = Math.max(records.length - feedbackReady, 0);
+      renderDonut("homeworkFeedbackDonut", [
+        {label: "전송가능", value: feedbackReady, color: "#2563eb"},
+        {label: "확인필요", value: feedbackNeeds, color: "#f59e0b"}
+      ], `${feedbackReady}/${records.length || 0}건`);
+
+      const volume = activeStudents.map(student => {
+        const list = records.filter(record => String(record.studentId) === String(student.id) || record.name === student.name);
+        return {label: student.name, value: list.length};
+      }).sort((a, b) => b.value - a.value).slice(0, 8);
+      renderBars("homeworkVolumeBars", volume.length ? volume : [{label: "제출 없음", value: 0}], Math.max(...volume.map(row => row.value), 1));
+
+      const average = records.length
+        ? Math.round(records.reduce((sum, record) => sum + Number(record.score || 0), 0) / records.length)
+        : 0;
+      const summary = document.getElementById("homeworkMonthlySummary");
+      if (summary) {
+        summary.innerHTML = `${month} 숙제 제출 ${records.length}건, 제출 학생 ${submittedKeys.size}명입니다.<br>평균 점수는 ${average || "-"}점, 보완 필요 숙제는 ${needsReview}건입니다.<br>아래 표에서 학생별 숙제량, 피드백, 완료 여부를 바로 확인하고 발송할 수 있습니다.`;
+      }
+
+      const rows = activeStudents.map(student => {
+        const list = records
+          .filter(record => String(record.studentId) === String(student.id) || record.name === student.name)
+          .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")) || String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+        const latest = list[0];
+        const avg = list.length ? Math.round(list.reduce((sum, record) => sum + Number(record.score || 0), 0) / list.length) : "-";
+        const label = homeworkCompletionLabel(latest);
+        const feedback = latest ? (latest.parentFeedback || latest.feedback || latest.summary || "-") : "-";
+        const actions = latest
+          ? `<button class="btn small secondary" onclick="renderHomeworkResultById('${latest.id}')">보기</button>
+             <button class="btn small" onclick="markHomeworkStatus('${latest.id}','완료')">완료</button>
+             <button class="btn small amber" onclick="markHomeworkStatus('${latest.id}','보완필요')">보완</button>
+             <button class="btn small blue" onclick="sendHomeworkFeedbackSms('${latest.id}')">문자</button>
+             <button class="btn small amber" onclick="sendHomeworkFeedbackKakao('${latest.id}')">카카오</button>`
+          : `<span class="muted">제출 없음</span>`;
+        return [
+          escapeHtml(student.name),
+          `${list.length}건`,
+          avg === "-" ? "-" : `${avg}점`,
+          latest ? `${escapeHtml(latest.date || "-")} · ${escapeHtml(latest.title || "-")}` : "-",
+          escapeHtml(String(feedback).slice(0, 110)),
+          pill(label),
+          actions
+        ];
+      });
+      table("homeworkOverviewTable", ["학생", "숙제량", "숙제정도", "최근 숙제", "피드백", "완료여부", "관리"], rows);
+    }
+
+    function markHomeworkStatus(recordId, status) {
+      const record = homeworkSubmissions.find(item => item.id === recordId);
+      if (!record) return;
+      record.status = status;
+      record.needsReview = status === "보완필요";
+      if (status === "완료" && !record.parentFeedback && !record.feedback) {
+        record.feedback = "숙제 제출과 풀이 과정을 확인했습니다. 현재 흐름을 유지하면 좋겠습니다.";
+      }
+      persistHomeworkSubmissions();
+    }
+
+    async function sendHomeworkFeedbackSms(recordId) {
+      const record = homeworkSubmissions.find(item => item.id === recordId);
+      if (!record) return;
+      const student = homeworkStudentFor(record);
+      const phone = normalizePhone(student.phone || record.phone || "");
+      if (!/^01\d{8,9}$/.test(phone)) return alert(`${record.name} 학생의 학부모 연락처를 학생관리에서 확인해주세요.`);
+      const body = homeworkMessageBody(record);
+      try {
+        const result = await sendSmsToSolapi(phone, body);
+        record.feedbackSent = "문자 발송접수";
+        record.feedbackSentAt = new Date().toISOString();
+        messages.unshift({date: today, name: record.name, phone, type: "숙제피드백 문자", title: "숙제 피드백", body, status: "발송접수", groupId: result?.result?.groupInfo?.groupId || result?.result?.groupId || ""});
+        persistHomeworkSubmissions();
+        renderMessages();
+        alert(`${record.name} 학생 숙제 피드백 문자를 발송 접수했습니다.`);
+      } catch (error) {
+        record.feedbackSent = "문자 발송실패";
+        messages.unshift({date: today, name: record.name, phone, type: "숙제피드백 문자", title: "숙제 피드백", body, status: "발송실패", error: error.message});
+        persistHomeworkSubmissions();
+        alert(`숙제 피드백 문자 발송 실패: ${error.message}`);
+      }
+    }
+
+    async function sendHomeworkFeedbackKakao(recordId) {
+      const record = homeworkSubmissions.find(item => item.id === recordId);
+      if (!record) return;
+      const student = homeworkStudentFor(record);
+      const phone = normalizePhone(student.phone || record.phone || "");
+      if (!/^01\d{8,9}$/.test(phone)) return alert(`${record.name} 학생의 학부모 연락처를 학생관리에서 확인해주세요.`);
+      const body = homeworkMessageBody(record);
+      try {
+        const result = await sendKakaoToSolapi(phone, body, homeworkKakaoVariables(record), "daily");
+        record.feedbackSent = "카카오 발송접수";
+        record.feedbackSentAt = new Date().toISOString();
+        messages.unshift({date: today, name: record.name, phone, type: "숙제피드백 카카오", title: "숙제 피드백", body, status: "알림톡 접수", groupId: result?.result?.groupInfo?.groupId || result?.result?.groupId || ""});
+        persistHomeworkSubmissions();
+        renderMessages();
+        alert(`${record.name} 학생 숙제 피드백 카카오 알림톡을 접수했습니다.`);
+      } catch (kakaoError) {
+        try {
+          const result = await sendSmsToSolapi(phone, body);
+          record.feedbackSent = "카카오 실패 후 문자대체";
+          record.feedbackSentAt = new Date().toISOString();
+          messages.unshift({date: today, name: record.name, phone, type: "숙제피드백 문자대체", title: "숙제 피드백", body, status: "문자 대체접수", groupId: result?.result?.groupInfo?.groupId || result?.result?.groupId || ""});
+          persistHomeworkSubmissions();
+          renderMessages();
+          alert(`${record.name} 학생 숙제 피드백은 카카오 실패 후 문자로 대체 접수했습니다.`);
+        } catch (smsError) {
+          record.feedbackSent = "발송실패";
+          messages.unshift({date: today, name: record.name, phone, type: "숙제피드백", title: "숙제 피드백", body, status: "발송실패", error: `${kakaoError.message} / ${smsError.message}`});
+          persistHomeworkSubmissions();
+          alert(`카카오와 문자 대체발송이 모두 실패했습니다: ${smsError.message}`);
+        }
+      }
+    }
+
     function renderHomeworkSubmissions() {
       const tableEl = document.getElementById("homeworkFeedbackTable");
       if (!tableEl) return;
-      table("homeworkFeedbackTable", ["제출일", "학생", "숙제명", "교재/과목", "점수", "정답", "피드백", "확인", "관리"],
+      table("homeworkFeedbackTable", ["제출일", "학생", "숙제명", "교재/과목", "점수", "정답", "피드백", "확인", "발송", "관리"],
         homeworkSubmissions.map(record => [
           record.date || "-",
           escapeHtml(record.name || "-"),
@@ -4974,8 +5173,13 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
           `${Number(record.score || 0)}점`,
           `${Number(record.correctCount || 0)}/${Number(record.totalQuestions || 0)}`,
           escapeHtml((record.feedback || record.summary || "-").slice(0, 140)),
-          record.needsReview ? pill("보완필요") : pill("완료"),
-          `<button class="btn small secondary" onclick="renderHomeworkResultById('${record.id}')">보기</button>`
+          pill(homeworkCompletionLabel(record)),
+          escapeHtml(record.feedbackSent || "미발송"),
+          `<button class="btn small secondary" onclick="renderHomeworkResultById('${record.id}')">보기</button>
+           <button class="btn small" onclick="markHomeworkStatus('${record.id}','완료')">완료</button>
+           <button class="btn small amber" onclick="markHomeworkStatus('${record.id}','보완필요')">보완</button>
+           <button class="btn small blue" onclick="sendHomeworkFeedbackSms('${record.id}')">문자</button>
+           <button class="btn small amber" onclick="sendHomeworkFeedbackKakao('${record.id}')">카카오</button>`
         ]));
     }
 
@@ -9517,7 +9721,7 @@ ${report.ai_generated_comment}
           : students.map(s => [document.getElementById("attendanceDate")?.value || today, s.attendanceTime, s.name, s.attendance, s.reason, s.makeupDate, s.parentSent, s.attendanceMemo]);
         filename = "출결관리.csv";
       } else if (kind === "homework") {
-        headers = ["제출일","학생명","반","숙제명","교재/과목","점수","정답수","총문항","학생피드백","학부모피드백","사진파일","확인필요"];
+        headers = ["제출일","학생명","반","숙제명","교재/과목","점수","정답수","총문항","완료상태","발송상태","학생피드백","학부모피드백","사진파일","확인필요"];
         rows = homeworkSubmissions.map(r => [
           r.date,
           r.name,
@@ -9527,6 +9731,8 @@ ${report.ai_generated_comment}
           r.score,
           r.correctCount,
           r.totalQuestions,
+          homeworkCompletionLabel(r),
+          r.feedbackSent || "미발송",
           r.feedback,
           r.parentFeedback,
           (r.imageNames || []).join(" / "),
@@ -9559,6 +9765,7 @@ ${report.ai_generated_comment}
       renderMessages();
       renderAcademySchedule();
       renderHomeworkSubmissions();
+      renderHomeworkDashboard();
       renderDailyMiniTest();
       if (document.getElementById("dailyMiniAdminJson") && !document.getElementById("dailyMiniAdminJson").value) {
         loadDailyMiniAdminEditor();
