@@ -1378,6 +1378,52 @@
             <div id="monthlyScoreChart"></div>
           </div>
         </div>
+        <div id="dailyMiniDashboardSection" class="section" style="border:2px solid #2fa79b;background:linear-gradient(180deg,#f4fffb 0%,#ffffff 100%);">
+          <div class="calendar-toolbar">
+            <div>
+              <h2 style="margin-bottom:4px;">데일리리포트 통합 Daily CBT</h2>
+              <div class="muted">학생별로 듣기 5문항, 단어 5문항, 리딩 5문항을 생성하고 영역별 결과를 데일리리포트 메시지에 자동 반영합니다.</div>
+              <div class="pill blue" style="margin-top:8px;">Daily CBT v3 · 영역별 5문항 · 리포트 자동합성</div>
+            </div>
+            <div class="toolbar">
+              <label>학생<select id="dailyMiniStudent" onchange="syncDailyMiniStudentToReport()"></select></label>
+              <label>수준
+                <select id="dailyMiniLevel" onchange="renderDailyMiniTest()">
+                  <option>초저</option>
+                  <option>초중</option>
+                  <option>초고</option>
+                  <option>중1</option>
+                  <option>중2</option>
+                  <option>중3</option>
+                  <option>고등</option>
+                </select>
+              </label>
+              <label>유형
+                <select id="dailyMiniType" onchange="renderDailyMiniTest()">
+                  <option value="listening">듣기</option>
+                  <option value="vocab">단어</option>
+                  <option value="reading">리딩</option>
+                  <option value="daily">Daily 통합</option>
+                </select>
+              </label>
+              <button class="btn" onclick="startDailyMiniTest()">미니테스트 생성</button>
+            </div>
+          </div>
+          <div id="dailyMiniTestBox" class="notice">수준과 유형을 선택한 뒤 미니테스트 생성을 눌러 주세요.</div>
+          <div class="toolbar" style="margin-top:10px;">
+            <button class="btn" onclick="startDailyMiniTest()">CBT 미니테스트 시작</button>
+            <button class="btn blue" onclick="gradeDailyMiniTest()">채점 및 기록 저장</button>
+            <button class="btn secondary" onclick="startDailyMiniTest()">문항 다시 생성</button>
+            <button class="btn secondary" onclick="copyDailyMiniCbtUrl()">CBT URL 복사</button>
+            <button class="btn amber" onclick="sendDailyMiniTestSms()">CBT URL 문자 전송</button>
+            <button class="btn blue" onclick="sendDailyMiniTestKakao()">CBT URL 카카오 전송</button>
+            <button class="btn amber" onclick="sendDailyMiniResultSms()">결과 문자 전송</button>
+            <button class="btn blue" onclick="sendDailyMiniResultKakao()">결과 카카오 전송</button>
+          </div>
+          <div id="dailyMiniStatus" class="notice" style="margin-top:10px;">테스트를 생성하고 답안을 선택한 뒤 채점 및 기록 저장을 눌러 주세요.</div>
+          <h2 style="margin-top:18px;">Daily 미니테스트 기록</h2>
+          <div class="table-wrap"><table id="dailyMiniTestTable"></table></div>
+        </div>
         <div class="section">
           <div class="calendar-toolbar">
             <div>
@@ -2336,6 +2382,41 @@
           <div class="table-wrap"><table id="smsTemplateTable"></table></div>
         </div>
       </section>
+
+      <section id="dailyMiniAdmin" class="page hidden">
+        <div class="section">
+          <h2>Daily 미니테스트 문항관리</h2>
+          <div class="notice">랜딩페이지에 표시되는 매일 듣기·단어·리딩·Daily 통합 미니테스트 문항을 수준별로 관리합니다. 수준은 초저, 초중, 초고, 중1, 중2, 중3, 고등으로 나뉩니다.</div>
+          <div class="toolbar">
+            <label>수준
+              <select id="dailyMiniAdminLevel" onchange="loadDailyMiniAdminEditor()">
+                <option>초저</option>
+                <option>초중</option>
+                <option>초고</option>
+                <option>중1</option>
+                <option>중2</option>
+                <option>중3</option>
+                <option>고등</option>
+              </select>
+            </label>
+            <label>유형
+              <select id="dailyMiniAdminType" onchange="loadDailyMiniAdminEditor()">
+                <option value="listening">듣기</option>
+                <option value="vocab">단어</option>
+                <option value="reading">리딩</option>
+              </select>
+            </label>
+            <button class="btn" onclick="saveDailyMiniAdminBank()">문항 저장</button>
+            <button class="btn secondary" onclick="resetDailyMiniAdminBank()">기본 문항으로 복원</button>
+          </div>
+          <label>문항 JSON 편집
+            <textarea id="dailyMiniAdminJson" rows="14" style="font-family:Consolas, monospace;"></textarea>
+          </label>
+          <div class="notice">각 문항은 prompt, choices, answer, explanation 값을 사용합니다. 듣기 문항은 script 값을 추가할 수 있습니다. answer는 보기 번호 1~4로 입력합니다.</div>
+          <h2 style="margin-top:18px;">문항 미리보기</h2>
+          <div class="table-wrap"><table id="dailyMiniAdminPreview"></table></div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -2526,6 +2607,11 @@
       {id: "tpl-new-student", name: "신입생 등록 안내", category: "공지", body: "안녕하세요^^\n벌교미래엔영어 원장입니다.\n\n#{학생명} 학생의 신입생 등록을 진심으로 환영합니다.\n\n[신입생 등록 안내]\n· #{과정원비명}: #{원비}\n· 교재비: #{교재비}\n· 총 납부 금액: #{총납부금액}\n\n[입금 계좌]\n#{입금계좌}\n\n결제는 #{결제수단}\n\n궁금하신 점은 언제든 편하게 말씀해 주세요. 진심을 다해 지도하겠습니다. 감사합니다^^"}
     ];
     const dailyReports = JSON.parse(localStorage.getItem("beolgyo-daily-reports-v1") || "[]");
+    const dailyMiniTests = [];
+    const dailyMiniLevels = ["초저", "초중", "초고", "중1", "중2", "중3", "고등"];
+    const dailyMiniTypes = ["listening", "vocab", "reading"];
+    const dailyMiniTypeLabels = {listening: "듣기", vocab: "단어", reading: "리딩", daily: "Daily 통합"};
+    const dailyMiniBankStorageKey = "beolgyo-daily-mini-bank-v1";
     const attendanceRecords = [];
     const academySchedules = [];
     const weeklyRecords = [];
@@ -2551,6 +2637,10 @@
       result: null,
       reportHtml: ""
     };
+    let dailyMiniCurrentQuestions = [];
+    let dailyMiniRecentQuestionKeys = {};
+    let dailyMiniLastResult = null;
+    let dailyMiniQuestionBank = loadDailyMiniBank();
     let schoolSearchTimer = null;
     const studentLectureAssignments = {};
     const remoteSchoolCache = new Map();
@@ -2775,7 +2865,9 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
         messages: messages.map(message => ({...message})),
         smsContentTemplates: smsContentTemplates.map(template => ({...template})),
         attendanceRecords: attendanceRecords.map(record => ({...record})),
-        academySchedules: academySchedules.map(schedule => ({...schedule}))
+        academySchedules: academySchedules.map(schedule => ({...schedule})),
+        dailyMiniTests: dailyMiniTests.map(record => ({...record})),
+        dailyMiniBank: dailyMiniQuestionBank
       };
     }
 
@@ -2785,7 +2877,9 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
         messages: state.messages || [],
         smsContentTemplates: state.smsContentTemplates || [],
         attendanceRecords: state.attendanceRecords || [],
-        academySchedules: state.academySchedules || []
+        academySchedules: state.academySchedules || [],
+        dailyMiniTests: state.dailyMiniTests || [],
+        dailyMiniBank: state.dailyMiniBank || {}
       });
     }
 
@@ -2806,6 +2900,13 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       }
       if (Array.isArray(state?.academySchedules)) {
         academySchedules.splice(0, academySchedules.length, ...state.academySchedules);
+      }
+      if (Array.isArray(state?.dailyMiniTests)) {
+        dailyMiniTests.splice(0, dailyMiniTests.length, ...state.dailyMiniTests);
+      }
+      if (state?.dailyMiniBank && typeof state.dailyMiniBank === "object") {
+        dailyMiniQuestionBank = mergeDailyMiniBank(state.dailyMiniBank);
+        localStorage.setItem(dailyMiniBankStorageKey, JSON.stringify(dailyMiniQuestionBank));
       }
       if (Array.isArray(state?.smsContentTemplates) && state.smsContentTemplates.length) {
         smsContentTemplates.splice(0, smsContentTemplates.length, ...state.smsContentTemplates.map(template => ({
@@ -2907,6 +3008,9 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
     }
 
     async function init() {
+      const dashboard = document.getElementById("dailyReport");
+      const dailyMiniSection = document.getElementById("dailyMiniDashboardSection");
+      if (dashboard && dailyMiniSection) dashboard.prepend(dailyMiniSection);
       document.getElementById("attendanceDate").value = today;
       document.getElementById("attendanceTime").value = currentTime();
       document.getElementById("attendanceMakeupDate").value = today;
@@ -3172,6 +3276,436 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       ], `${counts.출석}명`);
       renderBars("attendanceBarChart", rows, students.length);
       renderBars("monthlyAttendanceChart", rows, students.length);
+    }
+
+    function defaultDailyMiniQuestionBank() {
+      const profiles = {
+        초저: {word: "apple", meaning: "사과", sentence: "I like apples.", word2: "friend", meaning2: "친구", sentence2: "Jina helps her friend.", script: "I have a red apple.", script2: "Please put your blue pencil on the desk.", reading: "Tom has a red bag. He puts a book in it.", reading2: "Mina sees a small puppy in the park. She gives it some water and calls its owner.", detail: "a book", detail2: "some water"},
+        초중: {word: "library", meaning: "도서관", sentence: "She goes to the library.", word2: "borrow", meaning2: "빌리다", sentence2: "I borrow a book from the library.", script: "Mina reads a book at the library.", script2: "Joon will meet his sister in front of the library at three.", reading: "Jina visits the library after school. She reads a storybook and borrows one book.", reading2: "Ben wanted to make a fruit salad. He washed an apple and a banana, cut them carefully, and shared the salad with his sister.", detail: "one book", detail2: "fruit salad"},
+        초고: {word: "carefully", meaning: "조심스럽게", sentence: "He reads carefully.", word2: "prepare", meaning2: "준비하다", sentence2: "We prepare for the class presentation.", script: "Kevin checks his homework carefully.", script2: "Sora practiced her speech twice before the school presentation.", reading: "Kevin wanted to finish his science poster. He checked each sentence carefully before he showed it to his teacher.", reading2: "The school garden was dry after several hot days. Yuna and her classmates made a watering schedule, and the plants soon became healthy again.", detail: "each sentence", detail2: "a watering schedule"},
+        중1: {word: "promise", meaning: "약속하다", sentence: "I promised to help my friend.", word2: "suggest", meaning2: "제안하다", sentence2: "Mina suggested a new idea.", script: "I promised to bring my English notebook tomorrow.", script2: "Daniel suggested meeting ten minutes earlier to practice the dialogue.", reading: "Mina promised to help her group. She finished her part first and checked the poster before class.", reading2: "Jisu missed the bus because she left home late. The next morning, she set an alarm and prepared her bag before breakfast. She arrived at school on time.", detail: "the poster", detail2: "an alarm"},
+        중2: {word: "environment", meaning: "환경", sentence: "We should protect the environment.", word2: "reduce", meaning2: "줄이다", sentence2: "We can reduce plastic waste.", script: "The students talked about ways to protect the environment.", script2: "Our class decided to reduce waste by using reusable water bottles.", reading: "Many students wanted to reduce plastic waste. They brought their own cups and shared the idea with other classes.", reading2: "A local river had become polluted, so students collected data about the water and presented it to the town council. Their research led to a weekend clean-up campaign.", detail: "their own cups", detail2: "water data"},
+        중3: {word: "responsible", meaning: "책임감 있는", sentence: "A responsible student plans ahead.", word2: "contribute", meaning2: "기여하다", sentence2: "Each member contributed to the project.", script: "A responsible student checks the deadline before starting homework.", script2: "Each team member contributed a different idea to improve the final design.", reading: "Although the project was difficult, Eric made a plan and asked his teammates to share their ideas. His group finished it on time.", reading2: "People often assume that multitasking saves time. However, research shows that switching repeatedly between tasks can reduce concentration and increase mistakes.", detail: "a plan", detail2: "concentration"},
+        고등: {word: "analyze", meaning: "분석하다", sentence: "Students should analyze the writer's purpose.", word2: "significant", meaning2: "중요한, 상당한", sentence2: "The policy produced a significant change.", script: "The teacher asked us to analyze the writer's purpose and evidence.", script2: "The speaker emphasized that reliable evidence is more significant than a popular opinion.", reading: "When readers analyze an article, they should not only find the main idea but also examine how each detail supports the writer's purpose.", reading2: "Technological convenience can reduce the effort required for routine tasks. Yet when people rely on automated suggestions without questioning them, they may gradually lose opportunities to practice independent judgment.", detail: "the writer's purpose", detail2: "independent judgment"}
+      };
+      const bank = {};
+      dailyMiniLevels.forEach(level => {
+        const p = profiles[level];
+        bank[level] = {
+          listening: [
+            {script: p.script, prompt: "들은 내용과 일치하는 것을 고르세요.", choices: [p.script, "The student forgot everything.", "The class was canceled.", "The teacher was absent."], answer: "1", explanation: "스크립트의 핵심 내용과 같은 문장을 고릅니다."},
+            {script: p.script, prompt: "들은 문장의 핵심 단어로 알맞은 것은?", choices: [p.word, "ticket", "weather", "kitchen"], answer: "1", explanation: `핵심 단어는 ${p.word}입니다.`},
+            {script: p.script, prompt: "들은 내용의 분위기로 가장 알맞은 것은?", choices: ["학습과 준비", "운동 경기", "음식 주문", "여행 예약"], answer: "1", explanation: "학습 또는 준비 상황을 말하고 있습니다."},
+            {script: p.script, prompt: "들은 문장에서 말하는 사람의 행동으로 알맞은 것은?", choices: ["학습 내용을 확인하거나 준비한다.", "운동장을 달린다.", "음식을 주문한다.", "여행 가방을 싼다."], answer: "1", explanation: "듣기 문장의 핵심 행동을 확인합니다."},
+            {script: p.script, prompt: "들은 문장의 주제로 가장 알맞은 것은?", choices: ["공부와 책임감", "날씨 변화", "교통수단", "취미 운동"], answer: "1", explanation: "문장 전체의 주제를 파악합니다."}
+            ,{script: p.script2, prompt: "들은 내용과 일치하는 것을 고르세요.", choices: [p.script2, "The plan was completely canceled.", "Nobody knew where to meet.", "The speaker forgot the task."], answer: "1", explanation: "시간·장소·행동과 같은 핵심 정보를 정확히 듣습니다."}
+            ,{script: p.script2, prompt: "말하는 사람이 강조하는 행동으로 가장 알맞은 것은?", choices: ["미리 준비하거나 정해진 행동을 실천하는 것", "계획 없이 기다리는 것", "약속을 취소하는 것", "도움을 거절하는 것"], answer: "1", explanation: "문장의 핵심 동사와 목적어를 연결해 의미를 파악합니다."}
+            ,{script: p.script2, prompt: "들은 문장 뒤에 이어질 반응으로 가장 자연스러운 것은?", choices: ["Okay, I will remember that.", "No, the weather is a pencil.", "I never have a yesterday.", "The window eats lunch."], answer: "1", explanation: "상황과 의도에 맞는 자연스러운 응답을 고릅니다."}
+            ,{script: p.script2, prompt: "들은 내용의 목적을 고르세요.", choices: ["정보를 알려 주거나 행동을 요청하기 위해", "과거의 실수를 비난하기 위해", "물건의 가격을 흥정하기 위해", "경기 결과를 발표하기 위해"], answer: "1", explanation: "표현의 기능과 말하는 목적을 함께 확인합니다."}
+            ,{script: p.script2, prompt: "들은 문장에서 가장 중요한 세부 정보는?", choices: [p.detail2, "a canceled flight", "an expensive dinner", "a rainy weekend"], answer: "1", explanation: "문장 속 핵심 명사구를 정확히 구별합니다."}
+          ],
+          vocab: [
+            {prompt: `"${p.word}"의 뜻으로 알맞은 것을 고르세요.`, choices: [p.meaning, "창문", "천천히", "도착하다"], answer: "1", explanation: `${p.word}의 뜻은 ${p.meaning}입니다.`},
+            {prompt: `다음 문장의 빈칸에 알맞은 단어를 고르세요. ${p.sentence.replace(p.word, "_____")}`, choices: [p.word, "chair", "blue", "under"], answer: "1", explanation: "문맥상 학습한 핵심 단어가 들어갑니다."},
+            {prompt: "문맥상 어울리는 단어를 고르세요.", choices: [p.word, "noise", "spoon", "winter"], answer: "1", explanation: "문장 흐름에 맞는 단어를 고르는 문제입니다."},
+            {prompt: `"${p.word}"를 사용한 문장으로 가장 알맞은 것은?`, choices: [p.sentence, "The chair is very table.", "She blue under.", "Winter spoon arrives."], answer: "1", explanation: "단어의 뜻과 문장 쓰임을 함께 확인합니다."},
+            {prompt: `"${p.meaning}"에 해당하는 영어 단어를 고르세요.`, choices: [p.word, "window", "slowly", "arrive"], answer: "1", explanation: `우리말 ${p.meaning}에 해당하는 단어는 ${p.word}입니다.`}
+            ,{prompt: `"${p.word2}"의 뜻으로 알맞은 것을 고르세요.`, choices: [p.meaning2, "잊어버리다", "반대하다", "갑작스럽게"], answer: "1", explanation: `${p.word2}의 문맥상 뜻은 ${p.meaning2}입니다.`}
+            ,{prompt: `빈칸에 가장 알맞은 단어를 고르세요.\n${p.sentence2.replace(new RegExp(p.word2, "i"), "_____")}`, choices: [p.word2, p.word, "however", "between"], answer: "1", explanation: "문장의 의미와 문법적 자리를 함께 살펴봅니다."}
+            ,{prompt: `"${p.word2}"를 가장 자연스럽게 사용한 문장은?`, choices: [p.sentence2, `${p.word2} is under quickly.`, `She very ${p.word2} yesterday is.`, `The ${p.word2} ate a blue idea.`], answer: "1", explanation: "뜻뿐 아니라 실제 문장 속 쓰임을 확인합니다."}
+            ,{prompt: `다음 설명에 해당하는 단어를 고르세요.\n${p.meaning2}라는 뜻으로 문장에서 핵심 행동이나 성질을 나타낸다.`, choices: [p.word2, p.word, "ticket", "corner"], answer: "1", explanation: "정의와 단어를 연결하는 문항입니다."}
+            ,{prompt: `두 문장의 의미가 자연스럽게 이어지도록 고르세요.\n${p.sentence2} Therefore, _____`, choices: ["the action or result matches the first sentence.", "the sentence has no subject or meaning.", "yesterday becomes a color.", "a table answers the question."], answer: "1", explanation: "핵심 어휘가 문장 전체의 논리 관계에서 어떻게 쓰이는지 확인합니다."}
+          ],
+          reading: [
+            {prompt: `${p.reading}\n\n글의 중심 내용으로 알맞은 것은?`, choices: ["학생이 스스로 학습하거나 준비한다.", "학생이 길을 잃는다.", "비가 많이 온다.", "동물이 도망간다."], answer: "1", explanation: "글 전체는 학생의 학습 또는 준비 행동을 중심으로 합니다."},
+            {prompt: `${p.reading}\n\n글의 내용과 일치하는 것은?`, choices: ["주인공은 과제를 확인하거나 읽는다.", "주인공은 아무것도 하지 않는다.", "수업은 모두 취소된다.", "친구가 모두 결석한다."], answer: "1", explanation: "본문의 세부 내용을 근거로 확인합니다."},
+            {prompt: `${p.reading}\n\n글을 읽고 추론할 수 있는 내용은?`, choices: ["주인공은 책임감 있게 행동한다.", "주인공은 항상 늦는다.", "주인공은 책을 싫어한다.", "주인공은 시험을 보지 않는다."], answer: "1", explanation: "본문 행동을 통해 책임감 있는 태도를 추론할 수 있습니다."},
+            {prompt: `${p.reading}\n\n주인공의 태도로 가장 알맞은 것은?`, choices: ["성실하고 계획적이다.", "무관심하고 게으르다.", "화를 잘 낸다.", "규칙을 지키지 않는다."], answer: "1", explanation: "본문에 나타난 행동을 바탕으로 태도를 판단합니다."},
+            {prompt: `${p.reading}\n\n글의 제목으로 가장 알맞은 것은?`, choices: ["작은 준비가 만드는 성장", "갑작스러운 여행", "비 오는 운동장", "맛있는 저녁 식사"], answer: "1", explanation: "중심 내용 전체를 아우르는 제목을 고릅니다."}
+            ,{prompt: `${p.reading2}\n\n글의 중심 내용으로 가장 알맞은 것은?`, choices: ["문제 상황을 파악하고 적절한 행동으로 해결한다.", "아무런 이유 없이 계획을 포기한다.", "날씨 정보만 자세히 설명한다.", "물건의 가격을 비교한다."], answer: "1", explanation: "원인·행동·결과의 흐름을 종합해 중심 내용을 찾습니다."}
+            ,{prompt: `${p.reading2}\n\n본문에서 직접 확인할 수 있는 핵심 정보는?`, choices: [p.detail2, "a canceled concert", "a lost passport", "an online shopping list"], answer: "1", explanation: "본문에 명시된 세부 정보를 근거로 답합니다."}
+            ,{prompt: `${p.reading2}\n\n글의 전개 방식으로 가장 알맞은 것은?`, choices: ["상황 또는 문제를 제시한 뒤 행동과 결과를 설명한다.", "서로 관계없는 단어만 나열한다.", "두 장소의 가격만 비교한다.", "인물의 외모만 반복해 묘사한다."], answer: "1", explanation: "글의 구조를 파악하는 독해 문항입니다."}
+            ,{prompt: `${p.reading2}\n\n글을 통해 추론할 수 있는 내용은?`, choices: ["계획적인 판단과 실천이 긍정적인 변화를 만들 수 있다.", "모든 문제는 저절로 해결된다.", "도움을 요청하면 항상 실패한다.", "정보를 확인할 필요가 없다."], answer: "1", explanation: "본문의 사실을 바탕으로 타당한 결론을 추론합니다."}
+            ,{prompt: `${p.reading2}\n\n본문의 내용과 일치하지 않는 것은?`, choices: ["주인공 또는 필자는 아무 근거 없이 모든 행동을 포기했다.", "본문에는 구체적인 상황이 제시된다.", "행동이나 판단의 결과가 드러난다.", "중심 생각을 뒷받침하는 세부 내용이 있다."], answer: "1", explanation: "본문과 반대되는 진술을 찾는 유형입니다."}
+          ]
+        };
+      });
+      return bank;
+    }
+
+    function mergeDailyMiniBank(source = {}) {
+      const base = defaultDailyMiniQuestionBank();
+      dailyMiniLevels.forEach(level => {
+        dailyMiniTypes.forEach(type => {
+          if (Array.isArray(source?.[level]?.[type]) && source[level][type].length) {
+            const custom = source[level][type].map(item => ({
+              script: item.script || "",
+              prompt: item.prompt || "",
+              choices: Array.isArray(item.choices) ? item.choices.slice(0, 4) : [],
+              answer: String(item.answer || "1"),
+              explanation: item.explanation || ""
+            })).filter(item => item.prompt && item.choices.length >= 2);
+            const combined = [...custom, ...base[level][type]];
+            base[level][type] = combined.filter((item, index, all) =>
+              index === all.findIndex(candidate => candidate.prompt === item.prompt && candidate.script === item.script)
+            ).slice(0, 30);
+          }
+        });
+      });
+      return base;
+    }
+
+    function loadDailyMiniBank() {
+      try { return mergeDailyMiniBank(JSON.parse(localStorage.getItem(dailyMiniBankStorageKey) || "{}")); }
+      catch { return defaultDailyMiniQuestionBank(); }
+    }
+
+    function persistDailyMiniBank() {
+      localStorage.setItem(dailyMiniBankStorageKey, JSON.stringify(dailyMiniQuestionBank));
+      scheduleDashboardPersistence();
+    }
+
+    function dailyMiniQuestionsFor(level, type) {
+      const bank = dailyMiniQuestionBank[level] || dailyMiniQuestionBank.초저;
+      const areaQuestions = area => {
+        const pool = (bank[area] || []).map((item, index) => ({...item, area, questionKey: `${level}:${area}:${index}`}));
+        const recent = new Set(dailyMiniRecentQuestionKeys[`${level}:${area}`] || []);
+        const fresh = pool.filter(item => !recent.has(item.questionKey));
+        const candidates = fresh.length >= 5 ? fresh : pool;
+        for (let index = candidates.length - 1; index > 0; index -= 1) {
+          const swapIndex = Math.floor(Math.random() * (index + 1));
+          [candidates[index], candidates[swapIndex]] = [candidates[swapIndex], candidates[index]];
+        }
+        const selected = candidates.slice(0, 5);
+        dailyMiniRecentQuestionKeys[`${level}:${area}`] = selected.map(item => item.questionKey);
+        return selected;
+      };
+      if (type === "daily") return [...areaQuestions("listening"), ...areaQuestions("vocab"), ...areaQuestions("reading")];
+      return areaQuestions(type);
+    }
+
+    function shuffledDailyMiniQuestion(item) {
+      const correctIndex = Math.max(0, Number(item.answer || 1) - 1);
+      const choices = (item.choices || []).map((choice, index) => ({choice, correct: index === correctIndex}));
+      for (let index = choices.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [choices[index], choices[swapIndex]] = [choices[swapIndex], choices[index]];
+      }
+      return {
+        ...item,
+        choices: choices.map(entry => entry.choice),
+        answer: String(choices.findIndex(entry => entry.correct) + 1)
+      };
+    }
+
+    function renderDailyMiniStudentOptions() {
+      const select = document.getElementById("dailyMiniStudent");
+      if (!select) return;
+      const before = select.value;
+      select.innerHTML = students.map(student => `<option value="${student.id}">${escapeHtml(student.name)} · ${escapeHtml(student.classGroup || "")}</option>`).join("");
+      if (before) select.value = before;
+    }
+
+    function startDailyMiniTest() {
+      const level = document.getElementById("dailyMiniLevel")?.value || "초저";
+      const type = document.getElementById("dailyMiniType")?.value || "daily";
+      dailyMiniCurrentQuestions = dailyMiniQuestionsFor(level, type).map((item, index) => ({...shuffledDailyMiniQuestion(item), number: index + 1}));
+      dailyMiniLastResult = null;
+      renderDailyMiniTest();
+      const status = document.getElementById("dailyMiniStatus");
+      if (status) status.textContent = `${level} · ${dailyMiniTypeLabels[type] || type} CBT ${dailyMiniCurrentQuestions.length}문항을 새로 생성했습니다.`;
+    }
+
+    function renderDailyMiniTest() {
+      renderDailyMiniStudentOptions();
+      const box = document.getElementById("dailyMiniTestBox");
+      if (!box) return;
+      if (!dailyMiniCurrentQuestions.length) {
+        box.className = "notice";
+        box.innerHTML = "수준과 유형을 선택한 뒤 미니테스트 생성을 눌러 주세요.";
+        renderDailyMiniRecords();
+        return;
+      }
+      box.className = "section";
+      box.innerHTML = dailyMiniCurrentQuestions.map((q, index) => `
+        <div class="card" style="margin-bottom:12px;border-color:#cfe8dc;">
+          <div class="toolbar" style="justify-content:space-between;margin-bottom:8px;">
+            <span class="pill">CBT ${index + 1}번</span>
+            <span class="muted">4지선다 자동채점</span>
+          </div>
+          <strong style="display:block;line-height:1.55;">${index + 1}. ${escapeHtml(q.prompt).replaceAll("\n", "<br>")}</strong>
+          ${q.script ? `<div class="toolbar" style="margin:8px 0;"><button class="btn secondary" type="button" onclick="speakDailyMiniScript(${index})">🔊 듣기 음원 재생</button><span class="muted">스크립트는 정답 확인 전까지 표시되지 않습니다.</span></div>` : ""}
+          <div class="form-grid" style="margin-top:8px;">
+            ${(q.choices || []).map((choice, choiceIndex) => `
+              <label style="margin:0;border:1px solid var(--line);border-radius:8px;padding:10px;background:#fff;">
+                <input type="radio" name="dailyMiniAnswer${index}" value="${choiceIndex + 1}" />
+                ${choiceIndex + 1}. ${escapeHtml(choice)}
+              </label>
+            `).join("")}
+          </div>
+          <div id="dailyMiniFeedback${index}" class="muted" style="margin-top:6px;"></div>
+        </div>
+      `).join("");
+      renderDailyMiniRecords();
+    }
+
+    function speakDailyMiniScript(index) {
+      const question = dailyMiniCurrentQuestions[index];
+      if (!question?.script) return;
+      speakLayout(question.script);
+    }
+
+    function gradeDailyMiniTest() {
+      if (!dailyMiniCurrentQuestions.length) {
+        alert("먼저 미니테스트를 생성해 주세요.");
+        return;
+      }
+      const studentId = Number(document.getElementById("dailyMiniStudent")?.value || 0);
+      const student = students.find(item => item.id === studentId) || students[0] || {};
+      const level = document.getElementById("dailyMiniLevel")?.value || "초저";
+      const type = document.getElementById("dailyMiniType")?.value || "daily";
+      let correct = 0;
+      const areas = {};
+      dailyMiniCurrentQuestions.forEach((q, index) => {
+        const checked = document.querySelector(`input[name="dailyMiniAnswer${index}"]:checked`);
+        const answer = checked?.value || "";
+        const ok = answer === String(q.answer);
+        const area = q.area || type;
+        if (!areas[area]) areas[area] = {correct: 0, total: 0, score: 0};
+        areas[area].total += 1;
+        if (ok) correct += 1;
+        if (ok) areas[area].correct += 1;
+        const feedback = document.getElementById(`dailyMiniFeedback${index}`);
+        if (feedback) feedback.innerHTML = `${ok ? "정답" : "오답"} · 정답 ${escapeHtml(q.answer)} · ${escapeHtml(q.explanation || "")}`;
+      });
+      Object.values(areas).forEach(area => {
+        area.score = area.total ? Math.round((area.correct / area.total) * 100) : 0;
+      });
+      const total = dailyMiniCurrentQuestions.length;
+      const score = Math.round((correct / total) * 100);
+      dailyMiniLastResult = {date: today, time: currentTime(), studentId: student.id || "", name: student.name || "학생", phone: student.phone || "", level, type: dailyMiniTypeLabels[type] || type, typeKey: type, score, correct, total, areas, memo: score >= 80 ? "안정" : "보완필요"};
+      dailyMiniTests.unshift({...dailyMiniLastResult});
+      renderDailyMiniRecords();
+      scheduleDashboardPersistence();
+      const reportStudent = document.getElementById("dailyReportStudent");
+      if (reportStudent && student.id) {
+        reportStudent.value = String(student.id);
+        syncDailyReportStudent();
+        generateDailyFeedback();
+      }
+      const status = document.getElementById("dailyMiniStatus");
+      if (status) status.textContent = `${student.name || "학생"} · ${level} · ${dailyMiniTypeLabels[type] || type} · ${score}점 (${correct}/${total}) 기록 저장 및 데일리리포트 반영 완료`;
+    }
+
+    function dailyMiniAreaSummary(result) {
+      const areas = result?.areas || {};
+      const lines = ["listening", "vocab", "reading"]
+        .filter(key => areas[key])
+        .map(key => `· ${dailyMiniTypeLabels[key]}: ${areas[key].score}점 (${areas[key].correct}/${areas[key].total})`);
+      return lines.length ? lines.join("\n") : `· 전체: ${result?.score || 0}점 (${result?.correct || 0}/${result?.total || 0})`;
+    }
+
+    function dailyMiniResultMessage(result = dailyMiniLastResult) {
+      if (!result) return "";
+      const guide = Number(result.score || 0) >= 80
+        ? "오늘 Daily 미니테스트 이해도가 안정적입니다. 같은 흐름으로 꾸준히 복습하겠습니다."
+        : "오늘 Daily 미니테스트에서 보완이 필요한 문항이 확인되었습니다. 오답 유형을 다시 짚고 짧은 복습으로 정확도를 높이겠습니다.";
+      return `안녕하세요^^ 벌교미래엔영어입니다.\n\n${result.name} 학생 Daily 미니테스트 결과 안내드립니다.\n\n· 수준: ${result.level}\n· 유형: ${result.type}\n\n[영역별 결과]\n${dailyMiniAreaSummary(result)}\n· 종합: ${result.score}점 (${result.correct}/${result.total})\n· 결과: ${result.memo}\n\n${guide}\n\n오늘도 성실히 학습할 수 있도록 따뜻하게 지도하겠습니다. 감사합니다^^`;
+    }
+
+    async function dailyMiniPublicBaseUrl() {
+      const fallback = window.location.protocol === "file:" ? "http://127.0.0.1:8789" : window.location.origin;
+      try {
+        const response = await fetch(dashboardApiUrl("/api/attendance/today"), {cache: "no-store"});
+        const data = await response.json();
+        const source = data.studentUrl || data.localUrl || "";
+        if (source) return source.replace(/\/student-attendance\/?$/, "");
+      } catch {}
+      return fallback.replace(/\/$/, "");
+    }
+
+    async function dailyMiniCbtLinkPayload() {
+      const studentId = Number(document.getElementById("dailyMiniStudent")?.value || 0);
+      const student = students.find(item => item.id === studentId) || students[0] || {};
+      const level = document.getElementById("dailyMiniLevel")?.value || "초저";
+      const type = document.getElementById("dailyMiniType")?.value || "daily";
+      const base = await dailyMiniPublicBaseUrl();
+      const params = new URLSearchParams({
+        studentId: String(student.id || ""),
+        name: student.name || "학생",
+        level,
+        type,
+        seed: `${today}-${student.id || "student"}-${level}-${type}`
+      });
+      const url = `${base}/daily-cbt?${params.toString()}`;
+      const typeLabel = dailyMiniTypeLabels[type] || type;
+      const body = `[벌교미래엔영어 Daily CBT]\n${student.name || "학생"} 학생 ${level} ${typeLabel} 미니테스트 링크입니다.\n\n아래 주소를 눌러 문제를 풀고 제출해 주세요.\n${url}\n\n제출이 완료되면 학원 대시보드 Daily 미니테스트 기록에 반영됩니다.`;
+      return {student, level, type, typeLabel, url, body};
+    }
+
+    async function copyDailyMiniCbtUrl() {
+      const content = await dailyMiniCbtLinkPayload();
+      try {
+        await navigator.clipboard.writeText(content.url);
+        alert(`CBT URL을 복사했습니다.\n${content.url}`);
+      } catch {
+        prompt("아래 CBT URL을 복사해 주세요.", content.url);
+      }
+    }
+
+    async function sendDailyMiniTestSms() {
+      const content = await dailyMiniCbtLinkPayload();
+      const phone = content.student.studentPhone || content.student.phone || "";
+      if (!phone) return alert("학생 또는 보호자 연락처가 없습니다.");
+      const status = document.getElementById("dailyMiniStatus");
+      status.textContent = "Daily CBT URL을 문자로 발송 중입니다...";
+      try {
+        await sendSmsToSolapi(phone, content.body);
+        messages.unshift({date:today,name:content.student.name,phone,type:"Daily CBT URL",title:"CBT URL 문자",body:content.body,status:"문자 발송접수"});
+        renderAll();
+        status.textContent = `${content.student.name} 학생에게 CBT URL 문자를 접수했습니다.`;
+      } catch (error) {
+        status.textContent = `CBT URL 문자 발송 실패: ${error.message}`;
+        alert(status.textContent);
+      }
+    }
+
+    async function sendDailyMiniTestKakao() {
+      const content = await dailyMiniCbtLinkPayload();
+      const phone = content.student.studentPhone || content.student.phone || "";
+      if (!phone) return alert("학생 또는 보호자 연락처가 없습니다.");
+      const status = document.getElementById("dailyMiniStatus");
+      const variables = {
+        "#{학생명}": content.student.name || "학생",
+        "#{출결상태}": "Daily CBT 링크 발송",
+        "#{출결시간}": currentTime(),
+        "#{내용}": `${content.level} ${content.typeLabel} 미니테스트를 아래 링크에서 풀어주세요. ${content.url}`,
+        "#{보강안내}": "제출이 완료되면 학원 대시보드 Daily 미니테스트 기록에 자동 반영됩니다."
+      };
+      status.textContent = "Daily CBT URL을 카카오 알림톡으로 발송 중입니다...";
+      try {
+        const result = await sendKakaoToSolapi(phone, content.body, variables, "daily");
+        messages.unshift({date:today,name:content.student.name,phone,type:"Daily CBT URL 카카오",title:"CBT URL 카카오",body:content.body,status:"알림톡 접수",groupId:result?.result?.groupInfo?.groupId || result?.result?.groupId || ""});
+        renderAll();
+        status.textContent = `${content.student.name} 학생에게 Daily CBT URL 카카오 알림톡을 접수했습니다.`;
+      } catch (kakaoError) {
+        status.textContent = "카카오 알림톡이 실패하여 같은 링크를 문자로 자동 전환 중입니다...";
+        try {
+          const result = await sendSmsToSolapi(phone, content.body);
+          messages.unshift({date:today,name:content.student.name,phone,type:"Daily CBT URL 문자대체",title:"CBT URL 문자대체",body:content.body,status:"문자 대체접수",groupId:result?.result?.groupInfo?.groupId || result?.result?.groupId || ""});
+          renderAll();
+          status.textContent = `${content.student.name} 학생 Daily CBT URL은 카카오 실패 후 문자로 대체 접수되었습니다.`;
+        } catch (smsError) {
+          status.textContent = `Daily CBT 카카오/문자 발송이 모두 실패했습니다: ${smsError.message}`;
+          alert(status.textContent);
+        }
+      }
+    }
+
+    async function sendDailyMiniResultSms() {
+      if (!dailyMiniLastResult) gradeDailyMiniTest();
+      if (!dailyMiniLastResult) return;
+      const student = students.find(item => item.id === Number(dailyMiniLastResult.studentId)) || {};
+      const phone = student.phone || dailyMiniLastResult.phone;
+      if (!phone) {
+        alert("보호자 연락처가 없습니다.");
+        return;
+      }
+      const body = dailyMiniResultMessage();
+      try {
+        const result = await sendSmsToSolapi(phone, body);
+        messages.unshift({date: today, name: dailyMiniLastResult.name, phone, type: "Daily 미니테스트", title: "Daily 미니테스트 결과", body, status: "문자 발송접수", solapiResult: JSON.stringify(result).slice(0, 500)});
+        renderAll();
+        alert("Daily 미니테스트 결과 문자를 접수했습니다.");
+      } catch (error) {
+        messages.unshift({date: today, name: dailyMiniLastResult.name, phone, type: "Daily 미니테스트", title: "Daily 미니테스트 결과", body, status: "발송실패", error: error.message});
+        renderAll();
+        alert(`문자 발송 실패: ${error.message}`);
+      }
+    }
+
+    async function sendDailyMiniResultKakao() {
+      if (!dailyMiniLastResult) gradeDailyMiniTest();
+      if (!dailyMiniLastResult) return;
+      const student = students.find(item => item.id === Number(dailyMiniLastResult.studentId)) || {};
+      const phone = student.phone || dailyMiniLastResult.phone;
+      if (!phone) {
+        alert("보호자 연락처가 없습니다.");
+        return;
+      }
+      const body = dailyMiniResultMessage();
+      try {
+        await sendReportKakaoWithSmsFallback({
+          phone,
+          kind: "daily",
+          title: "Daily 미니테스트 결과",
+          studentName: dailyMiniLastResult.name,
+          period: `${dailyMiniLastResult.date} ${dailyMiniLastResult.time}`,
+          summary: `${dailyMiniLastResult.level} ${dailyMiniLastResult.type} ${dailyMiniLastResult.score}점 (${dailyMiniLastResult.correct}/${dailyMiniLastResult.total})`,
+          improve: dailyMiniLastResult.memo,
+          next: dailyMiniLastResult.score >= 80 ? "현재 루틴 유지" : "오답 문항 재확인 및 짧은 복습",
+          fullSmsBody: body,
+          status: document.getElementById("dailyMiniStatus")
+        });
+        messages.unshift({date: today, name: dailyMiniLastResult.name, phone, type: "Daily 미니테스트", title: "Daily 미니테스트 결과", body, status: "카카오/문자 접수"});
+        renderAll();
+        alert("Daily 미니테스트 결과 카카오 전송을 접수했습니다.");
+      } catch (error) {
+        messages.unshift({date: today, name: dailyMiniLastResult.name, phone, type: "Daily 미니테스트", title: "Daily 미니테스트 결과", body, status: "발송실패", error: error.message});
+        renderAll();
+        alert(`카카오 발송 실패: ${error.message}`);
+      }
+    }
+
+    function renderDailyMiniRecords() {
+      if (!document.getElementById("dailyMiniTestTable")) return;
+      table("dailyMiniTestTable", ["날짜", "시간", "학생", "수준", "유형", "영역별 결과", "종합", "결과", "메모"], dailyMiniTests.slice(0, 20).map(record => [
+        record.date, record.time, escapeHtml(record.name), record.level, record.type,
+        escapeHtml(dailyMiniAreaSummary(record).replaceAll("\n", " / ")),
+        `${record.score}점`, `${record.correct}/${record.total}`, pill(record.memo)
+      ]));
+    }
+
+    function loadDailyMiniAdminEditor() {
+      const level = document.getElementById("dailyMiniAdminLevel")?.value || "초저";
+      const type = document.getElementById("dailyMiniAdminType")?.value || "listening";
+      const textarea = document.getElementById("dailyMiniAdminJson");
+      if (textarea) textarea.value = JSON.stringify(dailyMiniQuestionBank[level]?.[type] || [], null, 2);
+      renderDailyMiniAdminPreview();
+    }
+
+    function renderDailyMiniAdminPreview() {
+      if (!document.getElementById("dailyMiniAdminPreview")) return;
+      const level = document.getElementById("dailyMiniAdminLevel")?.value || "초저";
+      const type = document.getElementById("dailyMiniAdminType")?.value || "listening";
+      table("dailyMiniAdminPreview", ["번호", "문제", "보기", "정답", "해설"], (dailyMiniQuestionBank[level]?.[type] || []).map((q, index) => [
+        index + 1, escapeHtml(q.prompt).slice(0, 90), escapeHtml((q.choices || []).join(" / ")).slice(0, 110), q.answer, escapeHtml(q.explanation || "").slice(0, 80)
+      ]));
+    }
+
+    function saveDailyMiniAdminBank() {
+      const level = document.getElementById("dailyMiniAdminLevel")?.value || "초저";
+      const type = document.getElementById("dailyMiniAdminType")?.value || "listening";
+      try {
+        const parsed = JSON.parse(document.getElementById("dailyMiniAdminJson").value || "[]");
+        if (!Array.isArray(parsed)) throw new Error("문항은 배열 [] 형태여야 합니다.");
+        const next = mergeDailyMiniBank({[level]: {[type]: parsed}});
+        dailyMiniQuestionBank[level][type] = next[level][type];
+        persistDailyMiniBank();
+        renderDailyMiniAdminPreview();
+        alert("Daily 미니테스트 문항을 저장했습니다.");
+      } catch (error) {
+        alert(`저장 실패: ${error.message}`);
+      }
+    }
+
+    function resetDailyMiniAdminBank() {
+      if (!confirm("현재 선택한 수준/유형 문항을 기본 문항으로 되돌릴까요?")) return;
+      const level = document.getElementById("dailyMiniAdminLevel")?.value || "초저";
+      const type = document.getElementById("dailyMiniAdminType")?.value || "listening";
+      dailyMiniQuestionBank[level][type] = defaultDailyMiniQuestionBank()[level][type];
+      persistDailyMiniBank();
+      loadDailyMiniAdminEditor();
     }
 
     function renderDashboard() {
@@ -4816,6 +5350,21 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       if (!select?.value) return;
       const student = students.find(s => String(s.id) === String(select.value));
       if (student) document.getElementById("dailyReportPhone").value = student.phone || "";
+      const miniSelect = document.getElementById("dailyMiniStudent");
+      if (miniSelect) miniSelect.value = select.value;
+    }
+
+    function syncDailyMiniStudentToReport() {
+      const miniSelect = document.getElementById("dailyMiniStudent");
+      const reportSelect = document.getElementById("dailyReportStudent");
+      if (!miniSelect?.value || !reportSelect) return;
+      reportSelect.value = miniSelect.value;
+      syncDailyReportStudent();
+    }
+
+    function latestDailyMiniResultForStudent(studentId, date) {
+      const sameStudent = dailyMiniTests.filter(record => String(record.studentId) === String(studentId));
+      return sameStudent.find(record => !date || record.date === date) || sameStudent[0] || null;
     }
 
     function generateDailyFeedback() {
@@ -4827,7 +5376,11 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       const improve = document.getElementById("dailyImprove").value.trim() || "오늘 배운 내용을 짧게 한 번 더 복습하면 학습 효과가 더 좋아집니다.";
       const next = document.getElementById("dailyNext").value.trim() || "오늘 배운 내용과 단어를 복습해 주세요.";
       const videoUrl = document.getElementById("dailyVideoUrl").value.trim();
-      const body = `안녕하세요. 벌교미래엔영어입니다.\n\n${date} ${student.name} 학생 데일리리포트입니다.\n\n[오늘의 학습]\n${learning}\n\n[잘한 점]\n${strength}\n\n[보완할 점]\n${improve}\n\n[과제·다음 계획]\n${next}${videoUrl ? `\n\n[수업 영상 보기]\n${videoUrl}` : ""}\n\n오늘도 아이의 작은 성장을 꼼꼼히 살피겠습니다. 감사합니다.`;
+      const testResult = latestDailyMiniResultForStudent(student.id, date);
+      const testSection = testResult
+        ? `\n\n[Daily CBT 영역별 결과]\n· 수준: ${testResult.level}\n· 유형: ${testResult.type}\n${dailyMiniAreaSummary(testResult)}\n· 종합: ${testResult.score}점 (${testResult.correct}/${testResult.total})\n· 평가: ${testResult.memo}`
+        : "\n\n[Daily CBT 영역별 결과]\n오늘 저장된 테스트 결과가 없습니다.";
+      const body = `안녕하세요. 벌교미래엔영어입니다.\n\n${date} ${student.name} 학생 데일리리포트입니다.\n\n[오늘의 학습]\n${learning}\n\n[잘한 점]\n${strength}\n\n[보완할 점]\n${improve}\n\n[과제·다음 계획]\n${next}${testSection}${videoUrl ? `\n\n[수업 영상 보기]\n${videoUrl}` : ""}\n\n오늘도 아이의 작은 성장을 꼼꼼히 살피겠습니다. 감사합니다.`;
       document.getElementById("dailyFeedback").value = body;
       return body;
     }
@@ -8678,6 +9231,12 @@ ${report.ai_generated_comment}
       renderTextbookInventory();
       renderMessages();
       renderAcademySchedule();
+      renderDailyMiniTest();
+      if (document.getElementById("dailyMiniAdminJson") && !document.getElementById("dailyMiniAdminJson").value) {
+        loadDailyMiniAdminEditor();
+      } else {
+        renderDailyMiniAdminPreview();
+      }
       if (persist) scheduleDashboardPersistence();
     }
 

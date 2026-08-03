@@ -35,7 +35,9 @@ async function notifyParent(student, status, timeText, dateText) {
     "#{학생명}": student.name || "학생",
     "#{출결상태}": status,
     "#{출결시간}": timeText,
-    "#{날짜}": dateText
+    "#{날짜}": dateText,
+    "#{내용}": `${dateText} ${timeText} 학생 휴대폰 출결체크 자동 기록`,
+    "#{보강안내}": "필요한 경우 학원에서 별도로 안내드리겠습니다."
   };
 
   try {

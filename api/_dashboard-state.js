@@ -8,7 +8,9 @@ export const emptyState = () => ({
   messages: [],
   smsContentTemplates: [],
   attendanceRecords: [],
-  academySchedules: []
+  academySchedules: [],
+  dailyMiniTests: [],
+  dailyMiniBank: {}
 });
 
 export async function readPersistentState() {
@@ -18,7 +20,8 @@ export async function readPersistentState() {
   }
   const result = await get(STATE_PATH, {access: "private"});
   if (!result?.stream) return emptyState();
-  return JSON.parse(await new Response(result.stream).text());
+  const stored = JSON.parse(await new Response(result.stream).text());
+  return {...emptyState(), ...stored};
 }
 
 export async function writePersistentState(state) {

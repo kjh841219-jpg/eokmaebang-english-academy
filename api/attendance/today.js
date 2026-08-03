@@ -15,7 +15,9 @@ export default async function handler(req, res) {
   return sendJson(res, 200, {
     ok: true,
     date: new Date().toLocaleDateString("en-CA", {timeZone: "Asia/Seoul"}),
-    studentUrl: `${origin}/student_attendance.html`,
-    localUrl: `${origin}/student_attendance.html`
+    studentUrl: `${origin}/student-attendance`,
+    localUrl: `${origin}/student-attendance`,
+    dailyCbtStudentUrl: `${origin}/daily-cbt`,
+    dailyCbtLocalUrl: `${origin}/daily-cbt`
   });
 }

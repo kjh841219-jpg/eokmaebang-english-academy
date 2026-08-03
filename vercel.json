@@ -1,4 +1,10 @@
 {
+  "rewrites": [
+    {"source": "/student-attendance", "destination": "/student_attendance.html"},
+    {"source": "/attendance-app", "destination": "/student_attendance.html"},
+    {"source": "/daily-cbt", "destination": "/daily_cbt.html"},
+    {"source": "/daily-report-cbt", "destination": "/daily_cbt.html"}
+  ],
   "functions": {
     "api/**/*.js": {
       "maxDuration": 60

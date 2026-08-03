@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>벌교미래엔영어 Daily CBT</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Malgun Gothic", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(180deg, #eefaf5 0%, #f7fbff 100%);
+      color: #09231b;
+    }
+    main { width: min(760px, 100%); margin: 0 auto; padding: 28px 16px 48px; }
+    .brand { display: inline-flex; padding: 8px 14px; border-radius: 999px; background: #dff8ea; color: #076046; font-weight: 800; font-size: 13px; }
+    h1 { margin: 14px 0 8px; font-size: clamp(28px, 7vw, 42px); letter-spacing: 0; }
+    .sub { margin: 0 0 18px; color: #52665e; line-height: 1.55; }
+    .panel, .question, .result {
+      background: #fff;
+      border: 1px solid #cfe5da;
+      border-radius: 18px;
+      box-shadow: 0 18px 45px rgba(12, 74, 55, .08);
+      padding: 18px;
+    }
+    .meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+    .meta div { background: #f4fbf8; border: 1px solid #d9eee5; border-radius: 12px; padding: 11px; }
+    .meta b { display: block; font-size: 12px; color: #527163; margin-bottom: 4px; }
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-weight: 800;
+      font-size: 16px;
+      cursor: pointer;
+      min-height: 50px;
+    }
+    .primary { background: #08764f; color: #fff; flex: 1; }
+    .ghost { background: #edf7f3; color: #073f2d; border: 1px solid #bcded0; }
+    .question { margin: 14px 0; break-inside: avoid; }
+    .q-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin-bottom: 10px; }
+    .pill { border-radius: 999px; padding: 6px 10px; background: #eaf7ff; color: #075985; font-size: 12px; font-weight: 800; white-space: nowrap; }
+    .prompt { white-space: pre-line; line-height: 1.6; font-weight: 750; }
+    .listen { margin: 10px 0; background: #eefaf5; color: #064e3b; border: 1px solid #cdece0; }
+    label.choice {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      border: 1px solid #d8e7df;
+      border-radius: 14px;
+      padding: 12px;
+      margin: 9px 0;
+      background: #fff;
+      line-height: 1.45;
+    }
+    input[type="radio"] { margin-top: 3px; transform: scale(1.15); }
+    .notice { margin-top: 14px; padding: 14px; border-radius: 14px; background: #fff8dd; border: 1px solid #ead083; color: #6b4e03; line-height: 1.55; }
+    .result { margin-top: 18px; border-color: #9bd6be; background: #f8fffb; }
+    .hidden { display: none; }
+    .error { color: #b42318; background: #fff1f0; border-color: #ffb4ad; }
+    @media (max-width: 560px) {
+      main { padding-top: 22px; }
+      .meta { grid-template-columns: 1fr; }
+      .toolbar { flex-direction: column; }
+      button { width: 100%; }
+      .panel, .question, .result { border-radius: 16px; padding: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <span class="brand">벌교미래엔영어</span>
+    <h1>Daily CBT</h1>
+    <p class="sub">문제를 풀고 제출하면 학원 대시보드 Daily 미니테스트 기록에 자동 반영됩니다.</p>
+
+    <section class="panel">
+      <div class="meta">
+        <div><b>학생</b><span id="studentName">불러오는 중</span></div>
+        <div><b>수준 / 유형</b><span id="testMeta">-</span></div>
+      </div>
+      <div class="notice" id="statusBox">문항을 준비하고 있습니다.</div>
+    </section>
+
+    <form id="testForm"></form>
+    <div class="toolbar">
+      <button type="button" class="primary" onclick="submitDailyCbt()">제출하기</button>
+      <button type="button" class="ghost" onclick="window.location.reload()">다시 불러오기</button>
+    </div>
+    <section id="resultBox" class="result hidden"></section>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const levelLabels = ["초저", "초중", "초고", "중1", "중2", "중3", "고등"];
+    const typeLabels = {listening: "듣기", vocab: "단어", reading: "리딩", daily: "Daily 통합"};
+    const state = {
+      students: [],
+      student: null,
+      level: params.get("level") || "초저",
+      type: params.get("type") || "daily",
+      questions: []
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[char]));
+    }
+
+    function defaultBank() {
+      const profiles = {
+        초저: ["apple", "사과", "I like apples.", "I have a red apple.", "Tom has a red bag. He puts a book in it."],
+        초중: ["library", "도서관", "She goes to the library.", "Mina reads a book at the library.", "Jina visits the library after school. She reads a storybook and borrows one book."],
+        초고: ["carefully", "조심스럽게", "He reads carefully.", "Kevin checks his homework carefully.", "Kevin wanted to finish his science poster. He checked each sentence carefully."],
+        중1: ["promise", "약속하다", "I promised to help my friend.", "I promised to bring my English notebook tomorrow.", "Mina promised to help her group. She finished her part first."],
+        중2: ["environment", "환경", "We should protect the environment.", "The students talked about ways to protect the environment.", "Many students wanted to reduce plastic waste. They brought their own cups."],
+        중3: ["responsible", "책임감 있는", "A responsible student plans ahead.", "A responsible student checks the deadline before starting homework.", "Although the project was difficult, Eric made a plan and finished it on time."],
+        고등: ["analyze", "분석하다", "Students should analyze the writer's purpose.", "The teacher asked us to analyze the writer's purpose and evidence.", "When readers analyze an article, they should examine how details support the writer's purpose."]
+      };
+      const bank = {};
+      levelLabels.forEach(level => {
+        const [word, meaning, sentence, script, reading] = profiles[level] || profiles.초저;
+        bank[level] = {
+          listening: [
+            {script, prompt: "들은 내용과 일치하는 것을 고르세요.", choices: [script, "The student forgot everything.", "The class was canceled.", "The teacher was absent."], answer: "1", explanation: "듣기 문장의 핵심 내용과 일치합니다."},
+            {script, prompt: "들은 문장의 핵심 단어로 알맞은 것은?", choices: [word, "ticket", "weather", "kitchen"], answer: "1", explanation: `핵심 단어는 ${word}입니다.`},
+            {script, prompt: "들은 문장의 주제로 가장 알맞은 것은?", choices: ["학습과 준비", "음식 주문", "여행 예약", "경기 결과"], answer: "1", explanation: "문장 전체의 주제를 파악합니다."},
+            {script, prompt: "들은 내용의 목적으로 알맞은 것은?", choices: ["정보 전달 또는 준비 확인", "가격 흥정", "초대 거절", "날씨 예보"], answer: "1", explanation: "말하는 목적을 확인합니다."},
+            {script, prompt: "들은 문장 뒤에 이어질 반응으로 자연스러운 것은?", choices: ["Okay, I will remember that.", "The window eats lunch.", "Yesterday is a pencil.", "No one can read water."], answer: "1", explanation: "상황에 맞는 자연스러운 반응입니다."}
+          ],
+          vocab: [
+            {prompt: `"${word}"의 뜻으로 알맞은 것을 고르세요.`, choices: [meaning, "창문", "갑자기", "예약하다"], answer: "1", explanation: `${word}의 뜻은 ${meaning}입니다.`},
+            {prompt: `빈칸에 알맞은 단어를 고르세요.\n${sentence.replace(word, "_____")}`, choices: [word, "chair", "blue", "under"], answer: "1", explanation: "문맥상 핵심 단어가 들어갑니다."},
+            {prompt: `"${word}"를 사용한 문장으로 가장 자연스러운 것은?`, choices: [sentence, "She blue under.", "The table runs an idea.", "Winter spoon arrives."], answer: "1", explanation: "단어의 실제 문장 쓰임을 봅니다."},
+            {prompt: `우리말 "${meaning}"에 해당하는 영어 단어는?`, choices: [word, "window", "slowly", "arrive"], answer: "1", explanation: `정답은 ${word}입니다.`},
+            {prompt: "문맥상 가장 어울리는 단어를 고르세요.", choices: [word, "noise", "spoon", "winter"], answer: "1", explanation: "학습 문맥에 맞는 단어를 고릅니다."}
+          ],
+          reading: [
+            {prompt: `${reading}\n\n글의 중심 내용으로 알맞은 것은?`, choices: ["학생이 스스로 학습하거나 준비한다.", "학생이 길을 잃는다.", "비가 많이 온다.", "동물이 도망간다."], answer: "1", explanation: "글 전체의 중심 내용을 찾습니다."},
+            {prompt: `${reading}\n\n글의 내용과 일치하는 것은?`, choices: ["주인공은 과제를 확인하거나 읽는다.", "주인공은 아무것도 하지 않는다.", "수업은 모두 취소된다.", "친구가 모두 결석한다."], answer: "1", explanation: "본문 근거와 일치합니다."},
+            {prompt: `${reading}\n\n글을 읽고 추론할 수 있는 내용은?`, choices: ["주인공은 책임감 있게 행동한다.", "주인공은 항상 늦는다.", "주인공은 책을 싫어한다.", "주인공은 시험을 보지 않는다."], answer: "1", explanation: "행동을 바탕으로 태도를 추론합니다."},
+            {prompt: `${reading}\n\n주인공의 태도로 알맞은 것은?`, choices: ["성실하고 계획적이다.", "무관심하고 게으르다.", "화를 잘 낸다.", "규칙을 지키지 않는다."], answer: "1", explanation: "본문 행동에 근거합니다."},
+            {prompt: `${reading}\n\n글의 제목으로 가장 알맞은 것은?`, choices: ["작은 준비가 만드는 성장", "갑작스러운 여행", "비 오는 운동장", "맛있는 저녁 식사"], answer: "1", explanation: "중심 내용을 아우르는 제목입니다."}
+          ]
+        };
+      });
+      return bank;
+    }
+
+    function seededShuffle(items) {
+      const seedText = params.get("seed") || `${state.level}-${state.type}`;
+      let seed = 0;
+      for (const char of seedText) seed = (seed * 31 + char.charCodeAt(0)) >>> 0;
+      const next = () => {
+        seed = (seed * 1664525 + 1013904223) >>> 0;
+        return seed / 4294967296;
+      };
+      const copy = items.slice();
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(next() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function chooseQuestions(bank) {
+      const levelBank = bank[state.level] || bank.초저 || defaultBank().초저;
+      const pickArea = area => seededShuffle((levelBank[area] || []).map((item, index) => ({...item, area, key: `${area}-${index}`}))).slice(0, 5);
+      const selected = state.type === "daily" ? [...pickArea("listening"), ...pickArea("vocab"), ...pickArea("reading")] : pickArea(state.type);
+      state.questions = selected.map((item, index) => {
+        const correctIndex = Math.max(0, Number(item.answer || 1) - 1);
+        const choices = (item.choices || []).map((choice, i) => ({choice, correct: i === correctIndex}));
+        const shuffled = seededShuffle(choices);
+        return {...item, number: index + 1, choices: shuffled.map(entry => entry.choice), answer: String(shuffled.findIndex(entry => entry.correct) + 1)};
+      });
+    }
+
+    function renderQuestions() {
+      document.getElementById("studentName").textContent = state.student?.name || params.get("name") || "학생";
+      document.getElementById("testMeta").textContent = `${state.level} / ${typeLabels[state.type] || state.type}`;
+      document.getElementById("statusBox").textContent = `총 ${state.questions.length}문항입니다. 답을 고른 뒤 제출하기를 눌러 주세요.`;
+      document.getElementById("testForm").innerHTML = state.questions.map((q, index) => `
+        <article class="question">
+          <div class="q-head"><b>CBT ${index + 1}번</b><span class="pill">${escapeHtml(typeLabels[q.area] || q.area || state.type)}</span></div>
+          ${q.script ? `<button type="button" class="listen" onclick="speakText(${index})">듣기 재생</button>` : ""}
+          <div class="prompt">${escapeHtml(q.prompt)}</div>
+          ${(q.choices || []).map((choice, choiceIndex) => `
+            <label class="choice">
+              <input type="radio" name="answer${index}" value="${choiceIndex + 1}" />
+              <span>${choiceIndex + 1}. ${escapeHtml(choice)}</span>
+            </label>
+          `).join("")}
+        </article>
+      `).join("");
+    }
+
+    function speakText(index) {
+      const script = state.questions[index]?.script || "";
+      if (!script || !("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(script);
+      utterance.lang = "en-US";
+      utterance.rate = .82;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    async function loadDailyCbt() {
+      try {
+        const response = await fetch("/api/dashboard/state", {cache: "no-store"});
+        const data = await response.json();
+        if (data.ok) {
+          state.students = Array.isArray(data.students) ? data.students : [];
+          state.student = state.students.find(item => String(item.id) === String(params.get("studentId"))) || null;
+          chooseQuestions(Object.keys(data.dailyMiniBank || {}).length ? data.dailyMiniBank : defaultBank());
+        } else {
+          throw new Error(data.error || "state error");
+        }
+      } catch {
+        chooseQuestions(defaultBank());
+        document.getElementById("statusBox").className = "notice error";
+        document.getElementById("statusBox").textContent = "서버 기록을 불러오지 못해 기본 문항으로 표시합니다. 제출 기록은 이 기기에만 임시 저장될 수 있습니다.";
+      }
+      renderQuestions();
+    }
+
+    async function submitDailyCbt() {
+      let correct = 0;
+      const areas = {};
+      state.questions.forEach((q, index) => {
+        const answer = document.querySelector(`input[name="answer${index}"]:checked`)?.value || "";
+        const area = q.area || state.type;
+        if (!areas[area]) areas[area] = {correct: 0, total: 0, score: 0};
+        areas[area].total += 1;
+        if (answer === String(q.answer)) {
+          correct += 1;
+          areas[area].correct += 1;
+        }
+      });
+      Object.values(areas).forEach(area => {
+        area.score = area.total ? Math.round((area.correct / area.total) * 100) : 0;
+      });
+      const total = state.questions.length;
+      const score = total ? Math.round((correct / total) * 100) : 0;
+      const now = new Date();
+      const record = {
+        date: now.toISOString().slice(0, 10),
+        time: now.toTimeString().slice(0, 5),
+        studentId: state.student?.id || params.get("studentId") || "",
+        name: state.student?.name || params.get("name") || "학생",
+        phone: state.student?.phone || "",
+        level: state.level,
+        type: typeLabels[state.type] || state.type,
+        typeKey: state.type,
+        score,
+        correct,
+        total,
+        areas,
+        memo: score >= 80 ? "안정" : "보완필요",
+        source: "url-cbt"
+      };
+      let saved = false;
+      try {
+        const response = await fetch("/api/daily-mini/submit", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(record)
+        });
+        const data = await response.json();
+        saved = response.ok && data.ok;
+      } catch {}
+      if (!saved) {
+        const local = JSON.parse(localStorage.getItem("beolgyo-daily-cbt-submissions") || "[]");
+        local.unshift(record);
+        localStorage.setItem("beolgyo-daily-cbt-submissions", JSON.stringify(local.slice(0, 50)));
+      }
+      document.getElementById("resultBox").classList.remove("hidden");
+      document.getElementById("resultBox").innerHTML = `
+        <h2>제출 완료</h2>
+        <p><b>${escapeHtml(record.name)}</b> 학생 점수는 <b>${score}점</b>입니다. (${correct}/${total})</p>
+        <p>${saved ? "학원 대시보드 Daily 미니테스트 기록에 반영되었습니다." : "서버 연결이 되지 않아 이 기기에 임시 저장되었습니다. 학원에 제출 완료 화면을 보여 주세요."}</p>
+      `;
+      window.scrollTo({top: document.body.scrollHeight, behavior: "smooth"});
+    }
+
+    loadDailyCbt();
+  </script>
+</body>
+</html>

@@ -4,6 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0f5d41" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="벌교 출결" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="manifest" href="/student-attendance.webmanifest" />
+  <link rel="icon" href="/attendance-icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/attendance-icon.svg" />
   <title>벌교미래엔영어 학생 출결체크</title>
   <style>
     :root {
@@ -314,6 +321,10 @@
     document.getElementById("last4").addEventListener("input", event => {
       event.target.value = event.target.value.replace(/[^0-9]/g, "").slice(0, 4);
     });
+
+    if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+      navigator.serviceWorker.register("/attendance-sw.js").catch(() => {});
+    }
   </script>
 </body>
 </html>

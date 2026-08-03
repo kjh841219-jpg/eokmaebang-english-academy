@@ -24,7 +24,9 @@ export default async function handler(req, res) {
         messages: Array.isArray(data.messages) ? data.messages : [],
         smsContentTemplates: Array.isArray(data.smsContentTemplates) ? data.smsContentTemplates : [],
         attendanceRecords: Array.isArray(data.attendanceRecords) ? data.attendanceRecords : [],
-        academySchedules: Array.isArray(data.academySchedules) ? data.academySchedules : []
+        academySchedules: Array.isArray(data.academySchedules) ? data.academySchedules : [],
+        dailyMiniTests: Array.isArray(data.dailyMiniTests) ? data.dailyMiniTests : [],
+        dailyMiniBank: data.dailyMiniBank && typeof data.dailyMiniBank === "object" ? data.dailyMiniBank : {}
       };
       await writePersistentState(state);
       const messageIds = {};
