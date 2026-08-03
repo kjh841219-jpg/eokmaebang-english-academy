@@ -165,7 +165,8 @@
 
   <script>
     const PUBLIC_API_BASE = "https://beolgyo-miraen-growth-api.vercel.app";
-    const API_BASE = location.hostname.endsWith("vercel.app") ? "" : PUBLIC_API_BASE;
+    const LOCAL_API_BASE = "http://127.0.0.1:8789";
+    const API_BASE = location.hostname.endsWith("vercel.app") ? "" : LOCAL_API_BASE;
     const DASHBOARD_URL = `${PUBLIC_API_BASE}/?page=homeworkSubmit`;
     const APP_VERSION = "2026-08-03-storage-diagnostic-v3";
     const params = new URLSearchParams(location.search);
