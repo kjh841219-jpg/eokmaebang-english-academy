@@ -3294,12 +3294,12 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
         const p = profiles[level];
         bank[level] = {
           listening: [
-            {script: p.script, prompt: "들은 내용과 일치하는 것을 고르세요.", choices: [p.script, "The student forgot everything.", "The class was canceled.", "The teacher was absent."], answer: "1", explanation: "스크립트의 핵심 내용과 같은 문장을 고릅니다."},
+            {script: p.script, prompt: "들은 내용의 핵심 정보로 알맞은 것은?", choices: ["말하는 사람이 가진 물건이나 한 행동", "취소된 수업 안내", "잃어버린 표 이야기", "주말 날씨 예보"], answer: "1", explanation: "들은 문장에서 실제로 언급된 행동이나 대상을 확인합니다."},
             {script: p.script, prompt: "들은 문장의 핵심 단어로 알맞은 것은?", choices: [p.word, "ticket", "weather", "kitchen"], answer: "1", explanation: `핵심 단어는 ${p.word}입니다.`},
-            {script: p.script, prompt: "들은 내용의 분위기로 가장 알맞은 것은?", choices: ["학습과 준비", "운동 경기", "음식 주문", "여행 예약"], answer: "1", explanation: "학습 또는 준비 상황을 말하고 있습니다."},
-            {script: p.script, prompt: "들은 문장에서 말하는 사람의 행동으로 알맞은 것은?", choices: ["학습 내용을 확인하거나 준비한다.", "운동장을 달린다.", "음식을 주문한다.", "여행 가방을 싼다."], answer: "1", explanation: "듣기 문장의 핵심 행동을 확인합니다."},
+            {script: p.script, prompt: "들은 내용의 상황으로 가장 알맞은 것은?", choices: ["학습과 준비", "운동 경기", "음식 주문", "여행 예약"], answer: "1", explanation: "학습 또는 준비 상황을 말하고 있습니다."},
+            {script: p.script, prompt: "말하는 사람 또는 주인공의 행동으로 알맞은 것은?", choices: ["학습 내용을 확인하거나 준비한다.", "운동장을 달린다.", "음식을 주문한다.", "여행 가방을 싼다."], answer: "1", explanation: "듣기 문장의 핵심 행동을 확인합니다."},
             {script: p.script, prompt: "들은 문장의 주제로 가장 알맞은 것은?", choices: ["공부와 책임감", "날씨 변화", "교통수단", "취미 운동"], answer: "1", explanation: "문장 전체의 주제를 파악합니다."}
-            ,{script: p.script2, prompt: "들은 내용과 일치하는 것을 고르세요.", choices: [p.script2, "The plan was completely canceled.", "Nobody knew where to meet.", "The speaker forgot the task."], answer: "1", explanation: "시간·장소·행동과 같은 핵심 정보를 정확히 듣습니다."}
+            ,{script: p.script2, prompt: "들은 내용의 핵심 정보로 알맞은 것은?", choices: ["정해진 행동이나 계획을 실천하는 내용", "계획이 완전히 취소된 내용", "장소를 아무도 모르는 내용", "해야 할 일을 잊어버린 내용"], answer: "1", explanation: "시간·장소·행동과 같은 핵심 정보를 정확히 듣습니다."}
             ,{script: p.script2, prompt: "말하는 사람이 강조하는 행동으로 가장 알맞은 것은?", choices: ["미리 준비하거나 정해진 행동을 실천하는 것", "계획 없이 기다리는 것", "약속을 취소하는 것", "도움을 거절하는 것"], answer: "1", explanation: "문장의 핵심 동사와 목적어를 연결해 의미를 파악합니다."}
             ,{script: p.script2, prompt: "들은 문장 뒤에 이어질 반응으로 가장 자연스러운 것은?", choices: ["Okay, I will remember that.", "No, the weather is a pencil.", "I never have a yesterday.", "The window eats lunch."], answer: "1", explanation: "상황과 의도에 맞는 자연스러운 응답을 고릅니다."}
             ,{script: p.script2, prompt: "들은 내용의 목적을 고르세요.", choices: ["정보를 알려 주거나 행동을 요청하기 위해", "과거의 실수를 비난하기 위해", "물건의 가격을 흥정하기 위해", "경기 결과를 발표하기 위해"], answer: "1", explanation: "표현의 기능과 말하는 목적을 함께 확인합니다."}

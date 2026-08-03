@@ -12,26 +12,43 @@
       background: linear-gradient(180deg, #eefaf5 0%, #f7fbff 100%);
       color: #09231b;
     }
-    main { width: min(820px, 100%); margin: 0 auto; padding: 26px 16px 48px; }
+    main { width: min(860px, 100%); margin: 0 auto; padding: 26px 16px 52px; }
     .brand { display: inline-flex; padding: 8px 14px; border-radius: 999px; background: #dff8ea; color: #076046; font-weight: 900; font-size: 13px; }
     h1 { margin: 14px 0 8px; font-size: clamp(28px, 7vw, 42px); letter-spacing: 0; }
+    h2 { margin: 0 0 12px; font-size: 22px; }
     .sub { margin: 0 0 18px; color: #52665e; line-height: 1.55; }
     .panel, .question, .result {
-      background: #fff; border: 1px solid #cfe5da; border-radius: 18px;
-      box-shadow: 0 18px 45px rgba(12, 74, 55, .08); padding: 18px;
+      background: #fff;
+      border: 1px solid #cfe5da;
+      border-radius: 18px;
+      box-shadow: 0 18px 45px rgba(12, 74, 55, .08);
+      padding: 18px;
     }
     .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
     label { display: block; font-size: 12px; color: #527163; font-weight: 900; }
     select {
-      width: 100%; margin-top: 6px; border: 1px solid #c9e2d7; border-radius: 12px;
-      padding: 12px; background: #fbfffd; font-size: 15px; color: #10261d;
+      width: 100%;
+      margin-top: 6px;
+      border: 1px solid #c9e2d7;
+      border-radius: 12px;
+      padding: 12px;
+      background: #fbfffd;
+      font-size: 15px;
+      color: #10261d;
     }
     .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
     button {
-      border: 0; border-radius: 14px; padding: 14px 16px;
-      font-weight: 900; font-size: 16px; cursor: pointer; min-height: 50px;
+      border: 0;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-weight: 900;
+      font-size: 16px;
+      cursor: pointer;
+      min-height: 50px;
     }
     .primary { background: #08764f; color: #fff; flex: 1; }
+    .blue { background: #2563eb; color: #fff; }
+    .amber { background: #b7791f; color: #fff; }
     .ghost { background: #edf7f3; color: #073f2d; border: 1px solid #bcded0; }
     .question { margin: 14px 0; break-inside: avoid; }
     .q-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin-bottom: 10px; }
@@ -39,15 +56,26 @@
     .prompt { white-space: pre-line; line-height: 1.6; font-weight: 800; }
     .listen { margin: 10px 0; background: #eefaf5; color: #064e3b; border: 1px solid #cdece0; }
     label.choice {
-      display: flex; align-items: flex-start; gap: 10px; border: 1px solid #d8e7df;
-      border-radius: 14px; padding: 12px; margin: 9px 0; background: #fff; line-height: 1.45;
-      color: #13251d; font-size: 15px; font-weight: 700;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      border: 1px solid #d8e7df;
+      border-radius: 14px;
+      padding: 12px;
+      margin: 9px 0;
+      background: #fff;
+      line-height: 1.45;
+      color: #13251d;
+      font-size: 15px;
+      font-weight: 700;
     }
     input[type="radio"] { margin-top: 3px; transform: scale(1.15); }
     .notice { margin-top: 14px; padding: 14px; border-radius: 14px; background: #fff8dd; border: 1px solid #ead083; color: #6b4e03; line-height: 1.55; }
+    .ok { background: #eefbf3; border-color: #b8e6c8; color: #065f46; }
+    .error { color: #b42318; background: #fff1f0; border-color: #ffb4ad; }
     .result { margin-top: 18px; border-color: #9bd6be; background: #f8fffb; }
     .hidden { display: none; }
-    .error { color: #b42318; background: #fff1f0; border-color: #ffb4ad; }
+    .mini { color: #60756c; font-size: 13px; line-height: 1.5; }
     @media (max-width: 680px) {
       main { padding-top: 22px; }
       .grid { grid-template-columns: 1fr; }
@@ -61,14 +89,14 @@
   <main>
     <span class="brand">벌교미래엔영어</span>
     <h1>Daily CBT</h1>
-    <p class="sub">학생 이름과 레벨을 확인한 뒤 문제를 풀어 주세요. 제출하면 학원 대시보드 Daily 미니테스트 기록에 반영됩니다.</p>
+    <p class="sub">학생 이름, 수준, 유형을 확인한 뒤 문제를 풀어 주세요. 제출 후 결과를 학부모님께 카카오 또는 문자로 바로 전송할 수 있습니다.</p>
 
     <section class="panel">
       <div class="grid">
         <label>학생 이름
           <select id="studentSelect" onchange="selectStudentFromDropdown()"></select>
         </label>
-        <label>레벨
+        <label>수준
           <select id="levelSelect" onchange="resetQuestions()"></select>
         </label>
         <label>유형
@@ -79,6 +107,10 @@
             <option value="reading">리딩</option>
           </select>
         </label>
+      </div>
+      <div class="toolbar">
+        <button type="button" class="blue" onclick="sendCurrentCbtLink('kakao')">CBT 링크 카카오 전송</button>
+        <button type="button" class="amber" onclick="sendCurrentCbtLink('sms')">CBT 링크 문자 전송</button>
       </div>
       <div class="notice" id="statusBox">학생 목록과 문제를 불러오는 중입니다.</div>
     </section>
@@ -97,14 +129,15 @@
     const params = new URLSearchParams(location.search);
     const levelLabels = ["초저", "초중", "초고", "중1", "중2", "중3", "고등"];
     const typeLabels = {listening: "듣기", vocab: "단어", reading: "리딩", daily: "Daily 통합"};
+    const areaLabels = {listening: "듣기", vocab: "단어", reading: "리딩"};
     const state = {
       students: [],
       student: null,
       level: params.get("level") || "초저",
       type: params.get("type") || "daily",
-      bank: null,
       questions: [],
-      seed: params.get("seed") || String(Date.now())
+      seed: params.get("seed") || String(Date.now()),
+      lastRecord: null
     };
 
     function apiUrl(path) {
@@ -115,47 +148,113 @@
       return String(value ?? "").replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[char]));
     }
 
+    function cleanPhone(value) {
+      return String(value || "").replace(/[^0-9]/g, "");
+    }
+
     function defaultStudents() {
       const rows = [
         ["김정해", "-", "010-4032-2588", "010-4032-2588"],
         ["박세훈", "-", "010-6670-7898", "-"],
         ["박애은", "-", "010-9761-0517", "010-5424-7898"]
       ];
-      return rows.map((row, index) => ({id: index + 1, name: row[0], school: row[1] === "-" ? "" : row[1], phone: row[2], studentPhone: row[3] === "-" ? "" : row[3], classGroup: "초등반"}));
+      return rows.map((row, index) => ({
+        id: index + 1,
+        name: row[0],
+        school: row[1] === "-" ? "" : row[1],
+        phone: row[2],
+        studentPhone: row[3] === "-" ? "" : row[3],
+        classGroup: "초등반"
+      }));
+    }
+
+    function listeningSet(level) {
+      const map = {
+        "초저": [
+          ["I have a red pencil in my bag.", "말하는 사람이 가지고 있는 것은 무엇인가요?", ["a red pencil", "a blue cup", "a yellow ball", "a green ruler"], "1", "red pencil을 들을 수 있습니다."],
+          ["The cat is under the chair.", "고양이는 어디에 있나요?", ["under the chair", "on the desk", "in the box", "near the door"], "1", "under the chair가 위치 정보입니다."],
+          ["Mina likes apples, but she does not like bananas.", "Mina가 좋아하는 것은 무엇인가요?", ["apples", "bananas", "milk", "bread"], "1", "likes apples가 핵심입니다."],
+          ["Please open your book to page ten.", "선생님이 부탁한 행동은 무엇인가요?", ["open the book", "close the window", "write a name", "draw a cat"], "1", "open your book을 들어야 합니다."],
+          ["It is sunny today, so we can play outside.", "오늘 날씨는 어떤가요?", ["sunny", "rainy", "snowy", "windy"], "1", "sunny today가 정답 근거입니다."]
+        ],
+        "초중": [
+          ["Jina goes to the library after school and borrows a storybook.", "Jina가 방과 후에 간 장소는 어디인가요?", ["the library", "the park", "the hospital", "the restaurant"], "1", "goes to the library after school이 핵심입니다."],
+          ["Kevin needs two notebooks and a new pencil for class.", "Kevin에게 필요한 물건이 아닌 것은 무엇인가요?", ["a soccer ball", "two notebooks", "a new pencil", "school supplies"], "1", "soccer ball은 들리지 않았습니다."],
+          ["The students clean the classroom before lunch.", "학생들은 언제 교실을 청소하나요?", ["before lunch", "after dinner", "on Sunday", "at night"], "1", "before lunch를 확인합니다."],
+          ["Sora is late because she missed the bus.", "Sora가 늦은 이유는 무엇인가요?", ["She missed the bus.", "She lost her book.", "She was sick.", "She forgot her homework."], "1", "because she missed the bus가 이유입니다."],
+          ["The boy is asking for directions to the museum.", "소년이 묻고 있는 것은 무엇인가요?", ["directions to the museum", "the price of a ticket", "today's menu", "a phone number"], "1", "asking for directions to the museum이 핵심입니다."]
+        ],
+        "초고": [
+          ["Amy checked her homework carefully before she gave it to her teacher.", "Amy가 숙제를 제출하기 전에 한 행동은 무엇인가요?", ["checked it carefully", "threw it away", "copied her friend's answer", "left it at home"], "1", "checked her homework carefully가 정답입니다."],
+          ["The science club will meet in Room 204 at three thirty.", "과학 동아리 모임 정보로 알맞은 것은 무엇인가요?", ["Room 204 at 3:30", "Room 402 at 2:30", "the library at 3:00", "the gym at 4:30"], "1", "Room 204와 three thirty를 들어야 합니다."],
+          ["Brian cannot join the soccer game because he hurt his ankle.", "Brian이 축구 경기에 참여하지 못하는 이유는 무엇인가요?", ["He hurt his ankle.", "He lost his shoes.", "He has homework.", "He moved away."], "1", "because he hurt his ankle이 이유입니다."],
+          ["The girl suggests taking an umbrella because dark clouds are coming.", "소녀가 우산을 챙기자고 한 이유는 무엇인가요?", ["Dark clouds are coming.", "The sun is bright.", "The store is closed.", "The class is over."], "1", "dark clouds are coming이 근거입니다."],
+          ["They decided to practice the presentation one more time after class.", "그들이 방과 후에 하기로 한 일은 무엇인가요?", ["practice the presentation", "watch a movie", "buy snacks", "clean the playground"], "1", "practice the presentation이 핵심 행동입니다."]
+        ],
+        "중1": [
+          ["The notice says students should bring their English textbook and a blue pen tomorrow.", "안내문에서 내일 가져오라고 한 것은 무엇인가요?", ["an English textbook and a blue pen", "a math workbook and scissors", "a lunch box and water", "a history book and a ruler"], "1", "English textbook과 blue pen을 확인합니다."],
+          ["Yuna chose the smaller bag because it was lighter and easier to carry.", "Yuna가 작은 가방을 고른 이유는 무엇인가요?", ["It was lighter and easier to carry.", "It was more expensive.", "It had many pictures.", "It was her brother's bag."], "1", "because 뒤의 이유를 듣습니다."],
+          ["The teacher asked the class to compare two stories and find the different endings.", "선생님이 요구한 활동은 무엇인가요?", ["compare two stories", "memorize ten words only", "draw a map", "write a shopping list"], "1", "compare two stories가 핵심 활동입니다."],
+          ["Minho usually walks to school, but today he took the subway because of heavy rain.", "오늘 Minho가 지하철을 탄 이유는 무엇인가요?", ["heavy rain", "a broken bike", "a school trip", "a late bus"], "1", "because of heavy rain이 근거입니다."],
+          ["The speaker is explaining how to save energy at home.", "말하는 사람의 주제로 알맞은 것은 무엇인가요?", ["saving energy at home", "choosing a vacation place", "making a sandwich", "joining a music club"], "1", "save energy at home이 주제입니다."]
+        ],
+        "중2": [
+          ["Although the first plan failed, the team discussed the problem and tried another solution.", "팀이 첫 계획 실패 후 한 행동은 무엇인가요?", ["discussed the problem and tried another solution", "stopped the project forever", "blamed only one student", "left the classroom quietly"], "1", "Although 이후 실제 행동을 파악합니다."],
+          ["The speaker recommends this book because it explains difficult science ideas with simple examples.", "화자가 이 책을 추천하는 이유는 무엇인가요?", ["It explains difficult ideas simply.", "It has no pictures.", "It is the cheapest book.", "It was written yesterday."], "1", "because 이하 추천 이유를 듣습니다."],
+          ["If you want to join the volunteer club, submit the form by Friday.", "봉사 동아리에 가입하려면 무엇을 해야 하나요?", ["submit the form by Friday", "pay for a ticket", "call every member", "bring a soccer uniform"], "1", "submit the form by Friday가 조건입니다."],
+          ["The museum guide told visitors not to touch the old paintings.", "방문객이 하지 말아야 할 행동은 무엇인가요?", ["touch the old paintings", "listen to the guide", "look at the pictures", "walk slowly"], "1", "not to touch가 금지 내용입니다."],
+          ["This podcast is mainly about how small habits can change a student's study routine.", "팟캐스트의 중심 내용은 무엇인가요?", ["small habits and study routines", "popular sports rules", "ancient buildings", "a famous restaurant"], "1", "mainly about 이후 중심 내용을 듣습니다."]
+        ],
+        "중3": [
+          ["The article points out that online reviews can be helpful, but they are not always reliable.", "글의 핵심 주장으로 알맞은 것은 무엇인가요?", ["Online reviews are useful but not always reliable.", "All online reviews are perfectly true.", "No one reads online reviews.", "Reviews are only for movies."], "1", "helpful but not always reliable의 균형을 들어야 합니다."],
+          ["The speaker regretted ignoring the advice that his coach had given him before the match.", "화자가 후회한 일은 무엇인가요?", ["ignoring his coach's advice", "winning the match", "arriving too early", "buying new shoes"], "1", "regretted ignoring the advice가 핵심입니다."],
+          ["The project was delayed because the data that the group collected was incomplete.", "프로젝트가 지연된 이유는 무엇인가요?", ["The collected data was incomplete.", "The group finished early.", "The topic was too easy.", "The teacher canceled it."], "1", "because 이하 이유를 듣습니다."],
+          ["The speaker contrasts two opinions before explaining why the second one is more convincing.", "화자의 전개 방식으로 알맞은 것은 무엇인가요?", ["contrasting two opinions", "listing random facts", "telling a joke only", "describing a recipe"], "1", "contrasts two opinions가 전개 방식입니다."],
+          ["Students who revise their essays after receiving feedback usually make clearer arguments.", "피드백 후 글을 고치는 학생들에게 나타나는 결과는 무엇인가요?", ["They make clearer arguments.", "They stop writing.", "They forget the topic.", "They copy the feedback word for word."], "1", "make clearer arguments가 결과입니다."]
+        ],
+        "고등": [
+          ["The lecturer argues that technology itself is not the problem; rather, the way people use it determines its value.", "강연자의 주장으로 알맞은 것은 무엇인가요?", ["The value of technology depends on how people use it.", "Technology is always harmful.", "People should avoid every device.", "Value is unrelated to human choices."], "1", "not the problem, rather the way people use it가 핵심입니다."],
+          ["The experiment was designed to measure whether background music affects short-term memory.", "실험의 목적은 무엇인가요?", ["to measure the effect of music on short-term memory", "to sell music online", "to compare school uniforms", "to introduce a famous singer"], "1", "designed to measure whether가 목적입니다."],
+          ["The speaker implies that saving time is less important than understanding the reason behind a mistake.", "화자가 암시하는 바로 알맞은 것은 무엇인가요?", ["Understanding mistakes matters more than saving time.", "Fast answers are always best.", "Mistakes should be hidden.", "Reasons are not useful."], "1", "less important than 구조를 들어야 합니다."],
+          ["The announcement asks applicants to upload both a resume and a short self-introduction by midnight.", "지원자가 제출해야 하는 것은 무엇인가요?", ["a resume and a short self-introduction", "a photo only", "a long novel", "a school map"], "1", "both A and B 구조를 확인합니다."],
+          ["The researcher warns that a single example cannot prove a general rule.", "연구자가 경고하는 내용은 무엇인가요?", ["One example cannot prove a general rule.", "Every rule has no examples.", "Research is unnecessary.", "Examples are always wrong."], "1", "single example cannot prove a general rule이 핵심입니다."]
+        ]
+      };
+      return map[level] || map["초저"];
     }
 
     function defaultBank() {
-      const profiles = {
-        초저: ["apple", "사과", "I like apples.", "I have a red apple.", "Tom has a red bag. He puts a book in it."],
-        초중: ["library", "도서관", "She goes to the library.", "Mina reads a book at the library.", "Jina visits the library after school. She reads a storybook and borrows one book."],
-        초고: ["carefully", "조심스럽게", "He reads carefully.", "Kevin checks his homework carefully.", "Kevin wanted to finish his science poster. He checked each sentence carefully."],
-        중1: ["promise", "약속하다", "I promised to help my friend.", "I promised to bring my English notebook tomorrow.", "Mina promised to help her group. She finished her part first."],
-        중2: ["environment", "환경", "We should protect the environment.", "The students talked about ways to protect the environment.", "Many students wanted to reduce plastic waste. They brought their own cups."],
-        중3: ["responsible", "책임감 있는", "A responsible student plans ahead.", "A responsible student checks the deadline before starting homework.", "Although the project was difficult, Eric made a plan and finished it on time."],
-        고등: ["analyze", "분석하다", "Students should analyze the writer's purpose.", "The teacher asked us to analyze the writer's purpose and evidence.", "When readers analyze an article, they should examine how details support the writer's purpose."]
+      const profile = {
+        "초저": ["apple", "사과", "I eat an apple after lunch.", "Tom has a red bag. He puts a book in it."],
+        "초중": ["library", "도서관", "She goes to the library on Monday.", "Jina visits the library after school. She reads a storybook and borrows one book."],
+        "초고": ["carefully", "조심스럽게", "Kevin checks his homework carefully.", "Kevin wanted to finish his science poster. He checked each sentence carefully."],
+        "중1": ["promise", "약속하다", "I promised to help my friend.", "Mina promised to help her group. She finished her part first."],
+        "중2": ["environment", "환경", "We should protect the environment.", "Many students wanted to reduce plastic waste. They brought their own cups."],
+        "중3": ["responsible", "책임감 있는", "A responsible student checks the deadline before starting homework.", "Although the project was difficult, Eric made a plan and finished it on time."],
+        "고등": ["analyze", "분석하다", "Students should analyze the writer's purpose.", "When readers analyze an article, they should examine how details support the writer's purpose."]
       };
       const bank = {};
       levelLabels.forEach(level => {
-        const [word, meaning, sentence, script, reading] = profiles[level] || profiles.초저;
+        const [word, meaning, sentence, reading] = profile[level] || profile["초저"];
         bank[level] = {
-          listening: [
-            {script, prompt: "들은 내용과 일치하는 것을 고르세요.", choices: [script, "The student forgot everything.", "The class was canceled.", "The teacher was absent."], answer: "1", explanation: "듣기 문장의 핵심 내용과 일치합니다."},
-            {script, prompt: "들은 문장의 핵심 단어로 알맞은 것은?", choices: [word, "ticket", "weather", "kitchen"], answer: "1", explanation: `핵심 단어는 ${word}입니다.`},
-            {script, prompt: "들은 문장의 주제로 알맞은 것은?", choices: ["학습과 준비", "음식 주문", "여행 예약", "경기 결과"], answer: "1", explanation: "문장 전체의 주제를 파악합니다."},
-            {script, prompt: "들은 내용의 목적으로 알맞은 것은?", choices: ["정보 전달 또는 준비 확인", "가격 흥정", "초대 거절", "농담하기"], answer: "1", explanation: "말하는 목적을 확인합니다."},
-            {script, prompt: "들은 문장 뒤에 이어질 반응으로 자연스러운 것은?", choices: ["Okay, I will remember that.", "The window eats lunch.", "Yesterday is a pencil.", "No one can read water."], answer: "1", explanation: "상황에 맞는 자연스러운 반응입니다."}
-          ],
+          listening: listeningSet(level).map(item => ({
+            script: item[0],
+            prompt: item[1],
+            choices: item[2],
+            answer: item[3],
+            explanation: item[4]
+          })),
           vocab: [
             {prompt: `"${word}"의 뜻으로 알맞은 것을 고르세요.`, choices: [meaning, "창문", "갑자기", "예약하다"], answer: "1", explanation: `${word}의 뜻은 ${meaning}입니다.`},
-            {prompt: `빈칸에 알맞은 단어를 고르세요.\n${sentence.replace(word, "_____")}`, choices: [word, "chair", "blue", "under"], answer: "1", explanation: "문맥에 맞는 단어가 들어갑니다."},
-            {prompt: `"${word}"를 사용한 문장으로 가장 자연스러운 것은?`, choices: [sentence, "She blue under.", "The table runs an idea.", "Winter spoon arrives."], answer: "1", explanation: "단어의 실제 문장 쓰임을 봅니다."},
+            {prompt: `빈칸에 알맞은 단어를 고르세요.\n${sentence.replace(word, "_____")}`, choices: [word, "chair", "blue", "under"], answer: "1", explanation: "문맥에 맞는 단어를 고릅니다."},
+            {prompt: `"${word}"를 사용한 문장으로 가장 자연스러운 것은?`, choices: [sentence, "She blue under.", "The table runs an idea.", "Winter spoon arrives."], answer: "1", explanation: "단어가 문장 속에서 자연스럽게 쓰였습니다."},
             {prompt: `우리말 "${meaning}"에 해당하는 영어 단어는?`, choices: [word, "window", "slowly", "arrive"], answer: "1", explanation: `정답은 ${word}입니다.`},
-            {prompt: "문맥에 가장 어울리는 단어를 고르세요.", choices: [word, "noise", "spoon", "winter"], answer: "1", explanation: "학습 문맥에 맞는 단어를 고릅니다."}
+            {prompt: "문맥상 가장 알맞은 단어를 고르세요.", choices: [word, "noise", "spoon", "winter"], answer: "1", explanation: "학습 문맥에 맞는 단어를 고릅니다."}
           ],
           reading: [
-            {prompt: `${reading}\n\n글의 중심 내용으로 알맞은 것은?`, choices: ["학생이 스스로 학습하거나 준비한다.", "학생이 길을 잃는다.", "비가 많이 온다.", "동물이 도망간다."], answer: "1", explanation: "글 전체의 중심 내용을 찾습니다."},
-            {prompt: `${reading}\n\n글의 내용과 일치하는 것은?`, choices: ["주인공은 과제를 확인하거나 읽는다.", "주인공은 아무것도 하지 않는다.", "수업은 모두 취소되었다.", "친구가 모두 결석했다."], answer: "1", explanation: "본문 근거와 일치합니다."},
-            {prompt: `${reading}\n\n글을 읽고 추론할 수 있는 내용은?`, choices: ["주인공은 책임감 있게 행동한다.", "주인공은 늘 늦는다.", "주인공은 책을 싫어한다.", "주인공은 시험을 보지 않는다."], answer: "1", explanation: "행동을 바탕으로 태도를 추론합니다."},
+            {prompt: `${reading}\n\n글의 중심 내용으로 알맞은 것은?`, choices: ["학생이 스스로 학습하거나 준비한다.", "학생이 길을 잃는다.", "비가 많이 온다.", "형제가 여행을 간다."], answer: "1", explanation: "글 전체의 중심 내용을 찾습니다."},
+            {prompt: `${reading}\n\n글의 내용과 일치하는 것은?`, choices: ["주인공은 과제나 활동을 확인한다.", "주인공은 아무것도 하지 않는다.", "수업은 모두 취소되었다.", "친구가 모두 결석했다."], answer: "1", explanation: "본문 근거와 일치합니다."},
+            {prompt: `${reading}\n\n글을 읽고 추론할 수 있는 내용은?`, choices: ["주인공은 책임감 있게 행동한다.", "주인공은 잠을 잔다.", "주인공은 책을 잃어버린다.", "주인공은 시험을 보지 않는다."], answer: "1", explanation: "행동을 바탕으로 태도를 추론합니다."},
             {prompt: `${reading}\n\n주인공의 태도로 알맞은 것은?`, choices: ["성실하고 계획적이다.", "무례하고 게으르다.", "화를 잘 낸다.", "규칙을 지키지 않는다."], answer: "1", explanation: "본문 행동이 근거입니다."},
             {prompt: `${reading}\n\n글의 제목으로 가장 알맞은 것은?`, choices: ["작은 준비가 만드는 성장", "갑작스러운 여행", "비 오는 운동장", "맛있는 간식 행사"], answer: "1", explanation: "중심 내용을 아우르는 제목입니다."}
           ]
@@ -181,8 +280,7 @@
     }
 
     function chooseQuestions() {
-      const bank = state.bank || defaultBank();
-      const levelBank = bank[state.level] || bank.초저 || defaultBank().초저;
+      const levelBank = defaultBank()[state.level] || defaultBank()["초저"];
       const pickArea = area => shuffle((levelBank[area] || []).map((item, index) => ({...item, area, key: `${area}-${index}`})), area).slice(0, 5);
       const selected = state.type === "daily" ? [...pickArea("listening"), ...pickArea("vocab"), ...pickArea("reading")] : pickArea(state.type);
       state.questions = selected.map((item, index) => {
@@ -216,22 +314,25 @@
       state.level = document.getElementById("levelSelect").value || "초저";
       state.type = document.getElementById("typeSelect").value || "daily";
       state.seed = String(Date.now());
+      state.lastRecord = null;
       chooseQuestions();
       renderQuestions();
       renderStatus();
       document.getElementById("resultBox").classList.add("hidden");
     }
 
-    function renderStatus() {
+    function renderStatus(message = "") {
       const studentName = state.student?.name || "학생";
-      document.getElementById("statusBox").textContent = `${studentName} 학생 · ${state.level} · ${typeLabels[state.type] || state.type} · 총 ${state.questions.length}문항입니다.`;
+      const base = `${studentName} 학생 · ${state.level} · ${typeLabels[state.type] || state.type} · 총 ${state.questions.length}문항`;
+      document.getElementById("statusBox").className = "notice";
+      document.getElementById("statusBox").textContent = message || base;
     }
 
     function renderQuestions() {
       document.getElementById("testForm").innerHTML = state.questions.map((q, index) => `
         <article class="question">
-          <div class="q-head"><b>CBT ${index + 1}번</b><span class="pill">${escapeHtml(typeLabels[q.area] || q.area || state.type)}</span></div>
-          ${q.script ? `<button type="button" class="listen" onclick="speakText(${index})">듣기 재생</button>` : ""}
+          <div class="q-head"><b>CBT ${index + 1}번</b><span class="pill">${escapeHtml(areaLabels[q.area] || q.area || state.type)}</span></div>
+          ${q.script ? `<button type="button" class="listen" onclick="speakText(${index})">듣기 재생</button><div class="mini">정답 확인 전까지 듣기 스크립트는 보이지 않습니다.</div>` : ""}
           <div class="prompt">${escapeHtml(q.prompt)}</div>
           ${(q.choices || []).map((choice, choiceIndex) => `
             <label class="choice">
@@ -239,18 +340,120 @@
               <span>${choiceIndex + 1}. ${escapeHtml(choice)}</span>
             </label>
           `).join("")}
+          <div id="feedback${index}" class="mini"></div>
         </article>
       `).join("");
     }
 
     function speakText(index) {
       const script = state.questions[index]?.script || "";
-      if (!script || !("speechSynthesis" in window)) return;
+      if (!script || !("speechSynthesis" in window)) return alert("이 브라우저에서는 음성 재생을 지원하지 않습니다.");
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(script);
       utterance.lang = "en-US";
       utterance.rate = .82;
       window.speechSynthesis.speak(utterance);
+    }
+
+    function buildCbtUrl() {
+      const url = new URL(`${PUBLIC_API_BASE}/daily-cbt`);
+      if (state.student?.id) url.searchParams.set("studentId", state.student.id);
+      url.searchParams.set("level", state.level);
+      url.searchParams.set("type", state.type);
+      url.searchParams.set("seed", state.seed);
+      return url.toString();
+    }
+
+    function resultMessage(record = state.lastRecord) {
+      if (!record) return "";
+      const areaText = Object.entries(record.areas || {}).map(([key, value]) => {
+        const label = areaLabels[key] || key;
+        return `${label} ${value.correct}/${value.total}`;
+      }).join(", ");
+      const guide = record.score >= 80
+        ? "오늘 학습 내용은 안정적으로 이해했습니다. 같은 유형을 짧게 복습하면 더 탄탄해집니다."
+        : "오늘 틀린 문항은 다시 듣고, 단어 뜻과 지문 근거를 한 번 더 확인하겠습니다.";
+      return `안녕하세요. 벌교미래엔영어입니다.\n\n${record.name} 학생 Daily CBT 결과 안내드립니다.\n수준/유형: ${record.level} · ${record.type}\n점수: ${record.score}점 (${record.correct}/${record.total})\n영역별 결과: ${areaText || "-"}\n\n${guide}`;
+    }
+
+    function linkMessage() {
+      const studentName = state.student?.name || "학생";
+      return `안녕하세요. 벌교미래엔영어입니다.\n\n${studentName} 학생 Daily CBT 링크를 보내드립니다.\n아래 주소를 눌러 오늘의 듣기·단어·리딩 미니테스트를 진행해 주세요.\n\n${buildCbtUrl()}`;
+    }
+
+    async function sendMessage(channel, text, variables = {}) {
+      const student = state.student || {};
+      const phone = cleanPhone(student.phone || student.parentPhone || student.guardianPhone);
+      if (phone.length < 10) throw new Error("학부모 연락처가 없습니다. 대시보드 학생관리에서 학부모 번호를 확인해 주세요.");
+      if (channel === "kakao") {
+        try {
+          const response = await fetch(apiUrl("/api/kakao/send"), {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({to: phone, text, kind: "daily", variables})
+          });
+          const data = await response.json();
+          if (!response.ok || !data.ok) throw new Error(data.error || "카카오 발송 실패");
+          return {channel: "카카오", data};
+        } catch (kakaoError) {
+          const response = await fetch(apiUrl("/api/sms/send"), {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({to: phone, text})
+          });
+          const data = await response.json();
+          if (!response.ok || !data.ok) throw new Error(`${kakaoError.message} / 문자 대체도 실패: ${data.error || "발송 실패"}`);
+          return {channel: "문자 대체", data, kakaoError: kakaoError.message};
+        }
+      }
+      const response = await fetch(apiUrl("/api/sms/send"), {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({to: phone, text})
+      });
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.error || "문자 발송 실패");
+      return {channel: "문자", data};
+    }
+
+    async function sendCurrentCbtLink(channel) {
+      selectStudentFromDropdown();
+      const status = document.getElementById("statusBox");
+      status.className = "notice";
+      status.textContent = channel === "kakao" ? "CBT 링크를 카카오로 전송하는 중입니다." : "CBT 링크를 문자로 전송하는 중입니다.";
+      try {
+        const studentName = state.student?.name || "학생";
+        const result = await sendMessage(channel, linkMessage(), {
+          "#{학생명}": studentName,
+          "#{내용}": `${studentName} 학생 Daily CBT 링크입니다. ${buildCbtUrl()}`,
+          "#{날짜}": new Date().toLocaleDateString("ko-KR"),
+          "#{학습내용}": `${state.level} ${typeLabels[state.type] || state.type} Daily CBT`,
+          "#{결과}": "CBT 진행 전"
+        });
+        status.className = "notice ok";
+        status.textContent = `CBT 링크 ${result.channel} 발송 접수 완료`;
+      } catch (error) {
+        status.className = "notice error";
+        status.textContent = `CBT 링크 발송 실패: ${error.message}`;
+      }
+    }
+
+    async function sendResult(channel) {
+      if (!state.lastRecord) return alert("먼저 CBT를 제출해 주세요.");
+      const resultBox = document.getElementById("resultBox");
+      try {
+        const record = state.lastRecord;
+        const result = await sendMessage(channel, resultMessage(record), {
+          "#{학생명}": record.name,
+          "#{내용}": `${record.level} ${record.type} ${record.score}점 (${record.correct}/${record.total})`,
+          "#{날짜}": record.date,
+          "#{학습내용}": `${record.level} ${record.type} Daily CBT`,
+          "#{결과}": `${record.score}점`
+        });
+        resultBox.insertAdjacentHTML("beforeend", `<div class="notice ok">결과 ${escapeHtml(result.channel)} 발송 접수 완료</div>`);
+      } catch (error) {
+        resultBox.insertAdjacentHTML("beforeend", `<div class="notice error">결과 발송 실패: ${escapeHtml(error.message)}</div>`);
+      }
     }
 
     async function loadDailyCbt() {
@@ -263,11 +466,9 @@
           state.students.find(item => item.name === params.get("name")) ||
           state.students[0] ||
           null;
-        state.bank = Object.keys(data.dailyMiniBank || {}).length ? data.dailyMiniBank : defaultBank();
       } catch {
         state.students = defaultStudents();
         state.student = state.students.find(item => item.name === params.get("name")) || state.students[0] || null;
-        state.bank = defaultBank();
         document.getElementById("statusBox").className = "notice error";
       }
       renderSelectors();
@@ -285,9 +486,16 @@
         const area = q.area || state.type;
         if (!areas[area]) areas[area] = {correct: 0, total: 0, score: 0};
         areas[area].total += 1;
-        if (answer === String(q.answer)) {
+        const isCorrect = answer === String(q.answer);
+        if (isCorrect) {
           correct += 1;
           areas[area].correct += 1;
+        }
+        const feedback = document.getElementById(`feedback${index}`);
+        if (feedback) {
+          feedback.textContent = answer
+            ? `${isCorrect ? "정답" : "오답"} · 정답 ${q.answer}번 · ${q.explanation || ""}${q.script ? " · 듣기 스크립트: " + q.script : ""}`
+            : `미응답 · 정답 ${q.answer}번 · ${q.explanation || ""}${q.script ? " · 듣기 스크립트: " + q.script : ""}`;
         }
       });
       Object.values(areas).forEach(area => {
@@ -297,8 +505,8 @@
       const score = total ? Math.round((correct / total) * 100) : 0;
       const now = new Date();
       const record = {
-        date: now.toISOString().slice(0, 10),
-        time: now.toTimeString().slice(0, 5),
+        date: now.toLocaleDateString("en-CA", {timeZone: "Asia/Seoul"}),
+        time: now.toLocaleTimeString("ko-KR", {hour: "2-digit", minute: "2-digit", hour12: false}),
         studentId: state.student?.id || params.get("studentId") || "",
         name: state.student?.name || params.get("name") || "학생",
         phone: state.student?.phone || "",
@@ -312,6 +520,7 @@
         memo: score >= 80 ? "안정" : "보완필요",
         source: "url-cbt"
       };
+      state.lastRecord = record;
       let saved = false;
       try {
         const response = await fetch(apiUrl("/api/daily-mini/submit"), {
@@ -331,7 +540,11 @@
       document.getElementById("resultBox").innerHTML = `
         <h2>제출 완료</h2>
         <p><b>${escapeHtml(record.name)}</b> 학생 점수는 <b>${score}점</b>입니다. (${correct}/${total})</p>
-        <p>${saved ? "학원 대시보드 Daily 미니테스트 기록에 반영되었습니다." : "서버 저장소가 잠시 불안정하여 이 기기에 임시 저장되었습니다. 제출 완료 화면을 학원에 보여 주세요."}</p>
+        <p>${saved ? "학원 대시보드 Daily 미니테스트 기록에 반영했습니다." : "서버 저장소가 일시적으로 불안정하여 이 기기에 임시 저장했습니다."}</p>
+        <div class="toolbar">
+          <button type="button" class="blue" onclick="sendResult('kakao')">결과 카카오 전송</button>
+          <button type="button" class="amber" onclick="sendResult('sms')">결과 문자 전송</button>
+        </div>
       `;
       window.scrollTo({top: document.body.scrollHeight, behavior: "smooth"});
     }

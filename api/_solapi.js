@@ -73,7 +73,7 @@ async function solapiRequest(url, payload) {
   const response = await fetch(url, {
     method: "POST",
     headers: {
-      "Authorization": authorization,
+      Authorization: authorization,
       "Content-Type": "application/json; charset=utf-8"
     },
     body: JSON.stringify(payload)
@@ -126,7 +126,7 @@ function solapiFailureMessage(code, message) {
   if (String(code) === "1041") {
     return "카카오 알림톡 발송 실패: 카카오 채널 PFID 값이 올바르지 않습니다. SOLAPI 콘솔의 카카오 채널 설정 화면에서 PFID 값을 다시 복사해 Vercel 환경변수 SOLAPI_KAKAO_PFID에 넣어주세요. 카카오 채널명, 검색용 ID, 채널 URL은 PFID가 아닙니다.";
   }
-  return `SOLAPI 발송 실패 [${code || "알 수 없음"}] ${message || "발송 가능한 메시지가 없습니다."}`;
+  return `SOLAPI 발송 실패 [${code || "코드 없음"}] ${message || "발송 가능한 메시지가 없습니다."}`;
 }
 
 export function kakaoOptions(kind, variables = null) {
