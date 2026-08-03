@@ -1,6 +1,42 @@
 import {handleOptions, readJson, sendJson} from "../_solapi.js";
 import {emptyState, readPersistentState, writePersistentState} from "../_dashboard-state.js";
 
+function itemKey(item, index = 0) {
+  return String(
+    item?.id ||
+    item?.clientId ||
+    item?.dbId ||
+    item?.groupId ||
+    `${item?.date || ""}|${item?.time || ""}|${item?.studentId || ""}|${item?.name || ""}|${item?.title || ""}|${item?.body || ""}|${index}`
+  );
+}
+
+function mergeList(existing, incoming, limit = 1000) {
+  const map = new Map();
+  (Array.isArray(existing) ? existing : []).forEach((item, index) => {
+    map.set(itemKey(item, index), item);
+  });
+  (Array.isArray(incoming) ? incoming : []).forEach((item, index) => {
+    const key = itemKey(item, index);
+    map.set(key, {...(map.get(key) || {}), ...item});
+  });
+  return [...map.values()]
+    .sort((a, b) => String(b.createdAt || b.savedAt || b.date || "").localeCompare(String(a.createdAt || a.savedAt || a.date || "")))
+    .slice(0, limit);
+}
+
+function mergeStudents(existing, incoming) {
+  const map = new Map();
+  (Array.isArray(existing) ? existing : []).forEach((student, index) => {
+    map.set(String(student.id || student.name || index), student);
+  });
+  (Array.isArray(incoming) ? incoming : []).forEach((student, index) => {
+    const key = String(student.id || student.name || index);
+    map.set(key, {...(map.get(key) || {}), ...student});
+  });
+  return [...map.values()];
+}
+
 export default async function handler(req, res) {
   if (handleOptions(req, res)) return;
 
@@ -18,23 +54,24 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
       const data = await readJson(req);
+      const existing = await readPersistentState();
       const state = {
         savedAt: new Date().toISOString(),
-        students: Array.isArray(data.students) ? data.students : [],
-        messages: Array.isArray(data.messages) ? data.messages : [],
-        smsContentTemplates: Array.isArray(data.smsContentTemplates) ? data.smsContentTemplates : [],
-        attendanceRecords: Array.isArray(data.attendanceRecords) ? data.attendanceRecords : [],
-        academySchedules: Array.isArray(data.academySchedules) ? data.academySchedules : [],
-        homeworkSubmissions: Array.isArray(data.homeworkSubmissions) ? data.homeworkSubmissions : [],
-        dailyMiniTests: Array.isArray(data.dailyMiniTests) ? data.dailyMiniTests : [],
+        students: mergeStudents(existing.students, data.students),
+        messages: mergeList(existing.messages, data.messages, 1000),
+        smsContentTemplates: mergeList(existing.smsContentTemplates, data.smsContentTemplates, 200),
+        attendanceRecords: mergeList(existing.attendanceRecords, data.attendanceRecords, 1500),
+        academySchedules: mergeList(existing.academySchedules, data.academySchedules, 500),
+        homeworkSubmissions: mergeList(existing.homeworkSubmissions, data.homeworkSubmissions, 500),
+        dailyMiniTests: mergeList(existing.dailyMiniTests, data.dailyMiniTests, 1000),
         dailyMiniBank: data.dailyMiniBank && typeof data.dailyMiniBank === "object" ? data.dailyMiniBank : {}
       };
-      await writePersistentState(state);
+      const saved = await writePersistentState(state);
       const messageIds = {};
       state.messages.forEach(message => {
         if (message.clientId && !message.dbId) messageIds[message.clientId] = message.clientId;
       });
-      return sendJson(res, 200, {ok: true, result: {messageIds}});
+      return sendJson(res, 200, {ok: true, result: {messageIds}, state: saved});
     } catch (error) {
       return sendJson(res, 400, {ok: false, error: error.message || "대시보드 저장에 실패했습니다."});
     }

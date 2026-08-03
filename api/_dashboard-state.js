@@ -113,7 +113,7 @@ export async function writePersistentState(state) {
     access: "private",
     allowOverwrite: true,
     contentType: "application/json",
-    cacheControlMaxAge: 60
+    cacheControlMaxAge: 0
   }).catch(error => {
     const message = String(error?.message || "");
     if (!message.toLowerCase().includes("suspended")) throw error;

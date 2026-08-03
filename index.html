@@ -2935,7 +2935,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
 
     const DASHBOARD_LOCAL_KEY = "beolgyo-academy-dashboard-state-v2";
     const PUBLIC_API_BASE = "https://beolgyo-miraen-growth-api.vercel.app";
-    const APP_VERSION = "2026-08-03-homework-live-refresh";
+    const APP_VERSION = "2026-08-03-live-merge-v2";
     let dashboardStateReady = false;
     let dashboardPersistTimer = null;
     let dashboardDirty = false;
@@ -3074,7 +3074,14 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
         if (!response.ok || !data.ok) throw new Error(data.error || "데이터 저장에 실패했습니다.");
         const ids = data.result?.messageIds || {};
         messages.forEach(message => { if (ids[message.clientId]) message.dbId = ids[message.clientId]; });
-        lastDashboardSignature = dashboardSignature(snapshot);
+        if (data.state) {
+          applyDashboardState(data.state);
+          lastDashboardSignature = dashboardSignature(data.state);
+          localStorage.setItem(DASHBOARD_LOCAL_KEY, JSON.stringify(dashboardSnapshot()));
+          renderAll(false);
+        } else {
+          lastDashboardSignature = dashboardSignature(snapshot);
+        }
         dashboardDirty = false;
         setDashboardSyncStatus(`자동 저장됨 · ${currentTime()}`, "blue");
       } catch (error) {
@@ -3095,8 +3102,6 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
 
     async function refreshDashboardState() {
       if (!dashboardStateReady || dashboardDirty || !document.getElementById("smsModal")?.classList.contains("hidden")) return;
-      const active = document.activeElement;
-      if (active && ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName)) return;
       try {
         const response = await fetch(noCacheUrl(dashboardApiUrl("/api/dashboard/state")), {cache: "no-store"});
         const data = await response.json();
