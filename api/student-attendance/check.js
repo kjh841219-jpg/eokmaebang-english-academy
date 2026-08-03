@@ -42,16 +42,6 @@ async function notifyParent(student, status, timeText, dateText) {
     return {sent: false, channel: "없음", status: "보호자 연락처 없음"};
   }
 
-  const senderPhone = digits(process.env.SOLAPI_FROM || "");
-  if (senderPhone && senderPhone === parentPhone) {
-    return {
-      sent: false,
-      channel: "",
-      status: "발신번호와 수신번호 동일",
-      error: "SOLAPI 발신번호와 보호자 수신번호가 같습니다. 같은 번호로는 실제 도착 테스트가 실패할 수 있습니다."
-    };
-  }
-
   const body = attendanceMessage(student.name || "학생", status, timeText, dateText);
   const variables = {
     "#{학생명}": student.name || "학생",
@@ -150,8 +140,8 @@ export default async function handler(req, res) {
     const date = koreanDate();
     const time = koreanTime();
     const already = student.attendanceDate === date && student.attendance === status;
-    const notification = dryRun || already
-      ? {sent: false, channel: dryRun ? "테스트" : "생략", status: dryRun ? "학생 확인 테스트" : "중복 출결, 발송 생략"}
+    const notification = dryRun
+      ? {sent: false, channel: "테스트", status: "학생 확인 테스트"}
       : await notifyParent(student, status, time, date);
 
     if (!dryRun) {

@@ -8,60 +8,49 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: "Malgun Gothic", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
       background: linear-gradient(180deg, #eefaf5 0%, #f7fbff 100%);
       color: #09231b;
     }
-    main { width: min(760px, 100%); margin: 0 auto; padding: 28px 16px 48px; }
-    .brand { display: inline-flex; padding: 8px 14px; border-radius: 999px; background: #dff8ea; color: #076046; font-weight: 800; font-size: 13px; }
+    main { width: min(820px, 100%); margin: 0 auto; padding: 26px 16px 48px; }
+    .brand { display: inline-flex; padding: 8px 14px; border-radius: 999px; background: #dff8ea; color: #076046; font-weight: 900; font-size: 13px; }
     h1 { margin: 14px 0 8px; font-size: clamp(28px, 7vw, 42px); letter-spacing: 0; }
     .sub { margin: 0 0 18px; color: #52665e; line-height: 1.55; }
     .panel, .question, .result {
-      background: #fff;
-      border: 1px solid #cfe5da;
-      border-radius: 18px;
-      box-shadow: 0 18px 45px rgba(12, 74, 55, .08);
-      padding: 18px;
+      background: #fff; border: 1px solid #cfe5da; border-radius: 18px;
+      box-shadow: 0 18px 45px rgba(12, 74, 55, .08); padding: 18px;
     }
-    .meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
-    .meta div { background: #f4fbf8; border: 1px solid #d9eee5; border-radius: 12px; padding: 11px; }
-    .meta b { display: block; font-size: 12px; color: #527163; margin-bottom: 4px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+    label { display: block; font-size: 12px; color: #527163; font-weight: 900; }
+    select {
+      width: 100%; margin-top: 6px; border: 1px solid #c9e2d7; border-radius: 12px;
+      padding: 12px; background: #fbfffd; font-size: 15px; color: #10261d;
+    }
     .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
     button {
-      border: 0;
-      border-radius: 14px;
-      padding: 14px 16px;
-      font-weight: 800;
-      font-size: 16px;
-      cursor: pointer;
-      min-height: 50px;
+      border: 0; border-radius: 14px; padding: 14px 16px;
+      font-weight: 900; font-size: 16px; cursor: pointer; min-height: 50px;
     }
     .primary { background: #08764f; color: #fff; flex: 1; }
     .ghost { background: #edf7f3; color: #073f2d; border: 1px solid #bcded0; }
     .question { margin: 14px 0; break-inside: avoid; }
     .q-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin-bottom: 10px; }
-    .pill { border-radius: 999px; padding: 6px 10px; background: #eaf7ff; color: #075985; font-size: 12px; font-weight: 800; white-space: nowrap; }
-    .prompt { white-space: pre-line; line-height: 1.6; font-weight: 750; }
+    .pill { border-radius: 999px; padding: 6px 10px; background: #eaf7ff; color: #075985; font-size: 12px; font-weight: 900; white-space: nowrap; }
+    .prompt { white-space: pre-line; line-height: 1.6; font-weight: 800; }
     .listen { margin: 10px 0; background: #eefaf5; color: #064e3b; border: 1px solid #cdece0; }
     label.choice {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      border: 1px solid #d8e7df;
-      border-radius: 14px;
-      padding: 12px;
-      margin: 9px 0;
-      background: #fff;
-      line-height: 1.45;
+      display: flex; align-items: flex-start; gap: 10px; border: 1px solid #d8e7df;
+      border-radius: 14px; padding: 12px; margin: 9px 0; background: #fff; line-height: 1.45;
+      color: #13251d; font-size: 15px; font-weight: 700;
     }
     input[type="radio"] { margin-top: 3px; transform: scale(1.15); }
     .notice { margin-top: 14px; padding: 14px; border-radius: 14px; background: #fff8dd; border: 1px solid #ead083; color: #6b4e03; line-height: 1.55; }
     .result { margin-top: 18px; border-color: #9bd6be; background: #f8fffb; }
     .hidden { display: none; }
     .error { color: #b42318; background: #fff1f0; border-color: #ffb4ad; }
-    @media (max-width: 560px) {
+    @media (max-width: 680px) {
       main { padding-top: 22px; }
-      .meta { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr; }
       .toolbar { flex-direction: column; }
       button { width: 100%; }
       .panel, .question, .result { border-radius: 16px; padding: 15px; }
@@ -72,25 +61,38 @@
   <main>
     <span class="brand">벌교미래엔영어</span>
     <h1>Daily CBT</h1>
-    <p class="sub">문제를 풀고 제출하면 학원 대시보드 Daily 미니테스트 기록에 자동 반영됩니다.</p>
+    <p class="sub">학생 이름과 레벨을 확인한 뒤 문제를 풀어 주세요. 제출하면 학원 대시보드 Daily 미니테스트 기록에 반영됩니다.</p>
 
     <section class="panel">
-      <div class="meta">
-        <div><b>학생</b><span id="studentName">불러오는 중</span></div>
-        <div><b>수준 / 유형</b><span id="testMeta">-</span></div>
+      <div class="grid">
+        <label>학생 이름
+          <select id="studentSelect" onchange="selectStudentFromDropdown()"></select>
+        </label>
+        <label>레벨
+          <select id="levelSelect" onchange="resetQuestions()"></select>
+        </label>
+        <label>유형
+          <select id="typeSelect" onchange="resetQuestions()">
+            <option value="daily">Daily 통합</option>
+            <option value="listening">듣기</option>
+            <option value="vocab">단어</option>
+            <option value="reading">리딩</option>
+          </select>
+        </label>
       </div>
-      <div class="notice" id="statusBox">문항을 준비하고 있습니다.</div>
+      <div class="notice" id="statusBox">학생 목록과 문제를 불러오는 중입니다.</div>
     </section>
 
     <form id="testForm"></form>
     <div class="toolbar">
+      <button type="button" class="ghost" onclick="resetQuestions()">랜덤 문제 다시 만들기</button>
       <button type="button" class="primary" onclick="submitDailyCbt()">제출하기</button>
-      <button type="button" class="ghost" onclick="window.location.reload()">다시 불러오기</button>
     </div>
     <section id="resultBox" class="result hidden"></section>
   </main>
 
   <script>
+    const API_BASE = location.protocol === "file:" ? "https://beolgyo-miraen-growth-api.vercel.app" : "";
     const params = new URLSearchParams(location.search);
     const levelLabels = ["초저", "초중", "초고", "중1", "중2", "중3", "고등"];
     const typeLabels = {listening: "듣기", vocab: "단어", reading: "리딩", daily: "Daily 통합"};
@@ -99,11 +101,26 @@
       student: null,
       level: params.get("level") || "초저",
       type: params.get("type") || "daily",
-      questions: []
+      bank: null,
+      questions: [],
+      seed: params.get("seed") || String(Date.now())
     };
+
+    function apiUrl(path) {
+      return `${API_BASE}${path}`;
+    }
 
     function escapeHtml(value) {
       return String(value ?? "").replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[char]));
+    }
+
+    function defaultStudents() {
+      const rows = [
+        ["김정해", "-", "010-4032-2588", "010-4032-2588"],
+        ["박세훈", "-", "010-6670-7898", "-"],
+        ["박애은", "-", "010-9761-0517", "010-5424-7898"]
+      ];
+      return rows.map((row, index) => ({id: index + 1, name: row[0], school: row[1] === "-" ? "" : row[1], phone: row[2], studentPhone: row[3] === "-" ? "" : row[3], classGroup: "초등반"}));
     }
 
     function defaultBank() {
@@ -123,32 +140,32 @@
           listening: [
             {script, prompt: "들은 내용과 일치하는 것을 고르세요.", choices: [script, "The student forgot everything.", "The class was canceled.", "The teacher was absent."], answer: "1", explanation: "듣기 문장의 핵심 내용과 일치합니다."},
             {script, prompt: "들은 문장의 핵심 단어로 알맞은 것은?", choices: [word, "ticket", "weather", "kitchen"], answer: "1", explanation: `핵심 단어는 ${word}입니다.`},
-            {script, prompt: "들은 문장의 주제로 가장 알맞은 것은?", choices: ["학습과 준비", "음식 주문", "여행 예약", "경기 결과"], answer: "1", explanation: "문장 전체의 주제를 파악합니다."},
-            {script, prompt: "들은 내용의 목적으로 알맞은 것은?", choices: ["정보 전달 또는 준비 확인", "가격 흥정", "초대 거절", "날씨 예보"], answer: "1", explanation: "말하는 목적을 확인합니다."},
+            {script, prompt: "들은 문장의 주제로 알맞은 것은?", choices: ["학습과 준비", "음식 주문", "여행 예약", "경기 결과"], answer: "1", explanation: "문장 전체의 주제를 파악합니다."},
+            {script, prompt: "들은 내용의 목적으로 알맞은 것은?", choices: ["정보 전달 또는 준비 확인", "가격 흥정", "초대 거절", "농담하기"], answer: "1", explanation: "말하는 목적을 확인합니다."},
             {script, prompt: "들은 문장 뒤에 이어질 반응으로 자연스러운 것은?", choices: ["Okay, I will remember that.", "The window eats lunch.", "Yesterday is a pencil.", "No one can read water."], answer: "1", explanation: "상황에 맞는 자연스러운 반응입니다."}
           ],
           vocab: [
             {prompt: `"${word}"의 뜻으로 알맞은 것을 고르세요.`, choices: [meaning, "창문", "갑자기", "예약하다"], answer: "1", explanation: `${word}의 뜻은 ${meaning}입니다.`},
-            {prompt: `빈칸에 알맞은 단어를 고르세요.\n${sentence.replace(word, "_____")}`, choices: [word, "chair", "blue", "under"], answer: "1", explanation: "문맥상 핵심 단어가 들어갑니다."},
+            {prompt: `빈칸에 알맞은 단어를 고르세요.\n${sentence.replace(word, "_____")}`, choices: [word, "chair", "blue", "under"], answer: "1", explanation: "문맥에 맞는 단어가 들어갑니다."},
             {prompt: `"${word}"를 사용한 문장으로 가장 자연스러운 것은?`, choices: [sentence, "She blue under.", "The table runs an idea.", "Winter spoon arrives."], answer: "1", explanation: "단어의 실제 문장 쓰임을 봅니다."},
             {prompt: `우리말 "${meaning}"에 해당하는 영어 단어는?`, choices: [word, "window", "slowly", "arrive"], answer: "1", explanation: `정답은 ${word}입니다.`},
-            {prompt: "문맥상 가장 어울리는 단어를 고르세요.", choices: [word, "noise", "spoon", "winter"], answer: "1", explanation: "학습 문맥에 맞는 단어를 고릅니다."}
+            {prompt: "문맥에 가장 어울리는 단어를 고르세요.", choices: [word, "noise", "spoon", "winter"], answer: "1", explanation: "학습 문맥에 맞는 단어를 고릅니다."}
           ],
           reading: [
             {prompt: `${reading}\n\n글의 중심 내용으로 알맞은 것은?`, choices: ["학생이 스스로 학습하거나 준비한다.", "학생이 길을 잃는다.", "비가 많이 온다.", "동물이 도망간다."], answer: "1", explanation: "글 전체의 중심 내용을 찾습니다."},
-            {prompt: `${reading}\n\n글의 내용과 일치하는 것은?`, choices: ["주인공은 과제를 확인하거나 읽는다.", "주인공은 아무것도 하지 않는다.", "수업은 모두 취소된다.", "친구가 모두 결석한다."], answer: "1", explanation: "본문 근거와 일치합니다."},
-            {prompt: `${reading}\n\n글을 읽고 추론할 수 있는 내용은?`, choices: ["주인공은 책임감 있게 행동한다.", "주인공은 항상 늦는다.", "주인공은 책을 싫어한다.", "주인공은 시험을 보지 않는다."], answer: "1", explanation: "행동을 바탕으로 태도를 추론합니다."},
-            {prompt: `${reading}\n\n주인공의 태도로 알맞은 것은?`, choices: ["성실하고 계획적이다.", "무관심하고 게으르다.", "화를 잘 낸다.", "규칙을 지키지 않는다."], answer: "1", explanation: "본문 행동에 근거합니다."},
-            {prompt: `${reading}\n\n글의 제목으로 가장 알맞은 것은?`, choices: ["작은 준비가 만드는 성장", "갑작스러운 여행", "비 오는 운동장", "맛있는 저녁 식사"], answer: "1", explanation: "중심 내용을 아우르는 제목입니다."}
+            {prompt: `${reading}\n\n글의 내용과 일치하는 것은?`, choices: ["주인공은 과제를 확인하거나 읽는다.", "주인공은 아무것도 하지 않는다.", "수업은 모두 취소되었다.", "친구가 모두 결석했다."], answer: "1", explanation: "본문 근거와 일치합니다."},
+            {prompt: `${reading}\n\n글을 읽고 추론할 수 있는 내용은?`, choices: ["주인공은 책임감 있게 행동한다.", "주인공은 늘 늦는다.", "주인공은 책을 싫어한다.", "주인공은 시험을 보지 않는다."], answer: "1", explanation: "행동을 바탕으로 태도를 추론합니다."},
+            {prompt: `${reading}\n\n주인공의 태도로 알맞은 것은?`, choices: ["성실하고 계획적이다.", "무례하고 게으르다.", "화를 잘 낸다.", "규칙을 지키지 않는다."], answer: "1", explanation: "본문 행동이 근거입니다."},
+            {prompt: `${reading}\n\n글의 제목으로 가장 알맞은 것은?`, choices: ["작은 준비가 만드는 성장", "갑작스러운 여행", "비 오는 운동장", "맛있는 간식 행사"], answer: "1", explanation: "중심 내용을 아우르는 제목입니다."}
           ]
         };
       });
       return bank;
     }
 
-    function seededShuffle(items) {
-      const seedText = params.get("seed") || `${state.level}-${state.type}`;
+    function shuffle(items, salt = "") {
       let seed = 0;
+      const seedText = `${state.seed}-${state.level}-${state.type}-${salt}`;
       for (const char of seedText) seed = (seed * 31 + char.charCodeAt(0)) >>> 0;
       const next = () => {
         seed = (seed * 1664525 + 1013904223) >>> 0;
@@ -162,22 +179,54 @@
       return copy;
     }
 
-    function chooseQuestions(bank) {
+    function chooseQuestions() {
+      const bank = state.bank || defaultBank();
       const levelBank = bank[state.level] || bank.초저 || defaultBank().초저;
-      const pickArea = area => seededShuffle((levelBank[area] || []).map((item, index) => ({...item, area, key: `${area}-${index}`}))).slice(0, 5);
+      const pickArea = area => shuffle((levelBank[area] || []).map((item, index) => ({...item, area, key: `${area}-${index}`})), area).slice(0, 5);
       const selected = state.type === "daily" ? [...pickArea("listening"), ...pickArea("vocab"), ...pickArea("reading")] : pickArea(state.type);
       state.questions = selected.map((item, index) => {
         const correctIndex = Math.max(0, Number(item.answer || 1) - 1);
         const choices = (item.choices || []).map((choice, i) => ({choice, correct: i === correctIndex}));
-        const shuffled = seededShuffle(choices);
-        return {...item, number: index + 1, choices: shuffled.map(entry => entry.choice), answer: String(shuffled.findIndex(entry => entry.correct) + 1)};
+        const mixed = shuffle(choices, `${item.key}-${index}`);
+        return {...item, number: index + 1, choices: mixed.map(entry => entry.choice), answer: String(mixed.findIndex(entry => entry.correct) + 1)};
       });
     }
 
+    function renderSelectors() {
+      const studentSelect = document.getElementById("studentSelect");
+      studentSelect.innerHTML = state.students.map(student => {
+        const meta = [student.classGroup, student.school].filter(Boolean).join(" · ");
+        return `<option value="${escapeHtml(student.id)}">${escapeHtml(student.name)}${meta ? " · " + escapeHtml(meta) : ""}</option>`;
+      }).join("");
+      if (state.student?.id) studentSelect.value = String(state.student.id);
+      const levelSelect = document.getElementById("levelSelect");
+      levelSelect.innerHTML = levelLabels.map(level => `<option value="${level}">${level}</option>`).join("");
+      levelSelect.value = state.level;
+      document.getElementById("typeSelect").value = state.type;
+    }
+
+    function selectStudentFromDropdown() {
+      const id = document.getElementById("studentSelect").value;
+      state.student = state.students.find(item => String(item.id) === String(id)) || state.students[0] || null;
+      renderStatus();
+    }
+
+    function resetQuestions() {
+      state.level = document.getElementById("levelSelect").value || "초저";
+      state.type = document.getElementById("typeSelect").value || "daily";
+      state.seed = String(Date.now());
+      chooseQuestions();
+      renderQuestions();
+      renderStatus();
+      document.getElementById("resultBox").classList.add("hidden");
+    }
+
+    function renderStatus() {
+      const studentName = state.student?.name || "학생";
+      document.getElementById("statusBox").textContent = `${studentName} 학생 · ${state.level} · ${typeLabels[state.type] || state.type} · 총 ${state.questions.length}문항입니다.`;
+    }
+
     function renderQuestions() {
-      document.getElementById("studentName").textContent = state.student?.name || params.get("name") || "학생";
-      document.getElementById("testMeta").textContent = `${state.level} / ${typeLabels[state.type] || state.type}`;
-      document.getElementById("statusBox").textContent = `총 ${state.questions.length}문항입니다. 답을 고른 뒤 제출하기를 눌러 주세요.`;
       document.getElementById("testForm").innerHTML = state.questions.map((q, index) => `
         <article class="question">
           <div class="q-head"><b>CBT ${index + 1}번</b><span class="pill">${escapeHtml(typeLabels[q.area] || q.area || state.type)}</span></div>
@@ -205,24 +254,29 @@
 
     async function loadDailyCbt() {
       try {
-        const response = await fetch("/api/dashboard/state", {cache: "no-store"});
+        const response = await fetch(apiUrl("/api/dashboard/state"), {cache: "no-store"});
         const data = await response.json();
-        if (data.ok) {
-          state.students = Array.isArray(data.students) ? data.students : [];
-          state.student = state.students.find(item => String(item.id) === String(params.get("studentId"))) || null;
-          chooseQuestions(Object.keys(data.dailyMiniBank || {}).length ? data.dailyMiniBank : defaultBank());
-        } else {
-          throw new Error(data.error || "state error");
-        }
+        if (!data.ok) throw new Error(data.error || "state error");
+        state.students = Array.isArray(data.students) && data.students.length ? data.students : defaultStudents();
+        state.student = state.students.find(item => String(item.id) === String(params.get("studentId"))) ||
+          state.students.find(item => item.name === params.get("name")) ||
+          state.students[0] ||
+          null;
+        state.bank = Object.keys(data.dailyMiniBank || {}).length ? data.dailyMiniBank : defaultBank();
       } catch {
-        chooseQuestions(defaultBank());
+        state.students = defaultStudents();
+        state.student = state.students.find(item => item.name === params.get("name")) || state.students[0] || null;
+        state.bank = defaultBank();
         document.getElementById("statusBox").className = "notice error";
-        document.getElementById("statusBox").textContent = "서버 기록을 불러오지 못해 기본 문항으로 표시합니다. 제출 기록은 이 기기에만 임시 저장될 수 있습니다.";
       }
+      renderSelectors();
+      chooseQuestions();
       renderQuestions();
+      renderStatus();
     }
 
     async function submitDailyCbt() {
+      selectStudentFromDropdown();
       let correct = 0;
       const areas = {};
       state.questions.forEach((q, index) => {
@@ -259,7 +313,7 @@
       };
       let saved = false;
       try {
-        const response = await fetch("/api/daily-mini/submit", {
+        const response = await fetch(apiUrl("/api/daily-mini/submit"), {
           method: "POST",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify(record)
@@ -276,7 +330,7 @@
       document.getElementById("resultBox").innerHTML = `
         <h2>제출 완료</h2>
         <p><b>${escapeHtml(record.name)}</b> 학생 점수는 <b>${score}점</b>입니다. (${correct}/${total})</p>
-        <p>${saved ? "학원 대시보드 Daily 미니테스트 기록에 반영되었습니다." : "서버 연결이 되지 않아 이 기기에 임시 저장되었습니다. 학원에 제출 완료 화면을 보여 주세요."}</p>
+        <p>${saved ? "학원 대시보드 Daily 미니테스트 기록에 반영되었습니다." : "서버 저장소가 잠시 불안정하여 이 기기에 임시 저장되었습니다. 제출 완료 화면을 학원에 보여 주세요."}</p>
       `;
       window.scrollTo({top: document.body.scrollHeight, behavior: "smooth"});
     }
