@@ -25,6 +25,7 @@ export default async function handler(req, res) {
         smsContentTemplates: Array.isArray(data.smsContentTemplates) ? data.smsContentTemplates : [],
         attendanceRecords: Array.isArray(data.attendanceRecords) ? data.attendanceRecords : [],
         academySchedules: Array.isArray(data.academySchedules) ? data.academySchedules : [],
+        homeworkSubmissions: Array.isArray(data.homeworkSubmissions) ? data.homeworkSubmissions : [],
         dailyMiniTests: Array.isArray(data.dailyMiniTests) ? data.dailyMiniTests : [],
         dailyMiniBank: data.dailyMiniBank && typeof data.dailyMiniBank === "object" ? data.dailyMiniBank : {}
       };

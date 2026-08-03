@@ -83,6 +83,7 @@ export const emptyState = () => ({
   smsContentTemplates: [],
   attendanceRecords: [],
   academySchedules: [],
+  homeworkSubmissions: [],
   dailyMiniTests: [],
   dailyMiniBank: {}
 });
