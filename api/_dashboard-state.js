@@ -5,6 +5,38 @@ import vm from "node:vm";
 const STATE_PATH = "academy/dashboard-state.json";
 let cachedFallbackStudents = null;
 
+function normalizeStudents(students) {
+  if (!Array.isArray(students)) return [];
+  return students.map((student, index) => {
+    if (Array.isArray(student)) {
+      return {
+        id: index + 1,
+        name: student[0] || `학생${index + 1}`,
+        school: student[1] === "-" ? "" : (student[1] || ""),
+        phone: student[2] === "-" ? "" : (student[2] || ""),
+        studentPhone: student[3] === "-" ? "" : (student[3] || ""),
+        grade: student[0] === "김정해" ? "초등 1학년" : "",
+        parentName: "보호자",
+        classGroup: student[0] === "김정해" ? "초등반" : (index < 35 ? "초등반" : (index < 45 ? "중등반" : "고등반")),
+        enrollDate: "2026-06-25",
+        monthlyFee: index < 35 ? 150000 : (index < 45 ? 200000 : 250000),
+        payDay: 5,
+        attendance: student[4] || "미입력",
+        attendanceTime: student[5] || "",
+        note: student[6] || "",
+        status: "재원생"
+      };
+    }
+    return {
+      ...student,
+      id: student.id || index + 1,
+      name: student.name || `학생${index + 1}`,
+      phone: student.phone || student.parentPhone || "",
+      studentPhone: student.studentPhone || ""
+    };
+  });
+}
+
 function extractStudentsFromDashboard() {
   if (cachedFallbackStudents) return cachedFallbackStudents;
   try {
@@ -33,7 +65,7 @@ function extractStudentsFromDashboard() {
       if (ch === "]") {
         depth -= 1;
         if (depth === 0) {
-          cachedFallbackStudents = vm.runInNewContext(html.slice(firstBracket, i + 1));
+          cachedFallbackStudents = normalizeStudents(vm.runInNewContext(html.slice(firstBracket, i + 1)));
           return cachedFallbackStudents;
         }
       }
@@ -64,14 +96,14 @@ export async function readPersistentState() {
     const result = await get(STATE_PATH, {access: "private"});
     if (!result?.stream) return emptyState();
     const stored = JSON.parse(await new Response(result.stream).text());
-    return {...emptyState(), ...stored};
+    return {...emptyState(), ...stored, students: normalizeStudents(stored.students)};
   } catch {
     return emptyState();
   }
 }
 
 export async function writePersistentState(state) {
-  const merged = {...emptyState(), ...state, savedAt: new Date().toISOString()};
+  const merged = {...emptyState(), ...state, students: normalizeStudents(state.students), savedAt: new Date().toISOString()};
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     globalThis.__beolgyoDashboardState = merged;
     return merged;
