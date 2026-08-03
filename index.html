@@ -3067,7 +3067,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
             dailyCount += 1;
           } else {
             const record = normalizeImportedHomework(payload);
-            const response = await fetch(homeworkApiUrl("/api/homework/submissions"), {
+            const response = await fetch(homeworkApiUrl("/api/homework/analyze?action=submissions"), {
               method: "POST",
               headers: {"Content-Type": "application/json"},
               body: JSON.stringify({record})
@@ -3170,7 +3170,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       if (homeworkFetchInFlight && !options.force) return;
       homeworkFetchInFlight = true;
       try {
-        const response = await fetch(noCacheUrl(homeworkApiUrl("/api/homework/submissions")), {cache: "no-store"});
+        const response = await fetch(noCacheUrl(homeworkApiUrl("/api/homework/analyze?action=submissions")), {cache: "no-store"});
         const data = await response.json().catch(() => ({}));
         if (!response.ok || !data.ok) throw new Error(data.error || "숙제 제출 목록을 불러오지 못했습니다.");
         const records = Array.isArray(data.homeworkSubmissions) ? data.homeworkSubmissions : [];
@@ -3195,7 +3195,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       await fetchHomeworkSubmissions({showStatus: false, showError: false});
       homeworkPollTimer = window.setInterval(() => fetchHomeworkSubmissions({showStatus: false, showError: false}), 10000);
       try {
-        const response = await fetch(noCacheUrl(homeworkApiUrl("/api/homework/config")), {cache: "no-store"});
+        const response = await fetch(noCacheUrl(homeworkApiUrl("/api/homework/analyze?action=config")), {cache: "no-store"});
         const config = await response.json();
         if (!config.ok || !config.configured || !window.supabase?.createClient) return;
         homeworkRealtimeClient = window.supabase.createClient(config.url, config.anonKey);
@@ -3223,7 +3223,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
     }
 
     async function saveHomeworkSubmissionPatch(recordId, patch) {
-      const response = await fetch(homeworkApiUrl("/api/homework/submissions"), {
+      const response = await fetch(homeworkApiUrl("/api/homework/analyze?action=submissions"), {
         method: "PATCH",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({id: recordId, patch})
@@ -3238,7 +3238,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       const record = homeworkSubmissions.find(item => String(item.id) === String(recordId));
       if (!record) return;
       if (!confirm(`${record.name || "학생"} 학생의 숙제 제출 1건만 삭제할까요?\n데일리테스트와 다른 학생 데이터는 삭제되지 않습니다.`)) return;
-      const response = await fetch(homeworkApiUrl("/api/homework/submissions"), {
+      const response = await fetch(homeworkApiUrl("/api/homework/analyze?action=submissions"), {
         method: "DELETE",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({id: recordId})
@@ -3256,7 +3256,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       const records = [...homeworkSubmissions, ...local].filter(Boolean);
       if (!records.length) return alert("이전할 기존 숙제 데이터가 없습니다.");
       if (!confirm(`기존 숙제 데이터 ${records.length}건을 Supabase로 한 번만 이전할까요?`)) return;
-      const response = await fetch(homeworkApiUrl("/api/homework/migrate"), {
+      const response = await fetch(homeworkApiUrl("/api/homework/analyze?action=migrate"), {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({records})
@@ -5218,7 +5218,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
         const result = await response.json();
         if (!response.ok || !result.ok) throw new Error(result.error || "숙제 사진 분석에 실패했습니다.");
         const record = normalizeHomeworkResult(result, {student, title, subject, memo});
-        const saveResponse = await fetch(homeworkApiUrl("/api/homework/submissions"), {
+        const saveResponse = await fetch(homeworkApiUrl("/api/homework/analyze?action=submissions"), {
           method: "POST",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({record})

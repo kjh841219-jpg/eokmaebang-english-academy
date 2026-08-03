@@ -1,4 +1,4 @@
-import {handleOptions, sendJson} from "../_solapi.js";
+import {handleOptions, sendJson} from "../../lib/solapi.js";
 
 function publicOrigin(req) {
   const proto = req.headers["x-forwarded-proto"] || "https";

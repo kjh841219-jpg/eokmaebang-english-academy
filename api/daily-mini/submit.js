@@ -1,5 +1,5 @@
-import {readPersistentState, writePersistentState} from "../_dashboard-state.js";
-import {handleOptions, readJson, sendJson} from "../_solapi.js";
+import {readPersistentState, writePersistentState} from "../../lib/dashboard-state.js";
+import {handleOptions, readJson, sendJson} from "../../lib/solapi.js";
 
 const koreaDate = () => new Date().toLocaleDateString("en-CA", {timeZone: "Asia/Seoul"});
 const koreaTime = () => new Date().toLocaleTimeString("ko-KR", {

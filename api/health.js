@@ -1,5 +1,5 @@
-import {handleOptions, sendJson, solapiStatus} from "./_solapi.js";
-import {persistentStorageStatus} from "./_dashboard-state.js";
+import {handleOptions, sendJson, solapiStatus} from "../lib/solapi.js";
+import {persistentStorageStatus} from "../lib/dashboard-state.js";
 
 export default async function handler(req, res) {
   if (handleOptions(req, res)) return;

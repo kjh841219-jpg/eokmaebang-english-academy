@@ -1,5 +1,5 @@
-import {readPersistentState, writePersistentState} from "../_dashboard-state.js";
-import {handleOptions, kakaoOptions, readJson, sendJson, sendSolapiMessages} from "../_solapi.js";
+import {readPersistentState, writePersistentState} from "../../lib/dashboard-state.js";
+import {handleOptions, kakaoOptions, readJson, sendJson, sendSolapiMessages} from "../../lib/solapi.js";
 
 const digits = value => String(value || "").replace(/[^0-9]/g, "");
 

@@ -1,6 +1,6 @@
-import {handleOptions, readJson, sendJson} from "../_solapi.js";
-import {emptyState, readPersistentState, writePersistentState} from "../_dashboard-state.js";
-import {homeworkDbConfigured, listHomeworkSubmissions} from "../homework/_db.js";
+import {handleOptions, readJson, sendJson} from "../../lib/solapi.js";
+import {emptyState, readPersistentState, writePersistentState} from "../../lib/dashboard-state.js";
+import {homeworkDbConfigured, listHomeworkSubmissions} from "../../lib/homework-db.js";
 
 function itemKey(item, index = 0) {
   return String(

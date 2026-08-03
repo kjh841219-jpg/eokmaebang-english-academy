@@ -1,4 +1,4 @@
-import {handleOptions, kakaoOptions, readJson, sendJson, sendSolapiMessages} from "../_solapi.js";
+import {handleOptions, kakaoOptions, readJson, sendJson, sendSolapiMessages} from "../../lib/solapi.js";
 
 export default async function handler(req, res) {
   if (handleOptions(req, res)) return;

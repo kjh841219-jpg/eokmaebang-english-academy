@@ -468,7 +468,7 @@
       try {
         const [stateResponse, homeworkResponse] = await Promise.all([
           fetch(noCacheUrl(apiUrl("/api/dashboard/state")), {cache: "no-store"}),
-          fetch(noCacheUrl(homeworkApiUrl("/api/homework/submissions")), {cache: "no-store"})
+          fetch(noCacheUrl(homeworkApiUrl("/api/homework/analyze?action=submissions")), {cache: "no-store"})
         ]);
         const data = await stateResponse.json();
         const homeworkData = await homeworkResponse.json();
@@ -510,7 +510,7 @@
       await loadHomeworkStatus();
       homeworkPollTimer = window.setInterval(loadHomeworkStatus, 10000);
       try {
-        const response = await fetch(noCacheUrl(homeworkApiUrl("/api/homework/config")), {cache: "no-store"});
+        const response = await fetch(noCacheUrl(homeworkApiUrl("/api/homework/analyze?action=config")), {cache: "no-store"});
         const config = await response.json();
         if (!config.ok || !config.configured || !window.supabase?.createClient) return;
         homeworkRealtimeClient = window.supabase.createClient(config.url, config.anonKey);
