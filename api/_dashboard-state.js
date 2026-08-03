@@ -98,12 +98,40 @@ export async function readPersistentState() {
     if (!result?.stream) return emptyState();
     const stored = JSON.parse(await new Response(result.stream).text());
     return {...emptyState(), ...stored, students: normalizeStudents(stored.students)};
+  } catch (error) {
+    const message = String(error?.message || "");
+    const status = Number(error?.status || error?.statusCode || error?.response?.status || 0);
+    if (status === 404 || message.toLowerCase().includes("not found")) {
+      return emptyState();
+    }
+    throw new Error(`Vercel Blob 저장소 읽기 실패: ${message || "알 수 없는 오류"}`);
+  }
+}
+
+export function persistentStorageStatus() {
+  return {
+    configured: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+    mode: process.env.BLOB_READ_WRITE_TOKEN ? "vercel-blob" : "server-memory"
+  };
+}
+
+function ensurePersistentStorage() {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return;
+  if (process.env.VERCEL) {
+    throw new Error("Vercel Blob 저장소 토큰(BLOB_READ_WRITE_TOKEN)이 없어 두 프로그램 간 자료가 공유 저장되지 않습니다.");
+  }
+}
+
+export async function readPersistentStateSafe() {
+  try {
+    return await readPersistentState();
   } catch {
     return emptyState();
   }
 }
 
 export async function writePersistentState(state) {
+  ensurePersistentStorage();
   const merged = {...emptyState(), ...state, students: normalizeStudents(state.students), savedAt: new Date().toISOString()};
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     globalThis.__beolgyoDashboardState = merged;
@@ -114,9 +142,6 @@ export async function writePersistentState(state) {
     allowOverwrite: true,
     contentType: "application/json",
     cacheControlMaxAge: 0
-  }).catch(error => {
-    const message = String(error?.message || "");
-    if (!message.toLowerCase().includes("suspended")) throw error;
   });
   return merged;
 }

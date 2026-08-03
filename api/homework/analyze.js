@@ -153,6 +153,9 @@ export default async function handler(req, res) {
     return sendJson(res, 200, result);
   } catch (error) {
     if (error.statusCode) return sendJson(res, error.statusCode, {ok: false, error: error.message});
+    if (payload.studentSubmit) {
+      return sendJson(res, 500, {ok: false, error: error.message || "숙제 제출 저장에 실패했습니다."});
+    }
     return sendJson(res, 200, fallbackHomeworkResult(payload, error.message || "숙제 사진 분석에 실패했습니다."));
   }
 }
