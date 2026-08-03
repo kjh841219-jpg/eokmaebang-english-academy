@@ -18,10 +18,19 @@ export async function readPersistentState() {
     globalThis.__beolgyoDashboardState ||= emptyState();
     return globalThis.__beolgyoDashboardState;
   }
-  const result = await get(STATE_PATH, {access: "private"});
-  if (!result?.stream) return emptyState();
-  const stored = JSON.parse(await new Response(result.stream).text());
-  return {...emptyState(), ...stored};
+  try {
+    const result = await get(STATE_PATH, {access: "private"});
+    if (!result?.stream) return emptyState();
+    const stored = JSON.parse(await new Response(result.stream).text());
+    return {...emptyState(), ...stored};
+  } catch (error) {
+    const message = String(error?.message || "").toLowerCase();
+    const status = Number(error?.status || error?.statusCode || error?.cause?.status || 0);
+    if (status === 404 || message.includes("not found") || message.includes("no such")) {
+      return emptyState();
+    }
+    throw error;
+  }
 }
 
 export async function writePersistentState(state) {
