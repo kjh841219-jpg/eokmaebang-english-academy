@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>벌교미래엔영어 숙제 사진 제출</title>
   <style>
     * { box-sizing: border-box; }
@@ -164,12 +167,17 @@
     const PUBLIC_API_BASE = "https://beolgyo-miraen-growth-api.vercel.app";
     const API_BASE = location.hostname.endsWith("vercel.app") ? "" : PUBLIC_API_BASE;
     const DASHBOARD_URL = `${PUBLIC_API_BASE}/?page=homeworkSubmit`;
+    const APP_VERSION = "2026-08-03-homework-live-refresh";
     const params = new URLSearchParams(location.search);
     let selectedStudentId = params.get("studentId") || "";
     let photoItems = [];
 
     function apiUrl(path) {
       return `${API_BASE}${path}`;
+    }
+
+    function noCacheUrl(url) {
+      return `${url}${url.includes("?") ? "&" : "?"}_=${Date.now()}`;
     }
 
     function todayKorea() {
@@ -332,7 +340,7 @@
       const summary = document.getElementById("summary");
       const grid = document.getElementById("statusGrid");
       try {
-        const response = await fetch(apiUrl("/api/dashboard/state"), {cache: "no-store"});
+        const response = await fetch(noCacheUrl(apiUrl("/api/dashboard/state")), {cache: "no-store"});
         const data = await response.json();
         if (!response.ok || !data.ok) throw new Error(data.error || "제출 현황을 불러오지 못했습니다.");
         const date = todayKorea();
@@ -366,9 +374,21 @@
       }
     }
 
+    async function checkAppVersion() {
+      if (!window.location.hostname.endsWith("vercel.app")) return;
+      const active = document.activeElement;
+      if (active && ["INPUT", "TEXTAREA"].includes(active.tagName)) return;
+      try {
+        const response = await fetch(noCacheUrl("/version.json"), {cache: "no-store"});
+        const data = await response.json();
+        if (data.version && data.version !== APP_VERSION) window.location.reload();
+      } catch (_) {}
+    }
+
     if (params.get("last4")) document.getElementById("last4").value = params.get("last4").replace(/[^0-9]/g, "").slice(-4);
     loadHomeworkStatus();
-    window.setInterval(loadHomeworkStatus, 10000);
+    window.setInterval(loadHomeworkStatus, 3000);
+    window.setInterval(checkAppVersion, 30000);
   </script>
 </body>
 </html>

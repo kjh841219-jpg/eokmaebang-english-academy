@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>학원관리대시보드</title>
   <style>
     :root {
@@ -2932,6 +2935,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
 
     const DASHBOARD_LOCAL_KEY = "beolgyo-academy-dashboard-state-v2";
     const PUBLIC_API_BASE = "https://beolgyo-miraen-growth-api.vercel.app";
+    const APP_VERSION = "2026-08-03-homework-live-refresh";
     let dashboardStateReady = false;
     let dashboardPersistTimer = null;
     let dashboardDirty = false;
@@ -2939,6 +2943,10 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
 
     function dashboardApiUrl(path) {
       return window.location.hostname.endsWith("vercel.app") ? path : `${PUBLIC_API_BASE}${path}`;
+    }
+
+    function noCacheUrl(url) {
+      return `${url}${url.includes("?") ? "&" : "?"}_=${Date.now()}`;
     }
 
     function ensureMessageClientId(message) {
@@ -3024,7 +3032,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
 
     async function loadDashboardState() {
       try {
-        const response = await fetch(dashboardApiUrl("/api/dashboard/state"), {cache: "no-store"});
+        const response = await fetch(noCacheUrl(dashboardApiUrl("/api/dashboard/state")), {cache: "no-store"});
         const data = await response.json();
         if (!response.ok || !data.ok) throw new Error(data.error || "저장 데이터를 불러오지 못했습니다.");
         if (!Array.isArray(data.students) || !data.students.length) {
@@ -3090,7 +3098,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       const active = document.activeElement;
       if (active && ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName)) return;
       try {
-        const response = await fetch(dashboardApiUrl("/api/dashboard/state"), {cache: "no-store"});
+        const response = await fetch(noCacheUrl(dashboardApiUrl("/api/dashboard/state")), {cache: "no-store"});
         const data = await response.json();
         if (!response.ok || !data.ok) return;
         const signature = dashboardSignature(data);
@@ -3101,6 +3109,17 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
         fillStudentSelects();
         renderAll(false);
         setDashboardSyncStatus(`최신 내용 반영 · ${currentTime()}`, "blue");
+      } catch (_) {}
+    }
+
+    async function checkAppVersion() {
+      if (!window.location.hostname.endsWith("vercel.app") || dashboardDirty) return;
+      const active = document.activeElement;
+      if (active && ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName)) return;
+      try {
+        const response = await fetch(noCacheUrl("/version.json"), {cache: "no-store"});
+        const data = await response.json();
+        if (data.version && data.version !== APP_VERSION) window.location.reload();
       } catch (_) {}
     }
 
@@ -3141,9 +3160,15 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       renderLectureManager();
       renderTextbookInventory();
       renderAll(false);
+      const requestedPage = new URLSearchParams(window.location.search).get("page");
+      if (requestedPage && document.getElementById(requestedPage)) {
+        const targetButton = [...document.querySelectorAll("nav button")].find(button => pages.find(([id, label]) => id === requestedPage && button.textContent === label));
+        showPage(requestedPage, targetButton || document.querySelector("nav button"));
+      }
       dashboardStateReady = true;
       if (!loadedFromServer) scheduleDashboardPersistence();
-      window.setInterval(refreshDashboardState, 5000);
+      window.setInterval(refreshDashboardState, 2000);
+      window.setInterval(checkAppVersion, 30000);
     }
 
     function mountExamEngineInsideMonthly() {
