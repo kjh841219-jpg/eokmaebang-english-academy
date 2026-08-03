@@ -3,6 +3,8 @@ import fs from "node:fs";
 import vm from "node:vm";
 
 const STATE_PATH = "academy/dashboard-state.json";
+const SUPABASE_TABLE = "academy_dashboard_state";
+const SUPABASE_STATE_ID = "main";
 let cachedFallbackStudents = null;
 
 function normalizeStudents(students) {
@@ -88,7 +90,66 @@ export const emptyState = () => ({
   dailyMiniBank: {}
 });
 
+function supabaseConfig() {
+  const url = String(process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
+  const serviceKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
+  return {url, serviceKey, configured: Boolean(url && serviceKey)};
+}
+
+function supabaseHeaders(serviceKey) {
+  return {
+    apikey: serviceKey,
+    Authorization: `Bearer ${serviceKey}`,
+    "Content-Type": "application/json",
+    Accept: "application/json"
+  };
+}
+
+async function readSupabaseState() {
+  const {url, serviceKey, configured} = supabaseConfig();
+  if (!configured) return null;
+  const response = await fetch(
+    `${url}/rest/v1/${SUPABASE_TABLE}?id=eq.${encodeURIComponent(SUPABASE_STATE_ID)}&select=state`,
+    {headers: supabaseHeaders(serviceKey), cache: "no-store"}
+  );
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(`Supabase 저장소 읽기 실패(${response.status}): ${text || response.statusText}`);
+  }
+  const rows = await response.json();
+  const stored = Array.isArray(rows) && rows[0]?.state ? rows[0].state : null;
+  return stored ? {...emptyState(), ...stored, students: normalizeStudents(stored.students)} : emptyState();
+}
+
+async function writeSupabaseState(state) {
+  const {url, serviceKey, configured} = supabaseConfig();
+  if (!configured) return null;
+  const response = await fetch(
+    `${url}/rest/v1/${SUPABASE_TABLE}?on_conflict=id`,
+    {
+      method: "POST",
+      headers: {
+        ...supabaseHeaders(serviceKey),
+        Prefer: "resolution=merge-duplicates,return=representation"
+      },
+      body: JSON.stringify([{
+        id: SUPABASE_STATE_ID,
+        state,
+        updated_at: new Date().toISOString()
+      }])
+    }
+  );
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(`Supabase 저장소 저장 실패(${response.status}): ${text || response.statusText}`);
+  }
+  return state;
+}
+
 export async function readPersistentState() {
+  if (supabaseConfig().configured) {
+    return await readSupabaseState();
+  }
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     globalThis.__beolgyoDashboardState ||= emptyState();
     return globalThis.__beolgyoDashboardState;
@@ -110,16 +171,20 @@ export async function readPersistentState() {
 }
 
 export function persistentStorageStatus() {
+  const supabase = supabaseConfig();
   return {
-    configured: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
-    mode: process.env.BLOB_READ_WRITE_TOKEN ? "vercel-blob" : "server-memory"
+    configured: supabase.configured || Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+    mode: supabase.configured ? "supabase" : (process.env.BLOB_READ_WRITE_TOKEN ? "vercel-blob" : "server-memory"),
+    supabaseConfigured: supabase.configured,
+    blobConfigured: Boolean(process.env.BLOB_READ_WRITE_TOKEN)
   };
 }
 
 function ensurePersistentStorage() {
+  if (supabaseConfig().configured) return;
   if (process.env.BLOB_READ_WRITE_TOKEN) return;
   if (process.env.VERCEL) {
-    throw new Error("Vercel Blob 저장소 토큰(BLOB_READ_WRITE_TOKEN)이 없어 두 프로그램 간 자료가 공유 저장되지 않습니다.");
+    throw new Error("실시간 공유 저장소가 설정되지 않았습니다. SUPABASE_URL과 SUPABASE_SERVICE_ROLE_KEY를 Vercel 환경변수에 추가해 주세요.");
   }
 }
 
@@ -134,6 +199,10 @@ export async function readPersistentStateSafe() {
 export async function writePersistentState(state) {
   ensurePersistentStorage();
   const merged = {...emptyState(), ...state, students: normalizeStudents(state.students), savedAt: new Date().toISOString()};
+  if (supabaseConfig().configured) {
+    await writeSupabaseState(merged);
+    return merged;
+  }
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     globalThis.__beolgyoDashboardState = merged;
     return merged;
