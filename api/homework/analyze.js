@@ -1,6 +1,7 @@
 import {readPersistentState, writePersistentState} from "../_dashboard-state.js";
 import {handleOptions, readJson, sendJson} from "../_solapi.js";
 import {analyzeHomeworkPayload, fallbackHomeworkResult} from "../../lib/homework-ai.js";
+import {homeworkDbConfigured, insertHomeworkSubmission} from "./_db.js";
 
 const digits = value => String(value || "").replace(/[^0-9]/g, "");
 const koreaDate = () => new Date().toLocaleDateString("en-CA", {timeZone: "Asia/Seoul"});
@@ -124,10 +125,14 @@ async function handleStudentSubmit(payload) {
     analysis = fallbackHomeworkResult(analysisPayload, error.message);
   }
 
-  const record = normalizeRecord(analysis, payload, student);
-  const homeworkSubmissions = Array.isArray(state.homeworkSubmissions) ? [...state.homeworkSubmissions] : [];
-  homeworkSubmissions.unshift(record);
-  await writePersistentState({...state, homeworkSubmissions: homeworkSubmissions.slice(0, 300)});
+  let record = normalizeRecord(analysis, payload, student);
+  if (homeworkDbConfigured()) {
+    record = await insertHomeworkSubmission(record);
+  } else {
+    const homeworkSubmissions = Array.isArray(state.homeworkSubmissions) ? [...state.homeworkSubmissions] : [];
+    homeworkSubmissions.unshift(record);
+    await writePersistentState({...state, homeworkSubmissions: homeworkSubmissions.slice(0, 300)});
+  }
 
   return {
     ok: true,

@@ -1354,6 +1354,7 @@
       .attendance-actions { justify-content: flex-start; }
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="app">
@@ -1682,7 +1683,8 @@
           <div class="notice">학생의 숙제 사진을 업로드하면 AI가 문제와 답안을 판독해 예상 정답, 채점 결과, 학생별 피드백을 생성합니다. 사진이 흐리거나 답안이 불명확한 문항은 “추가 확인 필요”로 표시됩니다.</div>
           <div class="toolbar">
             <label style="max-width:220px;">현황 기준 월<input id="homeworkMonth" type="month" onchange="renderHomeworkDashboard()" /></label>
-            <button class="btn secondary" type="button" onclick="renderHomeworkDashboard()">숙제현황 새로고침</button>
+            <button class="btn secondary" type="button" onclick="fetchHomeworkSubmissions({force:true, showStatus:true})">숙제현황 새로고침</button>
+            <button class="btn amber" type="button" onclick="migrateLocalHomeworkToSupabase()">기존 숙제 Supabase 이전</button>
           </div>
           <div class="chart-grid">
             <div class="chart-card">
@@ -1730,7 +1732,7 @@
           <div id="homeworkResult" class="preview">AI 분석 결과와 학생별 피드백이 여기에 표시됩니다.</div>
         </div>
         <div class="section">
-          <div class="toolbar"><h2 style="margin-right:auto;">학생별 숙제 피드백 기록</h2><button class="btn secondary" type="button" onclick="renderHomeworkSubmissions()">새로고침</button></div>
+          <div class="toolbar"><h2 style="margin-right:auto;">학생별 숙제 피드백 기록</h2><button class="btn secondary" type="button" onclick="fetchHomeworkSubmissions({force:true, showStatus:true})">새로고침</button></div>
           <div class="table-wrap"><table id="homeworkFeedbackTable"></table></div>
         </div>
       </section>
@@ -3065,16 +3067,20 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
             dailyCount += 1;
           } else {
             const record = normalizeImportedHomework(payload);
-            const existing = homeworkSubmissions.findIndex(item => item.id === record.id);
-            if (existing >= 0) homeworkSubmissions.splice(existing, 1, record);
-            else homeworkSubmissions.unshift(record);
+            const response = await fetch(homeworkApiUrl("/api/homework/submissions"), {
+              method: "POST",
+              headers: {"Content-Type": "application/json"},
+              body: JSON.stringify({record})
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.ok) throw new Error(data.error || "숙제 결과 JSON 저장에 실패했습니다.");
             homeworkCount += 1;
           }
         } catch (error) {
           errors.push(`${file.name}: ${error.message}`);
         }
       }
-      if (homeworkCount) persistHomeworkSubmissions(false);
+      if (homeworkCount) await fetchHomeworkSubmissions({force: true, showStatus: true});
       if (dailyCount) localStorage.setItem("beolgyo-daily-cbt-submissions", JSON.stringify(dailyMiniTests.slice(0, 300)));
       renderAll();
       scheduleDashboardPersistence();
@@ -3085,14 +3091,24 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
     const DASHBOARD_LOCAL_KEY = "beolgyo-academy-dashboard-state-v2";
     const PUBLIC_API_BASE = "https://beolgyo-miraen-growth-api.vercel.app";
     const LOCAL_API_BASE = "http://127.0.0.1:8789";
-    const APP_VERSION = "2026-08-03-html-share-json-v5";
+    const APP_VERSION = "2026-08-03-homework-supabase-v6";
     let dashboardStateReady = false;
     let dashboardPersistTimer = null;
     let dashboardDirty = false;
     let lastDashboardSignature = "";
+    let homeworkRealtimeClient = null;
+    let homeworkRealtimeChannel = null;
+    let homeworkPollTimer = null;
+    let homeworkFetchInFlight = false;
+    let homeworkSaveInFlight = false;
+    let homeworkMigratedKey = "beolgyo-homework-supabase-migrated-v1";
 
     function dashboardApiUrl(path) {
       return window.location.hostname.endsWith("vercel.app") ? path : `${LOCAL_API_BASE}${path}`;
+    }
+
+    function homeworkApiUrl(path) {
+      return window.location.hostname.endsWith("vercel.app") ? path : `${PUBLIC_API_BASE}${path}`;
     }
 
     function noCacheUrl(url) {
@@ -3115,7 +3131,7 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
         smsContentTemplates: smsContentTemplates.map(template => ({...template})),
         attendanceRecords: attendanceRecords.map(record => ({...record})),
         academySchedules: academySchedules.map(schedule => ({...schedule})),
-        homeworkSubmissions: homeworkSubmissions.map(record => ({...record})),
+        homeworkSubmissions: [],
         dailyMiniTests: dailyMiniTests.map(record => ({...record})),
         dailyMiniBank: dailyMiniQuestionBank
       };
@@ -3132,6 +3148,124 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
         dailyMiniTests: state.dailyMiniTests || [],
         dailyMiniBank: state.dailyMiniBank || {}
       });
+    }
+
+    function formatKoreaDateTime(value) {
+      if (!value) return "-";
+      try {
+        return new Date(value).toLocaleString("ko-KR", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          timeZone: "Asia/Seoul"
+        });
+      } catch {
+        return String(value);
+      }
+    }
+
+    async function fetchHomeworkSubmissions(options = {}) {
+      if (homeworkFetchInFlight && !options.force) return;
+      homeworkFetchInFlight = true;
+      try {
+        const response = await fetch(noCacheUrl(homeworkApiUrl("/api/homework/submissions")), {cache: "no-store"});
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) throw new Error(data.error || "숙제 제출 목록을 불러오지 못했습니다.");
+        const records = Array.isArray(data.homeworkSubmissions) ? data.homeworkSubmissions : [];
+        homeworkSubmissions.splice(0, homeworkSubmissions.length, ...records);
+        localStorage.setItem("beolgyo-homework-submissions-supabase-cache-v1", JSON.stringify(records.slice(0, 300)));
+        renderHomeworkSubmissions();
+        renderHomeworkDashboard();
+        if (options.showStatus) setDashboardSyncStatus(`숙제 최신 내용 반영 · ${currentTime()}`, "blue");
+      } catch (error) {
+        const status = document.getElementById("homeworkStatus");
+        if (status && options.showError !== false) {
+          status.className = "notice error";
+          status.textContent = `숙제 목록 갱신 실패: ${error.message}`;
+        }
+      } finally {
+        homeworkFetchInFlight = false;
+      }
+    }
+
+    async function startHomeworkRealtime() {
+      stopHomeworkRealtime(true);
+      await fetchHomeworkSubmissions({showStatus: false, showError: false});
+      homeworkPollTimer = window.setInterval(() => fetchHomeworkSubmissions({showStatus: false, showError: false}), 10000);
+      try {
+        const response = await fetch(noCacheUrl(homeworkApiUrl("/api/homework/config")), {cache: "no-store"});
+        const config = await response.json();
+        if (!config.ok || !config.configured || !window.supabase?.createClient) return;
+        homeworkRealtimeClient = window.supabase.createClient(config.url, config.anonKey);
+        homeworkRealtimeChannel = homeworkRealtimeClient
+          .channel("homework_submissions_dashboard")
+          .on("postgres_changes", {event: "*", schema: "public", table: "homework_submissions"}, () => {
+            fetchHomeworkSubmissions({force: true, showStatus: true, showError: false});
+          })
+          .subscribe();
+      } catch (_) {
+        // Supabase Realtime 연결이 막혀도 10초 폴링으로 최신 내용을 가져옵니다.
+      }
+    }
+
+    function stopHomeworkRealtime(clearTimer = true) {
+      if (homeworkRealtimeClient && homeworkRealtimeChannel) {
+        try { homeworkRealtimeClient.removeChannel(homeworkRealtimeChannel); } catch (_) {}
+      }
+      homeworkRealtimeClient = null;
+      homeworkRealtimeChannel = null;
+      if (clearTimer && homeworkPollTimer) {
+        window.clearInterval(homeworkPollTimer);
+        homeworkPollTimer = null;
+      }
+    }
+
+    async function saveHomeworkSubmissionPatch(recordId, patch) {
+      const response = await fetch(homeworkApiUrl("/api/homework/submissions"), {
+        method: "PATCH",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({id: recordId, patch})
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error(data.error || "숙제 수정에 실패했습니다.");
+      await fetchHomeworkSubmissions({force: true, showStatus: true});
+      return data.result?.record;
+    }
+
+    async function deleteHomeworkSubmission(recordId) {
+      const record = homeworkSubmissions.find(item => String(item.id) === String(recordId));
+      if (!record) return;
+      if (!confirm(`${record.name || "학생"} 학생의 숙제 제출 1건만 삭제할까요?\n데일리테스트와 다른 학생 데이터는 삭제되지 않습니다.`)) return;
+      const response = await fetch(homeworkApiUrl("/api/homework/submissions"), {
+        method: "DELETE",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({id: recordId})
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) return alert(data.error || "숙제 삭제에 실패했습니다.");
+      await fetchHomeworkSubmissions({force: true, showStatus: true});
+    }
+
+    async function migrateLocalHomeworkToSupabase() {
+      if (localStorage.getItem(homeworkMigratedKey) === "done") {
+        return alert("이 브라우저의 기존 숙제 데이터는 이미 Supabase 이전 완료로 표시되어 있습니다.");
+      }
+      const local = JSON.parse(localStorage.getItem("beolgyo-homework-submissions-v1") || "[]");
+      const records = [...homeworkSubmissions, ...local].filter(Boolean);
+      if (!records.length) return alert("이전할 기존 숙제 데이터가 없습니다.");
+      if (!confirm(`기존 숙제 데이터 ${records.length}건을 Supabase로 한 번만 이전할까요?`)) return;
+      const response = await fetch(homeworkApiUrl("/api/homework/migrate"), {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({records})
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) return alert(data.error || "숙제 데이터 이전에 실패했습니다.");
+      localStorage.setItem(homeworkMigratedKey, "done");
+      await fetchHomeworkSubmissions({force: true, showStatus: true});
+      alert(`숙제 데이터 이전 완료\n신규 ${data.insertedCount || 0}건, 중복 제외 ${data.skippedCount || 0}건`);
     }
 
     function applyDashboardState(state) {
@@ -3321,9 +3455,11 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
         showPage(requestedPage, targetButton || document.querySelector("nav button"));
       }
       dashboardStateReady = true;
+      startHomeworkRealtime();
       if (!loadedFromServer) scheduleDashboardPersistence();
       window.setInterval(refreshDashboardState, 2000);
       window.setInterval(checkAppVersion, 30000);
+      window.addEventListener("beforeunload", () => stopHomeworkRealtime(true));
     }
 
     function mountExamEngineInsideMonthly() {
@@ -5046,7 +5182,6 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       localStorage.setItem("beolgyo-homework-submissions-v1", JSON.stringify(homeworkSubmissions.slice(0, 300)));
       renderHomeworkSubmissions();
       renderHomeworkDashboard();
-      if (shouldSchedule) scheduleDashboardPersistence();
     }
 
     async function analyzeHomeworkPhotos() {
@@ -5054,9 +5189,17 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       const status = document.getElementById("homeworkStatus");
       if (!student) return alert("학생을 선택해주세요.");
       if (!homeworkPhotoPreviews.length) return alert("분석할 숙제 사진을 업로드해주세요.");
+      if (homeworkSaveInFlight) return;
       const title = document.getElementById("homeworkTitle").value.trim() || "숙제 사진 제출";
       const subject = document.getElementById("homeworkSubject").value.trim();
       const memo = document.getElementById("homeworkMemo").value.trim();
+      homeworkSaveInFlight = true;
+      const submitButton = [...document.querySelectorAll("button")].find(button => button.textContent.includes("사진 AI 분석"));
+      const originalButtonText = submitButton?.textContent || "";
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = "저장 중...";
+      }
       status.className = "notice";
       status.innerHTML = `<div class="progress-wrap"><div class="spinner"></div><div><strong>AI가 숙제 사진을 판독하고 있습니다.</strong><div class="muted">문제, 학생 답안, 예상 정답, 피드백을 생성하는 중입니다.</div></div></div>`;
       const payload = {
@@ -5075,9 +5218,16 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
         const result = await response.json();
         if (!response.ok || !result.ok) throw new Error(result.error || "숙제 사진 분석에 실패했습니다.");
         const record = normalizeHomeworkResult(result, {student, title, subject, memo});
-        homeworkSubmissions.unshift(record);
-        persistHomeworkSubmissions();
-        renderHomeworkResult(record);
+        const saveResponse = await fetch(homeworkApiUrl("/api/homework/submissions"), {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({record})
+        });
+        const saveData = await saveResponse.json().catch(() => ({}));
+        if (!saveResponse.ok || !saveData.ok) throw new Error(saveData.error || "숙제 기록 저장에 실패했습니다.");
+        const savedRecord = saveData.result?.record || record;
+        renderHomeworkResult(savedRecord);
+        await fetchHomeworkSubmissions({force: true, showStatus: true});
         status.className = result.source === "fallback" ? "notice error" : "notice";
         status.textContent = result.source === "fallback"
           ? "AI 분석 연결이 불안정하여 선생님 확인용 기록으로 저장했습니다."
@@ -5085,6 +5235,12 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       } catch (error) {
         status.className = "notice error";
         status.textContent = `숙제 사진 분석 실패: ${error.message}`;
+      } finally {
+        homeworkSaveInFlight = false;
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = originalButtonText || "사진 AI 분석 및 피드백 생성";
+        }
       }
     }
 
@@ -5172,13 +5328,29 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       `;
     }
 
-    function saveHomeworkEditedFeedback(recordId) {
+    async function saveHomeworkEditedFeedback(recordId) {
       const record = homeworkSubmissions.find(item => item.id === recordId);
       if (!record) return;
-      record.feedback = document.getElementById("homeworkStudentFeedbackEdit")?.value.trim() || record.feedback;
-      record.parentFeedback = document.getElementById("homeworkParentFeedbackEdit")?.value.trim() || record.parentFeedback;
-      persistHomeworkSubmissions();
-      alert("숙제 피드백을 저장했습니다.");
+      const button = document.activeElement?.tagName === "BUTTON" ? document.activeElement : null;
+      const originalText = button?.textContent || "";
+      if (button) {
+        button.disabled = true;
+        button.textContent = "저장 중...";
+      }
+      try {
+        await saveHomeworkSubmissionPatch(recordId, {
+          feedback: document.getElementById("homeworkStudentFeedbackEdit")?.value.trim() || record.feedback,
+          parentFeedback: document.getElementById("homeworkParentFeedbackEdit")?.value.trim() || record.parentFeedback
+        });
+        alert("숙제 피드백을 저장했습니다.");
+      } catch (error) {
+        alert(`숙제 피드백 저장 실패: ${error.message}`);
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.textContent = originalText || "피드백 수정 저장";
+        }
+      }
     }
 
     async function copyHomeworkParentFeedback(recordId) {
@@ -5309,15 +5481,18 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
       table("homeworkOverviewTable", ["학생", "숙제량", "숙제정도", "최근 숙제", "피드백", "완료여부", "관리"], rows);
     }
 
-    function markHomeworkStatus(recordId, status) {
+    async function markHomeworkStatus(recordId, status) {
       const record = homeworkSubmissions.find(item => item.id === recordId);
       if (!record) return;
-      record.status = status;
-      record.needsReview = status === "보완필요";
+      const patch = {status, needsReview: status === "보완필요"};
       if (status === "완료" && !record.parentFeedback && !record.feedback) {
-        record.feedback = "숙제 제출과 풀이 과정을 확인했습니다. 현재 흐름을 유지하면 좋겠습니다.";
+        patch.feedback = "숙제 제출과 풀이 과정을 확인했습니다. 현재 흐름을 유지하면 좋겠습니다.";
       }
-      persistHomeworkSubmissions();
+      try {
+        await saveHomeworkSubmissionPatch(recordId, patch);
+      } catch (error) {
+        alert(`숙제 상태 수정 실패: ${error.message}`);
+      }
     }
 
     async function sendHomeworkFeedbackSms(recordId) {
@@ -5332,13 +5507,15 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
         record.feedbackSent = "문자 발송접수";
         record.feedbackSentAt = new Date().toISOString();
         messages.unshift({date: today, name: record.name, phone, type: "숙제피드백 문자", title: "숙제 피드백", body, status: "발송접수", groupId: result?.result?.groupInfo?.groupId || result?.result?.groupId || ""});
-        persistHomeworkSubmissions();
+        scheduleDashboardPersistence();
+        await saveHomeworkSubmissionPatch(recordId, {feedbackSent: record.feedbackSent, feedbackSentAt: record.feedbackSentAt});
         renderMessages();
         alert(`${record.name} 학생 숙제 피드백 문자를 발송 접수했습니다.`);
       } catch (error) {
         record.feedbackSent = "문자 발송실패";
         messages.unshift({date: today, name: record.name, phone, type: "숙제피드백 문자", title: "숙제 피드백", body, status: "발송실패", error: error.message});
-        persistHomeworkSubmissions();
+        scheduleDashboardPersistence();
+        try { await saveHomeworkSubmissionPatch(recordId, {feedbackSent: record.feedbackSent, feedbackSentAt: new Date().toISOString()}); } catch (_) {}
         alert(`숙제 피드백 문자 발송 실패: ${error.message}`);
       }
     }
@@ -5355,7 +5532,8 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
         record.feedbackSent = "카카오 발송접수";
         record.feedbackSentAt = new Date().toISOString();
         messages.unshift({date: today, name: record.name, phone, type: "숙제피드백 카카오", title: "숙제 피드백", body, status: "알림톡 접수", groupId: result?.result?.groupInfo?.groupId || result?.result?.groupId || ""});
-        persistHomeworkSubmissions();
+        scheduleDashboardPersistence();
+        await saveHomeworkSubmissionPatch(recordId, {feedbackSent: record.feedbackSent, feedbackSentAt: record.feedbackSentAt});
         renderMessages();
         alert(`${record.name} 학생 숙제 피드백 카카오 알림톡을 접수했습니다.`);
       } catch (kakaoError) {
@@ -5364,13 +5542,15 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
           record.feedbackSent = "카카오 실패 후 문자대체";
           record.feedbackSentAt = new Date().toISOString();
           messages.unshift({date: today, name: record.name, phone, type: "숙제피드백 문자대체", title: "숙제 피드백", body, status: "문자 대체접수", groupId: result?.result?.groupInfo?.groupId || result?.result?.groupId || ""});
-          persistHomeworkSubmissions();
+          scheduleDashboardPersistence();
+          await saveHomeworkSubmissionPatch(recordId, {feedbackSent: record.feedbackSent, feedbackSentAt: record.feedbackSentAt});
           renderMessages();
           alert(`${record.name} 학생 숙제 피드백은 카카오 실패 후 문자로 대체 접수했습니다.`);
         } catch (smsError) {
           record.feedbackSent = "발송실패";
           messages.unshift({date: today, name: record.name, phone, type: "숙제피드백", title: "숙제 피드백", body, status: "발송실패", error: `${kakaoError.message} / ${smsError.message}`});
-          persistHomeworkSubmissions();
+          scheduleDashboardPersistence();
+          try { await saveHomeworkSubmissionPatch(recordId, {feedbackSent: record.feedbackSent, feedbackSentAt: new Date().toISOString()}); } catch (_) {}
           alert(`카카오와 문자 대체발송이 모두 실패했습니다: ${smsError.message}`);
         }
       }
@@ -5379,23 +5559,22 @@ Vocabulary, Grammar, Reading, Story, Writing, Integrated 유형을 교재별 성
     function renderHomeworkSubmissions() {
       const tableEl = document.getElementById("homeworkFeedbackTable");
       if (!tableEl) return;
-      table("homeworkFeedbackTable", ["제출일", "제출시간", "학생", "숙제명", "교재/과목", "점수", "정답", "피드백", "확인", "발송", "관리"],
+      table("homeworkFeedbackTable", ["학생 이름", "숙제 제목", "제출 내용", "제출 상태", "제출 시간", "수정 시간", "점수", "발송", "수정", "삭제"],
         homeworkSubmissions.map(record => [
-          record.date || "-",
-          homeworkRecordTime(record),
           escapeHtml(record.name || "-"),
           escapeHtml(record.title || "-"),
-          escapeHtml(record.subject || "-"),
-          `${Number(record.score || 0)}점`,
-          `${Number(record.correctCount || 0)}/${Number(record.totalQuestions || 0)}`,
-          escapeHtml((record.feedback || record.summary || "-").slice(0, 140)),
+          escapeHtml((record.memo || record.subject || record.summary || record.feedback || "-").slice(0, 120)),
           pill(homeworkCompletionLabel(record)),
+          formatKoreaDateTime(record.createdAt || record.submittedAt || record.date),
+          formatKoreaDateTime(record.updatedAt),
+          `${Number(record.score || 0)}점`,
           escapeHtml(record.feedbackSent || "미발송"),
           `<button class="btn small secondary" onclick="renderHomeworkResultById('${record.id}')">보기</button>
            <button class="btn small" onclick="markHomeworkStatus('${record.id}','완료')">완료</button>
            <button class="btn small amber" onclick="markHomeworkStatus('${record.id}','보완필요')">보완</button>
            <button class="btn small blue" onclick="sendHomeworkFeedbackSms('${record.id}')">문자</button>
-           <button class="btn small amber" onclick="sendHomeworkFeedbackKakao('${record.id}')">카카오</button>`
+           <button class="btn small amber" onclick="sendHomeworkFeedbackKakao('${record.id}')">카카오</button>`,
+          `<button class="btn small red" onclick="deleteHomeworkSubmission('${record.id}')">삭제</button>`
         ]));
     }
 
@@ -9997,5 +10176,4 @@ ${report.ai_generated_comment}
   </script>
 </body>
 </html>
-
 

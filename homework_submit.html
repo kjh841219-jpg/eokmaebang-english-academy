@@ -114,6 +114,7 @@
       button, a.button { width: 100%; }
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <main>
@@ -168,14 +169,16 @@
 
   <script>
     const PUBLIC_API_BASE = "https://beolgyo-miraen-growth-api.vercel.app";
-    const LOCAL_API_BASE = "http://127.0.0.1:8789";
-    const API_BASE = location.hostname.endsWith("vercel.app") ? "" : LOCAL_API_BASE;
+    const API_BASE = location.hostname.endsWith("vercel.app") ? "" : PUBLIC_API_BASE;
     const DASHBOARD_URL = `${PUBLIC_API_BASE}/?page=homeworkSubmit`;
-    const APP_VERSION = "2026-08-03-html-share-json-v5";
+    const APP_VERSION = "2026-08-03-homework-supabase-v6";
     const params = new URLSearchParams(location.search);
     let selectedStudentId = params.get("studentId") || "";
     let photoItems = [];
     let lastHomeworkRecord = null;
+    let homeworkRealtimeClient = null;
+    let homeworkRealtimeChannel = null;
+    let homeworkPollTimer = null;
 
     function apiUrl(path) {
       return `${API_BASE}${path}`;
@@ -183,6 +186,10 @@
 
     function noCacheUrl(url) {
       return `${url}${url.includes("?") ? "&" : "?"}_=${Date.now()}`;
+    }
+
+    function homeworkApiUrl(path) {
+      return apiUrl(path);
     }
 
     function todayKorea() {
@@ -459,12 +466,17 @@
       const summary = document.getElementById("summary");
       const grid = document.getElementById("statusGrid");
       try {
-        const response = await fetch(noCacheUrl(apiUrl("/api/dashboard/state")), {cache: "no-store"});
-        const data = await response.json();
-        if (!response.ok || !data.ok) throw new Error(data.error || "제출 현황을 불러오지 못했습니다.");
+        const [stateResponse, homeworkResponse] = await Promise.all([
+          fetch(noCacheUrl(apiUrl("/api/dashboard/state")), {cache: "no-store"}),
+          fetch(noCacheUrl(homeworkApiUrl("/api/homework/submissions")), {cache: "no-store"})
+        ]);
+        const data = await stateResponse.json();
+        const homeworkData = await homeworkResponse.json();
+        if (!stateResponse.ok || !data.ok) throw new Error(data.error || "학생 정보를 불러오지 못했습니다.");
+        if (!homeworkResponse.ok || !homeworkData.ok) throw new Error(homeworkData.error || "숙제 제출 현황을 불러오지 못했습니다.");
         const date = todayKorea();
         const students = Array.isArray(data.students) ? data.students.filter(student => student.status !== "퇴원생") : [];
-        const records = (Array.isArray(data.homeworkSubmissions) ? data.homeworkSubmissions : [])
+        const records = (Array.isArray(homeworkData.homeworkSubmissions) ? homeworkData.homeworkSubmissions : [])
           .filter(record => String(record.date || "").startsWith(date))
           .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
         const submitted = new Set(records.map(record => String(record.studentId || record.name))).size;
@@ -493,6 +505,34 @@
       }
     }
 
+    async function startHomeworkRealtime() {
+      stopHomeworkRealtime();
+      await loadHomeworkStatus();
+      homeworkPollTimer = window.setInterval(loadHomeworkStatus, 10000);
+      try {
+        const response = await fetch(noCacheUrl(homeworkApiUrl("/api/homework/config")), {cache: "no-store"});
+        const config = await response.json();
+        if (!config.ok || !config.configured || !window.supabase?.createClient) return;
+        homeworkRealtimeClient = window.supabase.createClient(config.url, config.anonKey);
+        homeworkRealtimeChannel = homeworkRealtimeClient
+          .channel("homework_submissions_student")
+          .on("postgres_changes", {event: "*", schema: "public", table: "homework_submissions"}, () => loadHomeworkStatus())
+          .subscribe();
+      } catch (_) {}
+    }
+
+    function stopHomeworkRealtime() {
+      if (homeworkRealtimeClient && homeworkRealtimeChannel) {
+        try { homeworkRealtimeClient.removeChannel(homeworkRealtimeChannel); } catch (_) {}
+      }
+      homeworkRealtimeClient = null;
+      homeworkRealtimeChannel = null;
+      if (homeworkPollTimer) {
+        window.clearInterval(homeworkPollTimer);
+        homeworkPollTimer = null;
+      }
+    }
+
     async function checkAppVersion() {
       if (!window.location.hostname.endsWith("vercel.app")) return;
       const active = document.activeElement;
@@ -505,9 +545,9 @@
     }
 
     if (params.get("last4")) document.getElementById("last4").value = params.get("last4").replace(/[^0-9]/g, "").slice(-4);
-    loadHomeworkStatus();
-    window.setInterval(loadHomeworkStatus, 3000);
+    startHomeworkRealtime();
     window.setInterval(checkAppVersion, 30000);
+    window.addEventListener("beforeunload", stopHomeworkRealtime);
   </script>
 </body>
 </html>

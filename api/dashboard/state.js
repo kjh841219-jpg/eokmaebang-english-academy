@@ -1,5 +1,6 @@
 import {handleOptions, readJson, sendJson} from "../_solapi.js";
 import {emptyState, readPersistentState, writePersistentState} from "../_dashboard-state.js";
+import {homeworkDbConfigured, listHomeworkSubmissions} from "../homework/_db.js";
 
 function itemKey(item, index = 0) {
   return String(
@@ -42,7 +43,11 @@ export default async function handler(req, res) {
 
   if (req.method === "GET") {
     try {
-      return sendJson(res, 200, {ok: true, ...(await readPersistentState())});
+      const state = await readPersistentState();
+      if (homeworkDbConfigured()) {
+        state.homeworkSubmissions = await listHomeworkSubmissions();
+      }
+      return sendJson(res, 200, {ok: true, ...state});
     } catch (error) {
       if (String(error?.message || "").toLowerCase().includes("not found")) {
         return sendJson(res, 200, {ok: true, ...emptyState()});
@@ -55,6 +60,7 @@ export default async function handler(req, res) {
     try {
       const data = await readJson(req);
       const existing = await readPersistentState();
+      const useHomeworkDb = homeworkDbConfigured();
       const state = {
         savedAt: new Date().toISOString(),
         students: mergeStudents(existing.students, data.students),
@@ -62,11 +68,14 @@ export default async function handler(req, res) {
         smsContentTemplates: mergeList(existing.smsContentTemplates, data.smsContentTemplates, 200),
         attendanceRecords: mergeList(existing.attendanceRecords, data.attendanceRecords, 1500),
         academySchedules: mergeList(existing.academySchedules, data.academySchedules, 500),
-        homeworkSubmissions: mergeList(existing.homeworkSubmissions, data.homeworkSubmissions, 500),
+        homeworkSubmissions: useHomeworkDb ? (Array.isArray(existing.homeworkSubmissions) ? existing.homeworkSubmissions : []) : mergeList(existing.homeworkSubmissions, data.homeworkSubmissions, 500),
         dailyMiniTests: mergeList(existing.dailyMiniTests, data.dailyMiniTests, 1000),
         dailyMiniBank: data.dailyMiniBank && typeof data.dailyMiniBank === "object" ? data.dailyMiniBank : {}
       };
       const saved = await writePersistentState(state);
+      if (useHomeworkDb) {
+        saved.homeworkSubmissions = await listHomeworkSubmissions();
+      }
       const messageIds = {};
       state.messages.forEach(message => {
         if (message.clientId && !message.dbId) messageIds[message.clientId] = message.clientId;

@@ -91,7 +91,7 @@ export const emptyState = () => ({
 });
 
 function supabaseConfig() {
-  const url = String(process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
+  const url = String(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim().replace(/\/+$/, "");
   const serviceKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
   return {url, serviceKey, configured: Boolean(url && serviceKey)};
 }
