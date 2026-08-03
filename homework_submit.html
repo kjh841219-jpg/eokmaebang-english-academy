@@ -259,10 +259,10 @@
       document.querySelectorAll("button").forEach(button => button.disabled = true);
 
       try {
-        const response = await fetch(apiUrl("/api/homework/submit"), {
+        const response = await fetch(apiUrl("/api/homework/analyze"), {
           method: "POST",
           headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({last4, selectedStudentId, title, subject, memo, images: photoItems})
+          body: JSON.stringify({studentSubmit: true, last4, selectedStudentId, title, subject, memo, images: photoItems})
         });
         const data = await response.json();
         if (data.needsSelection || data.needSelect) {
