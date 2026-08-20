@@ -168,21 +168,12 @@
       <section class="panel" style="margin-bottom:14px">
         <div class="toolbar">
           <div>
-            <h2>학생별 · 전체 학습내용 입력</h2>
-            <p class="sub">학생을 선택하면 해당 학생에게만 작성할 수 있고, 필요하면 보이는 학생 또는 전체 학생에게도 한꺼번에 적용할 수 있습니다.</p>
+            <h2>전체 공통 학습내용 일괄 입력</h2>
+            <p class="sub">오늘 같은 내용을 진행한 학생들에게 한 번에 적용하는 공통 입력란입니다. 학생 한 명만 수정할 때는 아래 선택 학생 상세 피드백에서 작성하세요.</p>
           </div>
-          <span class="badge">학생별/전체 관리</span>
+          <span class="badge">전체 일괄 관리</span>
         </div>
-        <div class="detail-grid" style="margin-bottom:12px">
-          <div>
-            <label for="bulkTargetStudent">작성 대상 학생</label>
-            <select id="bulkTargetStudent" onchange="loadStudentDetailsToBulk()"></select>
-          </div>
-          <div>
-            <label>작성 방식</label>
-            <div class="notice" style="padding:9px 10px">아래 내용을 입력한 뒤 <b>선택 학생에게 적용</b>을 누르면 해당 학생 기록에만 저장됩니다.</div>
-          </div>
-        </div>
+        <div class="notice" style="padding:9px 10px; margin-bottom:12px">아래 내용은 <b>현재 보이는 학생</b> 또는 <b>전체 학생</b>에게만 일괄 적용됩니다. 개별 학생 내용은 아래 상세 피드백 영역에서 관리합니다.</div>
         <div class="bulk-grid">
           <div>
             <label for="globalVocabDetail">단어테스트 내용</label>
@@ -206,8 +197,6 @@
           </div>
         </div>
         <div class="feedback-actions">
-          <button class="primary" onclick="applyGlobalDetails('selected')">선택 학생에게 적용</button>
-          <button onclick="loadStudentDetailsToBulk()">선택 학생 내용 불러오기</button>
           <button class="blue" onclick="applyGlobalDetails('visible')">보이는 학생에게 적용</button>
           <button class="blue" onclick="applyGlobalDetails('all')">전체 학생에게 적용</button>
           <button onclick="clearGlobalDetails()">입력칸 비우기</button>
