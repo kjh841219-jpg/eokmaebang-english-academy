@@ -15,7 +15,9 @@
     {"source": "/homework-submit", "destination": "/homework_submit.html"},
     {"source": "/student-homework", "destination": "/homework_submit.html"},
     {"source": "/daily-cbt", "destination": "/daily_cbt.html"},
-    {"source": "/daily-report-cbt", "destination": "/daily_cbt.html"}
+    {"source": "/daily-report-cbt", "destination": "/daily_cbt.html"},
+    {"source": "/whole-student-daily", "destination": "/whole_student_daily.html"},
+    {"source": "/daily-management", "destination": "/whole_student_daily.html"}
   ],
   "functions": {
     "api/**/*.js": {

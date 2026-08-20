@@ -1,0 +1,1180 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>벌교미래엔영어 전체학생데일리관리프로그램</title>
+  <style>
+    :root { --green:#0f6b4b; --deep:#073b2d; --mint:#eefaf5; --line:#cfe4da; --soft:#f7fbf9; --text:#12342b; --muted:#61756d; --red:#c63d35; --blue:#2864b8; --accent:#4f63d9; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:"Malgun Gothic", Arial, sans-serif; color:var(--text); background:linear-gradient(180deg,#eefaf5,#ffffff); overflow-x:hidden; }
+    header { position:sticky; top:0; z-index:20; background:rgba(255,255,255,.94); border-bottom:1px solid var(--line); backdrop-filter:blur(8px); }
+    .wrap { max-width:1440px; margin:0 auto; padding:16px; }
+    .top { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    h1 { margin:0; font-size:24px; letter-spacing:0; line-height:1.25; word-break:keep-all; }
+    h2 { margin:0 0 12px; font-size:18px; }
+    h3 { margin:0 0 8px; font-size:15px; }
+    .sub { margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.55; }
+    .actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    button { border:1px solid var(--line); background:#fff; color:var(--deep); padding:9px 12px; border-radius:8px; font-weight:700; cursor:pointer; min-height:38px; }
+    button.primary { background:linear-gradient(135deg,#0f6b4b,#18845f); color:#fff; border-color:#0f6b4b; }
+    button.blue { background:#2864b8; color:#fff; border-color:#2864b8; }
+    button.amber { background:linear-gradient(135deg,#4f63d9,#3754b8); color:#fff; border-color:#4f63d9; }
+    button.red { background:#c63d35; color:#fff; border-color:#c63d35; }
+    button:disabled { opacity:.55; cursor:not-allowed; }
+    input, select, textarea { width:100%; border:1px solid var(--line); border-radius:8px; padding:10px 11px; font:inherit; background:#fff; }
+    textarea { min-height:72px; resize:vertical; }
+    label { display:block; font-size:13px; font-weight:700; margin:8px 0 5px; }
+    main.wrap { display:grid; grid-template-columns:minmax(280px,320px) minmax(0,1fr); gap:14px; align-items:start; }
+    main.wrap > *, .panel { min-width:0; }
+    .panel { background:#fff; border:1px solid var(--line); border-radius:10px; padding:15px; box-shadow:0 10px 28px rgba(9,78,53,.07); }
+    .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; }
+    .stat { background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:12px; }
+    .stat small { color:var(--muted); font-weight:700; }
+    .stat b { display:block; font-size:24px; margin-top:4px; }
+    .toolbar { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+    .notice { background:#eef6ff; border:1px solid #bdd8ff; color:#164e80; border-radius:8px; padding:10px; font-size:13px; line-height:1.6; }
+    .ok { background:#edf8f2; border-color:#b8dfca; color:#0d6b43; }
+    .error { background:#fff1f1; border-color:#f0b8b8; color:#a12620; }
+    .table-wrap { width:100%; overflow:auto; border:1px solid var(--line); border-radius:10px; }
+    table { width:100%; border-collapse:collapse; background:#fff; min-width:980px; }
+    th, td { border-bottom:1px solid #e2eee8; padding:9px; text-align:left; vertical-align:top; font-size:13px; }
+    th { position:sticky; top:0; z-index:5; background:#edf6f1; color:#0f513b; white-space:nowrap; }
+    tr:hover td { background:#fbfffd; }
+    .student-name { font-weight:800; white-space:nowrap; }
+    .mini { font-size:12px; color:var(--muted); }
+    .checkcell { text-align:center; min-width:76px; }
+    .checkcell input { width:20px; height:20px; accent-color:var(--green); }
+    .badge { display:inline-flex; padding:4px 8px; border-radius:999px; background:#e8f6ef; border:1px solid #bfe1cf; color:#0f6b4b; font-weight:700; font-size:12px; white-space:nowrap; }
+    .badge.warn { background:#eef2ff; border-color:#c7d2fe; color:#3346a8; }
+    .badge.danger { background:#fff1f1; border-color:#f1b8b8; color:#a12620; }
+    .side-list { display:grid; gap:8px; max-height:520px; overflow:auto; padding-right:2px; }
+    .student-card { border:1px solid var(--line); border-radius:10px; padding:10px; background:#fbfffd; cursor:pointer; }
+    .student-card.active { background:#e9f7ef; border-color:#82caa9; }
+    .student-card b { display:block; margin-bottom:3px; }
+    .student-card small { color:var(--muted); }
+    .category-tabs { display:grid; grid-template-columns:repeat(auto-fit,minmax(86px,1fr)); gap:7px; margin:10px 0; }
+    .category-tabs label { display:flex; align-items:center; justify-content:center; gap:5px; min-height:42px; margin:0; border:1px solid var(--line); border-radius:999px; background:#fff; font-size:13px; cursor:pointer; white-space:nowrap; }
+    .category-tabs input { width:16px; height:16px; accent-color:var(--green); }
+    .message-preview { white-space:pre-wrap; line-height:1.65; min-height:170px; background:#fbfffd; border:1px solid var(--line); border-radius:8px; padding:12px; overflow:auto; }
+    .progress { height:10px; background:#e7f0ec; border-radius:999px; overflow:hidden; }
+    .progress > i { display:block; height:100%; background:linear-gradient(90deg,#0f6b4b,#35aa7c); border-radius:999px; }
+    .detail-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-bottom:12px; }
+    .detail-grid textarea { min-height:64px; }
+    .feedback-grid { display:grid; grid-template-columns:minmax(460px,1.2fr) minmax(360px,.8fr); gap:12px; align-items:start; }
+    .feedback-left, .feedback-right { min-width:0; }
+    .feedback-right { display:flex; flex-direction:column; }
+    .teacher-feedback { min-height:72px; }
+    .feedback-actions, .send-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+    .bulk-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-top:10px; }
+    .bulk-grid textarea { min-height:70px; }
+    .bulk-wide { grid-column:1 / -1; }
+    .empty-state { border:1px dashed #b8d8cc; border-radius:10px; padding:14px; background:#f8fffb; color:var(--muted); line-height:1.6; }
+    .chart-card { background:#fbfffd; border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:12px; }
+    .chart-box { width:100%; overflow:auto; }
+    .chart-box svg { width:100%; min-width:720px; height:auto; display:block; }
+    .chart-caption { color:var(--muted); font-size:12px; margin-top:8px; line-height:1.5; }
+    .auth-screen { position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center; padding:18px; background:linear-gradient(180deg,#e7f7ef,#fff); }
+    .auth-card { width:min(430px,100%); background:#fff; border:1px solid var(--line); border-radius:14px; padding:24px; box-shadow:0 20px 60px rgba(8,70,48,.16); }
+    .app-locked header, .app-locked main { display:none; }
+    .app-ready .auth-screen { display:none; }
+    @media (max-width:1050px) { main.wrap { grid-template-columns:1fr; } .stat-grid { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:1100px) { .feedback-grid { grid-template-columns:1fr; } }
+    @media (max-width:1100px) { .bulk-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:640px) { .wrap { padding:12px; } .top { flex-direction:column; align-items:flex-start; } .category-tabs { grid-template-columns:repeat(2,1fr); } .stat-grid, .detail-grid, .bulk-grid { grid-template-columns:1fr; } button { width:100%; } .actions { width:100%; } .actions button { flex:1 1 auto; } }
+  </style>
+</head>
+<body class="app-locked">
+  <section class="auth-screen">
+    <div class="auth-card">
+      <h1>벌교미래엔영어 전체학생데일리관리 로그인</h1>
+      <p class="sub">선생님 전용 전체 관리 화면입니다.</p>
+      <label for="loginId">아이디</label>
+      <input id="loginId" value="admin">
+      <label for="loginPin">비밀번호 / PIN번호</label>
+      <input id="loginPin" type="password" inputmode="numeric" placeholder="기본 2588">
+      <div class="actions" style="margin-top:14px">
+        <button class="primary" onclick="login()">로그인</button>
+      </div>
+      <div id="loginStatus" class="notice">기본 관리자 PIN은 2588입니다.</div>
+    </div>
+  </section>
+
+  <header>
+    <div class="wrap top">
+      <div>
+        <h1>벌교미래엔영어 전체학생데일리관리프로그램</h1>
+        <p class="sub">날짜별 숙제 제출, 리스닝·문법·단어·리딩·인강듣기 완료 여부, 세부 수업내용, 주간/월간 그래프, 학부모 발송문을 한 화면에서 관리합니다.</p>
+      </div>
+      <div class="actions">
+        <button class="primary" onclick="saveRecords()">저장</button>
+        <button onclick="loadAll()">새로고침</button>
+        <button class="blue" onclick="generateAllFeedback()">전체 피드백 생성</button>
+        <button onclick="openDashboard()">대시보드</button>
+        <button onclick="logout()">로그아웃</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <aside class="panel">
+      <h2>관리 기준</h2>
+      <label for="workDate">날짜</label>
+      <input id="workDate" type="date" onchange="renderAll()">
+      <label for="rangeMode">통계 범위</label>
+      <select id="rangeMode" onchange="renderAll()">
+        <option value="day">선택 날짜</option>
+        <option value="week">해당 주</option>
+        <option value="month">해당 월</option>
+      </select>
+      <label for="studentSearch">학생 검색</label>
+      <input id="studentSearch" list="studentOptions" placeholder="학생명·반·학교·전화번호 검색" oninput="renderAll()">
+      <datalist id="studentOptions"></datalist>
+      <div class="actions" style="margin-top:6px">
+        <button onclick="resetStudentFilters()">전체 학생 보기</button>
+        <button onclick="forceLoadDashboardStudents()">대시보드 명단 불러오기</button>
+      </div>
+      <div id="studentSearchHint" class="mini" style="margin-top:6px">학생명단을 불러오는 중입니다.</div>
+      <label for="classFilter">반 필터</label>
+      <select id="classFilter" onchange="renderAll()">
+        <option value="">전체</option>
+        <option>초등반</option>
+        <option>중등반</option>
+        <option>고등반</option>
+      </select>
+      <div class="category-tabs">
+        <label><input type="checkbox" value="listening" checked onchange="renderAll()">리스닝</label>
+        <label><input type="checkbox" value="grammar" checked onchange="renderAll()">문법</label>
+        <label><input type="checkbox" value="vocab" checked onchange="renderAll()">단어</label>
+        <label><input type="checkbox" value="reading" checked onchange="renderAll()">리딩</label>
+        <label><input type="checkbox" value="lecture" checked onchange="renderAll()">인강듣기</label>
+      </div>
+      <div id="statusBox" class="notice">변경 후 저장을 누르면 브라우저에 기록됩니다. 문자/카카오 발송은 로컬 발송 서버가 켜져 있어야 합니다.</div>
+      <hr style="border:0; border-top:1px solid var(--line); margin:14px 0">
+      <h2>학생 선택</h2>
+      <div id="studentList" class="side-list"></div>
+    </aside>
+
+    <section>
+      <section class="panel" style="margin-bottom:14px">
+        <div class="stat-grid">
+          <div class="stat"><small>대상 학생</small><b id="statTotal">0</b></div>
+          <div class="stat"><small>숙제 제출</small><b id="statSubmitted">0</b></div>
+          <div class="stat"><small>전체 완료율</small><b id="statRate">0%</b></div>
+          <div class="stat"><small>인강 완료</small><b id="statLecture">0</b></div>
+        </div>
+      </section>
+
+      <section class="panel" style="margin-bottom:14px">
+        <div class="toolbar">
+          <div>
+            <h2>학생별 · 전체 학습내용 입력</h2>
+            <p class="sub">학생을 선택하면 해당 학생에게만 작성할 수 있고, 필요하면 보이는 학생 또는 전체 학생에게도 한꺼번에 적용할 수 있습니다.</p>
+          </div>
+          <span class="badge">학생별/전체 관리</span>
+        </div>
+        <div class="detail-grid" style="margin-bottom:12px">
+          <div>
+            <label for="bulkTargetStudent">작성 대상 학생</label>
+            <select id="bulkTargetStudent" onchange="loadStudentDetailsToBulk()"></select>
+          </div>
+          <div>
+            <label>작성 방식</label>
+            <div class="notice" style="padding:9px 10px">아래 내용을 입력한 뒤 <b>선택 학생에게 적용</b>을 누르면 해당 학생 기록에만 저장됩니다.</div>
+          </div>
+        </div>
+        <div class="bulk-grid">
+          <div>
+            <label for="globalVocabDetail">단어테스트 내용</label>
+            <textarea id="globalVocabDetail" placeholder="예: Unit 3 단어 20개, 오답 단어 3회 쓰기" oninput="saveGlobalDetails()"></textarea>
+          </div>
+          <div>
+            <label for="globalReadingDetail">리딩수업 내용</label>
+            <textarea id="globalReadingDetail" placeholder="예: Reading Town p.14 지문 해석, 핵심 문장 표시" oninput="saveGlobalDetails()"></textarea>
+          </div>
+          <div>
+            <label for="globalGrammarDetail">문법내용</label>
+            <textarea id="globalGrammarDetail" placeholder="예: 일반동사 과거형, did 부정문, 어순 배열" oninput="saveGlobalDetails()"></textarea>
+          </div>
+          <div>
+            <label for="globalLectureDetail">인강내용</label>
+            <textarea id="globalLectureDetail" placeholder="예: 관계대명사 핵심 정리 1강 시청" oninput="saveGlobalDetails()"></textarea>
+          </div>
+          <div class="bulk-wide">
+            <label for="globalTeacherFeedback">전체 공통 선생님 피드백</label>
+            <textarea id="globalTeacherFeedback" class="teacher-feedback" placeholder="예: 오늘은 전체적으로 리딩 집중도가 좋았고, 문법 숙제는 시제 표시를 한 번 더 확인하도록 지도했습니다." oninput="saveGlobalDetails()"></textarea>
+          </div>
+        </div>
+        <div class="feedback-actions">
+          <button class="primary" onclick="applyGlobalDetails('selected')">선택 학생에게 적용</button>
+          <button onclick="loadStudentDetailsToBulk()">선택 학생 내용 불러오기</button>
+          <button class="blue" onclick="applyGlobalDetails('visible')">보이는 학생에게 적용</button>
+          <button class="blue" onclick="applyGlobalDetails('all')">전체 학생에게 적용</button>
+          <button onclick="clearGlobalDetails()">입력칸 비우기</button>
+        </div>
+      </section>
+
+      <section class="panel" style="margin-bottom:14px">
+        <div class="toolbar">
+          <h2>날짜별 숙제 및 인강 체크표</h2>
+          <div class="actions">
+            <button onclick="markAll(true)">보이는 학생 전체 완료</button>
+            <button onclick="markAll(false)">보이는 학생 전체 해제</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr id="recordHead"></tr>
+            </thead>
+            <tbody id="recordRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" style="margin-bottom:14px">
+        <div class="toolbar">
+          <h2>선택 학생 상세 피드백</h2>
+          <span id="selectedStudentLabel" class="badge">학생 미선택</span>
+        </div>
+        <div class="feedback-grid">
+          <div class="feedback-left">
+            <div class="detail-grid">
+              <div>
+                <label for="vocabDetail">단어테스트 내용</label>
+                <textarea id="vocabDetail" placeholder="예: Unit 3 단어 20개, 재시험 없음" oninput="updateSelectedFeedback()"></textarea>
+              </div>
+              <div>
+                <label for="readingDetail">리딩수업 내용</label>
+                <textarea id="readingDetail" placeholder="예: Reading Town p.14 지문 핵심문장 해석" oninput="updateSelectedFeedback()"></textarea>
+              </div>
+              <div>
+                <label for="grammarDetail">문법내용</label>
+                <textarea id="grammarDetail" placeholder="예: 일반동사 과거형, did 부정문" oninput="updateSelectedFeedback()"></textarea>
+              </div>
+              <div>
+                <label for="lectureDetail">인강내용</label>
+                <textarea id="lectureDetail" placeholder="예: 관계대명사 핵심 정리 1강 시청" oninput="updateSelectedFeedback()"></textarea>
+              </div>
+            </div>
+            <label for="teacherFeedback">선생님 피드백</label>
+            <textarea id="teacherFeedback" class="teacher-feedback" placeholder="예: 리딩은 안정적이나 문법 숙제에서 시제 표시를 한 번 더 확인하면 좋겠습니다." oninput="updateSelectedFeedback()"></textarea>
+            <div class="feedback-actions">
+              <button class="primary" onclick="generateSelectedFeedback()">선택 학생 자동 피드백 생성</button>
+              <button onclick="copyMessage()">발송문 복사</button>
+            </div>
+          </div>
+          <div class="feedback-right">
+            <label>학부모 발송문 미리보기</label>
+            <div id="messagePreview" class="message-preview">학생을 선택하면 자동 피드백과 발송문이 표시됩니다.</div>
+            <div class="send-actions">
+              <button class="blue" onclick="sendSelected('sms')">문자 발송</button>
+              <button class="amber" onclick="sendSelected('kakao')">카카오톡 발송</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="statsPanel" class="panel">
+        <div class="toolbar">
+          <h2>주별 · 월별 통계</h2>
+          <div class="actions">
+            <button onclick="downloadChartImage()">그래프 이미지 저장</button>
+            <button onclick="printStats()">통계 인쇄</button>
+            <button class="blue" onclick="sendChartSms()">그래프 문자 전송</button>
+            <button onclick="exportCsv()">CSV 저장</button>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div id="chartBox" class="chart-box"></div>
+          <p class="chart-caption">체크되지 않은 항목은 미완료가 아니라 그날 해당 숙제가 없는 것으로 피드백에 표시됩니다.</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>학생명</th><th>반</th><th>숙제 제출률</th><th>리스닝</th><th>문법</th><th>단어</th><th>리딩</th><th>인강듣기</th><th>관리 포인트</th></tr>
+            </thead>
+            <tbody id="statsRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const DASHBOARD_LOCAL_KEY = "beolgyo-academy-dashboard-state-v2";
+    const ADMIN_PIN_STORAGE_KEY = "beolgyo-admin-pin-v1";
+    const RECORD_STORAGE_KEY = "beolgyo-whole-student-work-records-v1";
+    const GLOBAL_DETAIL_STORAGE_KEY = "beolgyo-whole-student-global-details-v1";
+    const API_BASES = [
+      window.location.protocol === "file:" ? null : window.location.origin,
+      "http://127.0.0.1:8789",
+      "http://127.0.0.1:8787"
+    ].filter(Boolean);
+    const CATEGORIES = [
+      {key:"listening", label:"리스닝"},
+      {key:"grammar", label:"문법"},
+      {key:"vocab", label:"단어"},
+      {key:"reading", label:"리딩"},
+      {key:"lecture", label:"인강듣기"}
+    ];
+    let activeApiBase = API_BASES[0];
+    let students = [];
+    let records = {};
+    let globalDetails = {};
+    let selectedStudentId = "";
+
+    const fallbackStudents = [
+      "강정후","김가연","김나윤","김무성","김선호","김연후","김지민","김지우","김지윤","김태우","김태희","김하윤","김하율","나인서","남희주","류가연","박민솔","박보민","박세은","박세훈","박시후","박애은","박진수","서준호","손주영","손주희","양서희","여차은","윤하람","이가람","이가온","이기온","이소희","이수림","이정우","이형주","임시후","임윤지","장한별","정소연","정주연","정희원","조은","최재혁","최하율","한그루","한승수","한태양","홍주원","김정해"
+    ].map((name, index) => ({id:index + 1, name, classGroup:index < 35 ? "초등반" : (index < 45 ? "중등반" : "고등반"), phone:""}));
+
+    function normalizeStudent(raw, index = 0) {
+      if (!raw) return null;
+      const name = String(raw.name || raw.studentName || raw.student_name || raw.학생명 || raw.이름 || raw.label || "").trim();
+      if (!name) return null;
+      const id = raw.id ?? raw.studentId ?? raw.student_id ?? raw.학생ID ?? `student_${index + 1}_${name}`;
+      const classGroup = String(raw.classGroup || raw.className || raw.class || raw.grade || raw.반 || raw.학년반 || "").trim();
+      const phone = String(raw.phone || raw.parentPhone || raw.parent_phone || raw.보호자연락처 || raw.학부모연락처 || "").trim();
+      const studentPhone = String(raw.studentPhone || raw.student_phone || raw.학생연락처 || "").trim();
+      return {...raw, id, name, classGroup, phone, studentPhone};
+    }
+
+    function normalizeStudentList(list) {
+      if (!Array.isArray(list)) return [];
+      const seen = new Map();
+      list.map(normalizeStudent).filter(Boolean).forEach(student => {
+        const key = String(student.id || student.name);
+        if (!seen.has(key)) seen.set(key, student);
+      });
+      return [...seen.values()];
+    }
+
+    function mergeStudents(primary = [], fallback = []) {
+      const map = new Map();
+      [...normalizeStudentList(primary), ...normalizeStudentList(fallback)].forEach(student => {
+        const key = String(student.id || student.name);
+        if (!map.has(key)) map.set(key, student);
+      });
+      return [...map.values()];
+    }
+
+    function localDashboardStudents() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(DASHBOARD_LOCAL_KEY) || "{}");
+        return normalizeStudentList(saved.students);
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function ensureStudentsReady() {
+      students = normalizeStudentList(students);
+      if (!students.length) students = normalizeStudentList(fallbackStudents);
+      if (!selectedStudentId && students[0]) selectedStudentId = String(students[0].id);
+      if (selectedStudentId && !students.some(student => String(student.id) === String(selectedStudentId))) {
+        selectedStudentId = students[0] ? String(students[0].id) : "";
+      }
+      return students;
+    }
+
+    function compactText(value) {
+      return String(value || "").toLowerCase().replace(/\s+/g, "");
+    }
+
+    function todayKey() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    }
+
+    function setStatus(text, type = "") {
+      const box = document.getElementById("statusBox");
+      box.className = `notice ${type}`;
+      box.textContent = text;
+    }
+
+    function login() {
+      const id = String(document.getElementById("loginId").value || "").trim().toLowerCase();
+      const pin = String(document.getElementById("loginPin").value || "").trim();
+      const adminPin = localStorage.getItem(ADMIN_PIN_STORAGE_KEY) || "2588";
+      if ((id === "admin" || id === "관리자" || id === "원장") && pin === adminPin) {
+        document.body.classList.remove("app-locked");
+        document.body.classList.add("app-ready");
+        loadAll();
+      } else {
+        document.getElementById("loginStatus").className = "notice error";
+        document.getElementById("loginStatus").textContent = "관리자 아이디 또는 PIN번호가 맞지 않습니다.";
+      }
+    }
+
+    function logout() {
+      document.body.classList.add("app-locked");
+      document.body.classList.remove("app-ready");
+      document.getElementById("loginPin").value = "";
+    }
+
+    function checkedCategoryKeys() {
+      return [...document.querySelectorAll(".category-tabs input:checked")].map(input => input.value);
+    }
+
+    async function fetchDashboardState() {
+      let lastError = null;
+      for (const base of API_BASES) {
+        try {
+          const res = await fetch(`${base}/api/dashboard/state?ts=${Date.now()}`, {cache:"no-store"});
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          activeApiBase = base;
+          return res.json();
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      throw new Error(lastError?.message || "로컬 서버 연결 실패");
+    }
+
+    async function loadAll() {
+      document.getElementById("workDate").value ||= todayKey();
+      try {
+        const data = await fetchDashboardState();
+        students = mergeStudents(data.students, mergeStudents(localDashboardStudents(), fallbackStudents));
+        localStorage.setItem(DASHBOARD_LOCAL_KEY, JSON.stringify({...data, students}));
+        setStatus(`학생 명단 ${students.length}명을 로컬 서버에서 불러왔습니다.`, "ok");
+      } catch (error) {
+        try {
+          const dashboard = JSON.parse(localStorage.getItem(DASHBOARD_LOCAL_KEY) || "{}");
+          students = mergeStudents(dashboard.students, fallbackStudents);
+        } catch (_) {
+          students = normalizeStudentList(fallbackStudents);
+        }
+        setStatus(`서버가 꺼져 있어 저장된 학생 명단 ${students.length}명으로 표시합니다: ${error.message}`, "error");
+      }
+      ensureStudentsReady();
+      try {
+        records = JSON.parse(localStorage.getItem(RECORD_STORAGE_KEY) || "{}") || {};
+      } catch (_) {
+        records = {};
+      }
+      try {
+        globalDetails = JSON.parse(localStorage.getItem(GLOBAL_DETAIL_STORAGE_KEY) || "{}") || {};
+      } catch (_) {
+        globalDetails = {};
+      }
+      renderAll();
+    }
+
+    async function forceLoadDashboardStudents() {
+      try {
+        const data = await fetchDashboardState();
+        students = mergeStudents(data.students, students);
+        localStorage.setItem(DASHBOARD_LOCAL_KEY, JSON.stringify({...data, students}));
+        resetStudentFilters();
+        setStatus(`학원관리대시보드 학생명단 ${students.length}명을 다시 연결했습니다.`, "ok");
+      } catch (error) {
+        students = mergeStudents(localDashboardStudents(), fallbackStudents);
+        resetStudentFilters();
+        setStatus(`서버 연결은 실패했지만 저장된 대시보드 명단 ${students.length}명을 표시합니다: ${error.message}`, "error");
+      }
+    }
+
+    function saveRecords() {
+      localStorage.setItem(RECORD_STORAGE_KEY, JSON.stringify(records));
+      localStorage.setItem(GLOBAL_DETAIL_STORAGE_KEY, JSON.stringify(globalDetails));
+      setStatus("전체학생 숙제·인강 체크 기록을 저장했습니다.", "ok");
+      renderAll();
+    }
+
+    function recordKey(date, studentId) {
+      return `${date}::${studentId}`;
+    }
+
+    function blankRecord(date, student) {
+      return {
+        date,
+        studentId: student.id,
+        name: student.name,
+        classGroup: student.classGroup || student.grade || "",
+        phone: student.phone || "",
+        submitted: false,
+        categories: {listening:false, grammar:false, vocab:false, reading:false, lecture:false},
+        details: {vocab:"", reading:"", grammar:"", lecture:""},
+        teacherFeedback: "",
+        autoFeedback: "",
+        updatedAt: ""
+      };
+    }
+
+    function globalKey(date = document.getElementById("workDate")?.value || todayKey()) {
+      return String(date || todayKey());
+    }
+
+    function blankGlobalDetails(date = globalKey()) {
+      return {date, vocab:"", reading:"", grammar:"", lecture:"", teacherFeedback:"", updatedAt:""};
+    }
+
+    function currentGlobalDetails() {
+      const key = globalKey();
+      globalDetails[key] ||= blankGlobalDetails(key);
+      return globalDetails[key];
+    }
+
+    function getRecord(date, student) {
+      const key = recordKey(date, student.id);
+      if (!records[key]) records[key] = blankRecord(date, student);
+      const record = records[key];
+      record.name = student.name;
+      record.classGroup = student.classGroup || student.grade || "";
+      record.phone = student.phone || record.phone || "";
+      record.categories ||= {};
+      record.details ||= {};
+      CATEGORIES.forEach(cat => record.categories[cat.key] ??= false);
+      ["vocab", "reading", "grammar", "lecture"].forEach(detailKey => record.details[detailKey] ??= "");
+      return record;
+    }
+
+    function filteredStudents() {
+      ensureStudentsReady();
+      const q = compactText(document.getElementById("studentSearch").value);
+      const classFilter = document.getElementById("classFilter").value === "전체" ? "" : document.getElementById("classFilter").value;
+      return students.filter(student => {
+        const cls = student.classGroup || student.grade || "";
+        const haystack = compactText([student.name, cls, student.school, student.phone, student.studentPhone].join(" "));
+        return (!q || haystack.includes(q)) && (q || !classFilter || cls.includes(classFilter));
+      });
+    }
+
+    function resetStudentFilters() {
+      document.getElementById("studentSearch").value = "";
+      document.getElementById("classFilter").value = "";
+      renderAll();
+      setStatus(`전체 학생 ${students.length}명을 표시합니다.`, "ok");
+    }
+
+    function renderAll() {
+      ensureStudentsReady();
+      try {
+        renderStudentSearchOptions();
+        renderGlobalDetails();
+        renderStudentList();
+        renderRecordTable();
+        renderStats();
+        renderSelectedStudent();
+      } catch (error) {
+        console.error(error);
+        students = normalizeStudentList(fallbackStudents);
+        selectedStudentId = students[0] ? String(students[0].id) : "";
+        document.getElementById("studentSearch").value = "";
+        document.getElementById("classFilter").value = "";
+        renderStudentSearchOptions();
+        renderGlobalDetails();
+        renderStudentList();
+        renderRecordTable();
+        renderStats();
+        renderSelectedStudent();
+        setStatus(`화면 표시 오류를 자동 복구했습니다. 학생 명단 ${students.length}명을 다시 표시합니다: ${error.message}`, "error");
+      }
+    }
+
+    function renderStudentSearchOptions() {
+      const sortedStudents = students
+        .slice()
+        .sort((a, b) => String(a.name).localeCompare(String(b.name), "ko"));
+      const options = sortedStudents.map(student => `<option value="${student.name}">${student.classGroup || student.grade || "반 미입력"} ${student.school || ""}</option>`).join("");
+      document.getElementById("studentOptions").innerHTML = options;
+      const targetSelect = document.getElementById("bulkTargetStudent");
+      if (targetSelect) {
+        const previous = targetSelect.value || selectedStudentId;
+        targetSelect.innerHTML = sortedStudents.map(student => `<option value="${student.id}">${student.name} · ${student.classGroup || student.grade || "반 미입력"}</option>`).join("");
+        targetSelect.value = students.some(student => String(student.id) === String(previous)) ? previous : (selectedStudentId || students[0]?.id || "");
+      }
+      const visibleCount = filteredStudents().length;
+      document.getElementById("studentSearchHint").textContent = `대시보드 학생명단 ${students.length}명 연결 · 현재 검색 결과 ${visibleCount}명`;
+    }
+
+    function targetStudentForBulk() {
+      const id = document.getElementById("bulkTargetStudent")?.value || selectedStudentId;
+      return students.find(student => String(student.id) === String(id)) || selectedStudent();
+    }
+
+    function fillBulkFields(details = {}, teacherFeedback = "") {
+      document.getElementById("globalVocabDetail").value = details.vocab || "";
+      document.getElementById("globalReadingDetail").value = details.reading || "";
+      document.getElementById("globalGrammarDetail").value = details.grammar || "";
+      document.getElementById("globalLectureDetail").value = details.lecture || "";
+      document.getElementById("globalTeacherFeedback").value = teacherFeedback || "";
+      saveGlobalDetails();
+    }
+
+    function loadStudentDetailsToBulk() {
+      const student = targetStudentForBulk();
+      if (!student) {
+        setStatus("불러올 학생을 먼저 선택해 주세요.", "error");
+        return;
+      }
+      selectedStudentId = String(student.id);
+      const rec = getRecord(document.getElementById("workDate").value || todayKey(), student);
+      fillBulkFields(rec.details || {}, rec.teacherFeedback || "");
+      setStatus(`${student.name} 학생의 현재 학습내용을 입력칸으로 불러왔습니다.`, "ok");
+      renderSelectedStudent();
+      renderStudentList();
+    }
+
+    function renderGlobalDetails() {
+      const details = currentGlobalDetails();
+      const fields = {
+        globalVocabDetail:"vocab",
+        globalReadingDetail:"reading",
+        globalGrammarDetail:"grammar",
+        globalLectureDetail:"lecture",
+        globalTeacherFeedback:"teacherFeedback"
+      };
+      Object.entries(fields).forEach(([id, key]) => {
+        const input = document.getElementById(id);
+        if (input && input !== document.activeElement) input.value = details[key] || "";
+      });
+    }
+
+    function saveGlobalDetails() {
+      const details = currentGlobalDetails();
+      details.vocab = document.getElementById("globalVocabDetail").value.trim();
+      details.reading = document.getElementById("globalReadingDetail").value.trim();
+      details.grammar = document.getElementById("globalGrammarDetail").value.trim();
+      details.lecture = document.getElementById("globalLectureDetail").value.trim();
+      details.teacherFeedback = document.getElementById("globalTeacherFeedback").value.trim();
+      details.updatedAt = new Date().toISOString();
+      localStorage.setItem(GLOBAL_DETAIL_STORAGE_KEY, JSON.stringify(globalDetails));
+    }
+
+    function applyGlobalDetails(scope = "visible") {
+      saveGlobalDetails();
+      const details = currentGlobalDetails();
+      const date = document.getElementById("workDate").value || todayKey();
+      const targetStudents = scope === "all"
+        ? ensureStudentsReady()
+        : scope === "selected"
+          ? [targetStudentForBulk()].filter(Boolean)
+          : filteredStudents();
+      if (!targetStudents.length) {
+        setStatus("적용할 학생이 없습니다. 검색어 또는 반 필터를 확인해 주세요.", "error");
+        return;
+      }
+      targetStudents.forEach(student => {
+        const rec = getRecord(date, student);
+        rec.details.vocab = details.vocab;
+        rec.details.reading = details.reading;
+        rec.details.grammar = details.grammar;
+        rec.details.lecture = details.lecture;
+        rec.teacherFeedback = details.teacherFeedback;
+        rec.autoFeedback = generateFeedback(student, rec);
+        rec.updatedAt = new Date().toISOString();
+      });
+      localStorage.setItem(RECORD_STORAGE_KEY, JSON.stringify(records));
+      const targetLabel = scope === "all" ? "전체 학생" : scope === "selected" ? `${targetStudents[0].name} 학생` : "현재 보이는 학생";
+      setStatus(`${targetLabel} ${targetStudents.length}명에게 공통 학습내용과 피드백을 적용했습니다.`, "ok");
+      renderAll();
+    }
+
+    function clearGlobalDetails() {
+      const key = globalKey();
+      globalDetails[key] = blankGlobalDetails(key);
+      localStorage.setItem(GLOBAL_DETAIL_STORAGE_KEY, JSON.stringify(globalDetails));
+      renderGlobalDetails();
+      setStatus("전체 공통 학습내용 입력칸을 비웠습니다.", "ok");
+    }
+
+    function renderStudentList() {
+      const date = document.getElementById("workDate").value || todayKey();
+      const list = filteredStudents();
+      const listBox = document.getElementById("studentList");
+      if (!students.length) {
+        listBox.innerHTML = `<div class="empty-state">학생 명단을 아직 불러오지 못했습니다.<br><button onclick="loadAll()" style="margin-top:8px">학생 명단 다시 불러오기</button></div>`;
+        return;
+      }
+      if (!list.length) {
+        const q = document.getElementById("studentSearch").value.trim();
+        listBox.innerHTML = `<div class="empty-state">검색/반 필터에 맞는 학생이 없습니다.${q ? `<br>검색어: <b>${q}</b>` : ""}<br><button onclick="resetStudentFilters()" style="margin-top:8px">전체 학생 보기</button></div>`;
+        return;
+      }
+      listBox.innerHTML = list.map(student => {
+        const rec = getRecord(date, student);
+        const done = completionRate(rec);
+        return `<div class="student-card ${String(student.id) === String(selectedStudentId) ? "active" : ""}" onclick="selectStudent('${student.id}')">
+          <b>${student.name}</b>
+          <small>${student.classGroup || student.grade || "반 미입력"} · 숙제 ${rec.submitted ? "제출" : "숙제 없음"} · ${done}%</small>
+          <div class="progress" style="margin-top:7px"><i style="width:${done}%"></i></div>
+        </div>`;
+      }).join("");
+    }
+
+    function renderRecordTable() {
+      const keys = checkedCategoryKeys();
+      document.getElementById("recordHead").innerHTML = [
+        "<th>학생</th>",
+        "<th>숙제 제출</th>",
+        ...CATEGORIES.filter(cat => keys.includes(cat.key)).map(cat => `<th>${cat.label}</th>`),
+        "<th>완료율</th>",
+        "<th>선생님 피드백</th>",
+        "<th>발송</th>"
+      ].join("");
+      const date = document.getElementById("workDate").value || todayKey();
+      document.getElementById("recordRows").innerHTML = filteredStudents().map(student => {
+        const rec = getRecord(date, student);
+        const categoryCells = CATEGORIES.filter(cat => keys.includes(cat.key)).map(cat => `
+          <td class="checkcell"><input type="checkbox" ${rec.categories[cat.key] ? "checked" : ""} onchange="toggleCategory('${student.id}','${cat.key}',this.checked)"></td>
+        `).join("");
+        return `<tr>
+          <td onclick="selectStudent('${student.id}')"><span class="student-name">${student.name}</span><br><span class="mini">${student.classGroup || student.grade || "반 미입력"}</span></td>
+          <td class="checkcell"><input type="checkbox" ${rec.submitted ? "checked" : ""} onchange="toggleSubmitted('${student.id}',this.checked)"></td>
+          ${categoryCells}
+          <td><span class="badge ${completionRate(rec) < 60 ? "danger" : completionRate(rec) < 90 ? "warn" : ""}">${completionRate(rec)}%</span></td>
+          <td><textarea style="min-height:48px" oninput="setTeacherFeedback('${student.id}',this.value)">${rec.teacherFeedback || ""}</textarea></td>
+          <td><div class="actions"><button onclick="selectStudent('${student.id}'); generateSelectedFeedback()">생성</button><button class="blue" onclick="selectStudent('${student.id}'); sendSelected('sms')">문자</button><button class="amber" onclick="selectStudent('${student.id}'); sendSelected('kakao')">카카오</button></div></td>
+        </tr>`;
+      }).join("");
+    }
+
+    function completionRate(rec) {
+      const keys = checkedCategoryKeys();
+      const total = 1 + keys.length;
+      const done = (rec.submitted ? 1 : 0) + keys.filter(key => rec.categories?.[key]).length;
+      return total ? Math.round(done / total * 100) : 0;
+    }
+
+    function detailLines(rec) {
+      const details = rec.details || {};
+      const lines = [
+        ["단어테스트", details.vocab],
+        ["리딩수업", details.reading],
+        ["문법내용", details.grammar],
+        ["인강내용", details.lecture]
+      ].map(([label, value]) => `· ${label}: ${value || "별도 내용 없음"}`);
+      return lines.join("\n");
+    }
+
+    function detailSummary(rec) {
+      const details = rec.details || {};
+      const filled = [
+        details.vocab && `단어테스트는 ${details.vocab}`,
+        details.reading && `리딩수업은 ${details.reading}`,
+        details.grammar && `문법내용은 ${details.grammar}`,
+        details.lecture && `인강내용은 ${details.lecture}`
+      ].filter(Boolean);
+      return filled.length ? `\n\n세부 학습 내용: ${filled.join(" / ")}.` : "";
+    }
+
+    function toggleSubmitted(studentId, value) {
+      const student = students.find(s => String(s.id) === String(studentId));
+      const rec = getRecord(document.getElementById("workDate").value || todayKey(), student);
+      rec.submitted = value;
+      rec.updatedAt = new Date().toISOString();
+      renderAll();
+    }
+
+    function toggleCategory(studentId, key, value) {
+      const student = students.find(s => String(s.id) === String(studentId));
+      const rec = getRecord(document.getElementById("workDate").value || todayKey(), student);
+      rec.categories[key] = value;
+      rec.updatedAt = new Date().toISOString();
+      renderAll();
+    }
+
+    function setTeacherFeedback(studentId, value) {
+      const student = students.find(s => String(s.id) === String(studentId));
+      const rec = getRecord(document.getElementById("workDate").value || todayKey(), student);
+      rec.teacherFeedback = value;
+      rec.updatedAt = new Date().toISOString();
+      if (String(studentId) === String(selectedStudentId)) renderSelectedStudent();
+    }
+
+    function selectStudent(id) {
+      selectedStudentId = String(id);
+      const targetSelect = document.getElementById("bulkTargetStudent");
+      if (targetSelect) targetSelect.value = selectedStudentId;
+      renderAll();
+    }
+
+    function selectedStudent() {
+      return students.find(s => String(s.id) === String(selectedStudentId)) || students[0];
+    }
+
+    function renderSelectedStudent() {
+      const student = selectedStudent();
+      if (!student) return;
+      const rec = getRecord(document.getElementById("workDate").value || todayKey(), student);
+      document.getElementById("selectedStudentLabel").textContent = `${student.name} · ${student.classGroup || student.grade || "반 미입력"}`;
+      document.getElementById("vocabDetail").value = rec.details?.vocab || "";
+      document.getElementById("readingDetail").value = rec.details?.reading || "";
+      document.getElementById("grammarDetail").value = rec.details?.grammar || "";
+      document.getElementById("lectureDetail").value = rec.details?.lecture || "";
+      document.getElementById("teacherFeedback").value = rec.teacherFeedback || "";
+      document.getElementById("messagePreview").textContent = buildParentMessage(student, rec);
+    }
+
+    function generateFeedback(student, rec) {
+      const done = CATEGORIES.filter(cat => rec.categories?.[cat.key]).map(cat => cat.label);
+      const noHomework = CATEGORIES.filter(cat => !rec.categories?.[cat.key]).map(cat => cat.label);
+      const rate = completionRate(rec);
+      const intro = rate >= 90 ? "오늘 배정된 학습 루틴을 매우 안정적으로 완성했습니다." : rate >= 40 ? "오늘 배정된 학습의 주요 항목을 차분히 따라왔습니다." : "오늘은 배정된 항목이 많지 않아 핵심 수업 내용 중심으로 확인했습니다.";
+      const submittedLine = rec.submitted ? "숙제 제출도 확인되어 학습 책임감이 잘 유지되고 있습니다." : "오늘은 별도 제출 숙제가 없는 것으로 기록했습니다.";
+      const doneLine = done.length ? `완료 항목은 ${done.join(", ")}입니다.` : "완료 체크된 영역은 아직 없습니다.";
+      const missingLine = noHomework.length ? `숙제 없음으로 기록된 항목은 ${noHomework.join(", ")}입니다.` : "오늘 배정된 항목을 고르게 마쳤습니다.";
+      const detailLine = detailSummary(rec);
+      const teacher = rec.teacherFeedback ? `\n\n선생님 피드백: ${rec.teacherFeedback}` : "";
+      return `${intro} ${submittedLine} ${doneLine} ${missingLine}${detailLine}${teacher}`;
+    }
+
+    function buildParentMessage(student, rec) {
+      const date = rec.date || document.getElementById("workDate").value || todayKey();
+      const auto = rec.autoFeedback || generateFeedback(student, rec);
+      return `안녕하세요^^ 벌교미래엔영어 원장입니다.\n\n${student.name} 학생의 ${date} 숙제 및 인강 학습 확인 안내드립니다.\n\n[오늘 학습 체크]\n· 숙제 제출: ${rec.submitted ? "완료" : "숙제 없음"}\n· 리스닝: ${rec.categories.listening ? "완료" : "숙제 없음"}\n· 문법: ${rec.categories.grammar ? "완료" : "숙제 없음"}\n· 단어: ${rec.categories.vocab ? "완료" : "숙제 없음"}\n· 리딩: ${rec.categories.reading ? "완료" : "숙제 없음"}\n· 인강듣기: ${rec.categories.lecture ? "완료" : "숙제 없음"}\n\n[세부 학습 내용]\n${detailLines(rec)}\n\n[학습 피드백]\n${auto}\n\n${student.name} 학생이 매일의 작은 루틴을 꾸준히 쌓아 영어 자신감으로 이어질 수 있도록 세심하게 지도하겠습니다. 감사합니다^^`;
+    }
+
+    function generateSelectedFeedback() {
+      const student = selectedStudent();
+      if (!student) return;
+      const rec = getRecord(document.getElementById("workDate").value || todayKey(), student);
+      rec.autoFeedback = generateFeedback(student, rec);
+      rec.updatedAt = new Date().toISOString();
+      saveRecords();
+      renderSelectedStudent();
+    }
+
+    function generateAllFeedback() {
+      const date = document.getElementById("workDate").value || todayKey();
+      filteredStudents().forEach(student => {
+        const rec = getRecord(date, student);
+        rec.autoFeedback = generateFeedback(student, rec);
+        rec.updatedAt = new Date().toISOString();
+      });
+      saveRecords();
+      setStatus("보이는 학생 전체 자동 피드백을 생성했습니다.", "ok");
+    }
+
+    function updateSelectedFeedback() {
+      const student = selectedStudent();
+      if (!student) return;
+      const rec = getRecord(document.getElementById("workDate").value || todayKey(), student);
+      rec.details.vocab = document.getElementById("vocabDetail").value.trim();
+      rec.details.reading = document.getElementById("readingDetail").value.trim();
+      rec.details.grammar = document.getElementById("grammarDetail").value.trim();
+      rec.details.lecture = document.getElementById("lectureDetail").value.trim();
+      rec.teacherFeedback = document.getElementById("teacherFeedback").value;
+      rec.autoFeedback = generateFeedback(student, rec);
+      document.getElementById("messagePreview").textContent = buildParentMessage(student, rec);
+    }
+
+    function markAll(value) {
+      const date = document.getElementById("workDate").value || todayKey();
+      const keys = checkedCategoryKeys();
+      filteredStudents().forEach(student => {
+        const rec = getRecord(date, student);
+        rec.submitted = value;
+        keys.forEach(key => rec.categories[key] = value);
+        rec.updatedAt = new Date().toISOString();
+      });
+      renderAll();
+    }
+
+    function rangeDates() {
+      const base = new Date(document.getElementById("workDate").value || todayKey());
+      const mode = document.getElementById("rangeMode").value;
+      const start = new Date(base);
+      const end = new Date(base);
+      if (mode === "week") {
+        const day = start.getDay() || 7;
+        start.setDate(start.getDate() - day + 1);
+        end.setDate(start.getDate() + 6);
+      } else if (mode === "month") {
+        start.setDate(1);
+        end.setMonth(start.getMonth() + 1, 0);
+      }
+      const result = [];
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        result.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`);
+      }
+      return result;
+    }
+
+    function studentStats(student) {
+      const dates = rangeDates();
+      const keys = checkedCategoryKeys();
+      const accum = {submitted:0, possibleSubmitted:dates.length, cats:{}, totalDone:0, totalPossible:dates.length * (1 + keys.length)};
+      keys.forEach(key => accum.cats[key] = 0);
+      dates.forEach(date => {
+        const rec = records[recordKey(date, student.id)];
+        if (!rec) return;
+        if (rec.submitted) accum.submitted += 1;
+        keys.forEach(key => {
+          if (rec.categories?.[key]) accum.cats[key] += 1;
+        });
+      });
+      accum.totalDone = accum.submitted + keys.reduce((sum, key) => sum + accum.cats[key], 0);
+      return accum;
+    }
+
+    function aggregateStats() {
+      const list = filteredStudents();
+      const dates = rangeDates();
+      const keys = checkedCategoryKeys();
+      const totals = {submitted:0, cats:{}, possibleStudents:list.length, possibleDates:dates.length};
+      keys.forEach(key => totals.cats[key] = 0);
+      dates.forEach(date => {
+        list.forEach(student => {
+          const rec = records[recordKey(date, student.id)];
+          if (!rec) return;
+          if (rec.submitted) totals.submitted += 1;
+          keys.forEach(key => {
+            if (rec.categories?.[key]) totals.cats[key] += 1;
+          });
+        });
+      });
+      return totals;
+    }
+
+    function renderStatsChart() {
+      const totals = aggregateStats();
+      const max = Math.max(1, totals.possibleStudents * totals.possibleDates);
+      const rows = [
+        {label:"숙제 제출", value:totals.submitted, color:"#0f6b4b"},
+        ...CATEGORIES.filter(cat => checkedCategoryKeys().includes(cat.key)).map((cat, index) => ({
+          label:cat.label,
+          value:totals.cats[cat.key] || 0,
+          color:["#2864b8", "#4f63d9", "#0f766e", "#18845f", "#e47d62"][index % 5]
+        }))
+      ];
+      const width = 900;
+      const cardW = 268;
+      const cardH = 188;
+      const gap = 22;
+      const left = 28;
+      const top = 82;
+      const radius = 48;
+      const circumference = Math.round(2 * Math.PI * radius * 100) / 100;
+      const cols = 3;
+      const height = top + Math.ceil(rows.length / cols) * (cardH + gap) + 36;
+      const svgRows = rows.map((row, index) => {
+        const col = index % cols;
+        const rowIndex = Math.floor(index / cols);
+        const x = left + col * (cardW + gap);
+        const y = top + rowIndex * (cardH + gap);
+        const pct = Math.round(row.value / max * 100);
+        const dashOffset = Math.round((circumference * (100 - pct) / 100) * 100) / 100;
+        return `
+          <g>
+            <rect x="${x}" y="${y}" width="${cardW}" height="${cardH}" rx="18" fill="#ffffff" stroke="#cfe4da"></rect>
+            <text x="${x + 22}" y="${y + 31}" font-size="16" font-weight="800" fill="#073b2d">${row.label}</text>
+            <circle cx="${x + 82}" cy="${y + 104}" r="${radius}" fill="none" stroke="#e7f0ec" stroke-width="15"></circle>
+            <circle cx="${x + 82}" cy="${y + 104}" r="${radius}" fill="none" stroke="${row.color}" stroke-width="15" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${dashOffset}" transform="rotate(-90 ${x + 82} ${y + 104})"></circle>
+            <text x="${x + 82}" y="${y + 99}" text-anchor="middle" font-size="24" font-weight="900" fill="#12342b">${pct}%</text>
+            <text x="${x + 82}" y="${y + 122}" text-anchor="middle" font-size="12" font-weight="700" fill="#61756d">${row.value}/${max}</text>
+            <text x="${x + 152}" y="${y + 88}" font-size="13" fill="#61756d">기준 인원</text>
+            <text x="${x + 152}" y="${y + 112}" font-size="20" font-weight="900" fill="#12342b">${totals.possibleStudents}명</text>
+            <text x="${x + 152}" y="${y + 139}" font-size="13" fill="#61756d">${totals.possibleDates}일 누적</text>
+          </g>
+        `;
+      }).join("");
+      const modeLabel = {day:"선택 날짜", week:"주간", month:"월간"}[document.getElementById("rangeMode").value] || "통계";
+      const dateLabel = document.getElementById("workDate").value || todayKey();
+      document.getElementById("chartBox").innerHTML = `
+        <svg id="statsChart" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">
+          <rect width="${width}" height="${height}" rx="18" fill="#fbfffd"></rect>
+          <rect x="1" y="1" width="${width - 2}" height="${height - 2}" rx="18" fill="none" stroke="#cfe4da"></rect>
+          <text x="24" y="34" font-size="22" font-weight="800" fill="#073b2d">벌교미래엔영어 데일리 학습 통계</text>
+          <text x="24" y="58" font-size="13" fill="#61756d">${modeLabel} · 기준일 ${dateLabel} · 학생 ${totals.possibleStudents}명 · ${totals.possibleDates}일 기준</text>
+          ${svgRows}
+          <text x="24" y="${height - 20}" font-size="12" fill="#61756d">미체크 항목은 미완료가 아니라 해당 날짜의 숙제 없음으로 안내됩니다.</text>
+        </svg>
+      `;
+    }
+
+    function renderStats() {
+      const list = filteredStudents();
+      const date = document.getElementById("workDate").value || todayKey();
+      const todayRecords = list.map(student => getRecord(date, student));
+      const submitted = todayRecords.filter(rec => rec.submitted).length;
+      const lecture = todayRecords.filter(rec => rec.categories.lecture).length;
+      const avg = todayRecords.length ? Math.round(todayRecords.reduce((sum, rec) => sum + completionRate(rec), 0) / todayRecords.length) : 0;
+      document.getElementById("statTotal").textContent = list.length;
+      document.getElementById("statSubmitted").textContent = submitted;
+      document.getElementById("statRate").textContent = `${avg}%`;
+      document.getElementById("statLecture").textContent = lecture;
+      document.getElementById("statsRows").innerHTML = list.map(student => {
+        const st = studentStats(student);
+        const days = Math.max(st.possibleSubmitted, 1);
+        const rate = st.totalPossible ? Math.round(st.totalDone / st.totalPossible * 100) : 0;
+        const weak = CATEGORIES.filter(cat => checkedCategoryKeys().includes(cat.key)).filter(cat => (st.cats[cat.key] || 0) / days < .7).map(cat => cat.label);
+        return `<tr>
+          <td><b>${student.name}</b></td>
+          <td>${student.classGroup || student.grade || "-"}</td>
+          <td>${Math.round(st.submitted / days * 100)}% (${st.submitted}/${days})</td>
+          <td>${st.cats.listening || 0}/${days}</td>
+          <td>${st.cats.grammar || 0}/${days}</td>
+          <td>${st.cats.vocab || 0}/${days}</td>
+          <td>${st.cats.reading || 0}/${days}</td>
+          <td>${st.cats.lecture || 0}/${days}</td>
+          <td>${weak.length ? `${weak.join(", ")} 보완` : "고르게 안정"}</td>
+        </tr>`;
+      }).join("");
+      renderStatsChart();
+    }
+
+    function copyMessage() {
+      navigator.clipboard?.writeText(document.getElementById("messagePreview").textContent);
+      setStatus("학부모 발송문을 복사했습니다.", "ok");
+    }
+
+    async function sendSelected(kind) {
+      const student = selectedStudent();
+      if (!student) return;
+      const rec = getRecord(document.getElementById("workDate").value || todayKey(), student);
+      const phone = String(student.phone || rec.phone || "").replace(/\D/g, "");
+      if (!phone) return setStatus(`${student.name} 학생의 학부모 연락처가 없습니다.`, "error");
+      const text = buildParentMessage(student, rec);
+      const path = kind === "kakao" ? "/api/kakao/send" : "/api/sms/send";
+      const payload = kind === "kakao" ? {to:phone, text, kind:"homework"} : {to:phone, text};
+      try {
+        const res = await fetch(`${activeApiBase}${path}`, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.ok === false) throw new Error(data.error || `HTTP ${res.status}`);
+        setStatus(`${student.name} 학부모님께 ${kind === "kakao" ? "카카오톡" : "문자"} 발송을 접수했습니다.`, "ok");
+      } catch (error) {
+        setStatus(`${kind === "kakao" ? "카카오톡" : "문자"} 발송 실패: ${error.message}. 로컬 문자/카카오 발송 서버 실행과 솔라피 환경변수를 확인해 주세요.`, "error");
+      }
+    }
+
+    async function chartPngDataUrl() {
+      const svg = document.getElementById("statsChart");
+      if (!svg) throw new Error("통계 그래프가 아직 생성되지 않았습니다.");
+      const xml = new XMLSerializer().serializeToString(svg);
+      const svgUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(xml);
+      const img = new Image();
+      img.decoding = "async";
+      const loaded = new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = () => reject(new Error("그래프 이미지를 변환하지 못했습니다."));
+      });
+      img.src = svgUrl;
+      await loaded;
+      const canvas = document.createElement("canvas");
+      canvas.width = 1200;
+      canvas.height = Math.round(1200 * (svg.viewBox.baseVal.height / svg.viewBox.baseVal.width));
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL("image/png", 0.95);
+    }
+
+    async function downloadChartImage() {
+      try {
+        const dataUrl = await chartPngDataUrl();
+        const a = document.createElement("a");
+        a.href = dataUrl;
+        a.download = `벌교미래엔영어_데일리학습통계_${document.getElementById("rangeMode").value}_${todayKey()}.png`;
+        a.click();
+        setStatus("통계 그래프 이미지를 저장했습니다.", "ok");
+      } catch (error) {
+        setStatus(`그래프 이미지 저장 실패: ${error.message}`, "error");
+      }
+    }
+
+    function printStats() {
+      renderStatsChart();
+      const modeLabel = {day:"선택 날짜", week:"주간", month:"월간"}[document.getElementById("rangeMode").value] || "통계";
+      const dateLabel = document.getElementById("workDate").value || todayKey();
+      const chartHtml = document.getElementById("chartBox").innerHTML;
+      const tableHtml = document.querySelector("#statsPanel .table-wrap").innerHTML;
+      const printWindow = window.open("", "_blank", "width=900,height=1100");
+      if (!printWindow) {
+        setStatus("팝업이 차단되어 통계 인쇄창을 열지 못했습니다. 브라우저 팝업 허용 후 다시 눌러주세요.", "error");
+        return;
+      }
+      printWindow.document.write(`<!doctype html>
+        <html lang="ko">
+        <head>
+          <meta charset="utf-8">
+          <title>벌교미래엔영어 데일리 통계 인쇄</title>
+          <style>
+            @page { size:A4 portrait; margin:14mm; }
+            * { box-sizing:border-box; }
+            body { margin:0; font-family:"Malgun Gothic", Arial, sans-serif; color:#12342b; background:#fff; }
+            h1 { margin:0 0 8px; font-size:22px; color:#073b2d; }
+            .meta { margin:0 0 16px; color:#61756d; font-size:13px; }
+            .chart { border:1px solid #cfe4da; border-radius:10px; padding:10px; margin-bottom:14px; }
+            svg { width:100%; height:auto; display:block; }
+            table { width:100%; border-collapse:collapse; font-size:11px; }
+            th, td { border:1px solid #d8e8df; padding:7px; text-align:left; vertical-align:top; }
+            th { background:#edf6f1; color:#0f513b; }
+            tr { break-inside:avoid; page-break-inside:avoid; }
+            .foot { margin-top:12px; font-size:11px; color:#61756d; }
+          </style>
+        </head>
+        <body>
+          <h1>벌교미래엔영어 전체학생 데일리 통계</h1>
+          <p class="meta">${modeLabel} · 기준일 ${dateLabel} · 출력일 ${todayKey()}</p>
+          <div class="chart">${chartHtml}</div>
+          ${tableHtml}
+          <p class="foot">미체크 항목은 미완료가 아니라 해당 날짜의 숙제 없음으로 안내됩니다.</p>
+        </body>
+        </html>`);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => printWindow.print(), 250);
+    }
+
+    async function sendChartSms() {
+      const recipients = filteredStudents()
+        .map(student => ({student, phone:String(student.phone || "").replace(/\D/g, "")}))
+        .filter(item => item.phone);
+      if (!recipients.length) return setStatus("문자를 보낼 학부모 연락처가 없습니다.", "error");
+      if (!confirm(`현재 필터에 보이는 학부모 ${recipients.length}명에게 통계 그래프 이미지를 문자로 보낼까요?`)) return;
+      const modeLabel = {day:"일별", week:"주간", month:"월간"}[document.getElementById("rangeMode").value] || "학습";
+      const text = `안녕하세요^^ 벌교미래엔영어 원장입니다.\n\n${document.getElementById("workDate").value || todayKey()} 기준 ${modeLabel} 숙제·인강 학습 통계 그래프를 보내드립니다.\n\n체크되지 않은 항목은 미완료가 아니라 해당 날짜의 숙제 없음으로 기록된 항목입니다. 아이들의 학습 루틴을 세심하게 확인하며 지도하겠습니다. 감사합니다^^`;
+      try {
+        const imageData = await chartPngDataUrl();
+        const res = await fetch(`${activeApiBase}/api/mms/send-bulk`, {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({to:recipients.map(item => item.phone), text, imageData, fileName:"daily-study-chart.png"})
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.ok === false) throw new Error(data.error || `HTTP ${res.status}`);
+        setStatus(`통계 그래프 MMS 문자 발송을 ${recipients.length}명에게 접수했습니다.`, "ok");
+      } catch (error) {
+        setStatus(`그래프 문자 전송 실패: ${error.message}. 로컬 문자 발송 서버와 솔라피 MMS 설정을 확인해 주세요.`, "error");
+      }
+    }
+
+    function exportCsv() {
+      const rows = [["날짜","학생명","반","숙제제출","리스닝","문법","단어","리딩","인강듣기","단어테스트내용","리딩수업내용","문법내용","인강내용","선생님피드백","자동피드백"]];
+      Object.values(records).forEach(rec => rows.push([
+        rec.date, rec.name, rec.classGroup, rec.submitted ? "완료" : "숙제 없음",
+        rec.categories?.listening ? "완료" : "숙제 없음",
+        rec.categories?.grammar ? "완료" : "숙제 없음",
+        rec.categories?.vocab ? "완료" : "숙제 없음",
+        rec.categories?.reading ? "완료" : "숙제 없음",
+        rec.categories?.lecture ? "완료" : "숙제 없음",
+        rec.details?.vocab || "",
+        rec.details?.reading || "",
+        rec.details?.grammar || "",
+        rec.details?.lecture || "",
+        rec.teacherFeedback || "", rec.autoFeedback || ""
+      ]));
+      const csv = rows.map(row => row.map(cell => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+      const blob = new Blob(["\ufeff" + csv], {type:"text/csv;charset=utf-8"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `전체학생_숙제인강통계_${todayKey()}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function openDashboard() {
+      window.open("벌교미래엔영어학원관리대시보드.html", "_blank");
+    }
+
+    document.getElementById("workDate").value = todayKey();
+    window.addEventListener("storage", event => {
+      if ([DASHBOARD_LOCAL_KEY, RECORD_STORAGE_KEY].includes(event.key)) loadAll();
+    });
+  </script>
+</body>
+</html>
