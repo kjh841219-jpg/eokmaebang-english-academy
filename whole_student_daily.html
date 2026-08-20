@@ -168,63 +168,20 @@
       <section class="panel" style="margin-bottom:14px">
         <div class="toolbar">
           <div>
-            <h2>전체 공통 학습내용 일괄 입력</h2>
-            <p class="sub">오늘 같은 내용을 진행한 학생들에게 한 번에 적용하는 공통 입력란입니다. 학생 한 명만 수정할 때는 아래 선택 학생 상세 피드백에서 작성하세요.</p>
+            <h2>선택 학생 상세 피드백</h2>
+            <p class="sub">학생을 선택한 뒤 단어·리딩·문법·인강 내용과 선생님 피드백을 한 화면에서 작성합니다.</p>
           </div>
-          <span class="badge">전체 일괄 관리</span>
-        </div>
-        <div class="notice" style="padding:9px 10px; margin-bottom:12px">아래 내용은 <b>현재 보이는 학생</b> 또는 <b>전체 학생</b>에게만 일괄 적용됩니다. 개별 학생 내용은 아래 상세 피드백 영역에서 관리합니다.</div>
-        <div class="bulk-grid">
-          <div>
-            <label for="globalVocabDetail">단어테스트 내용</label>
-            <textarea id="globalVocabDetail" placeholder="예: Unit 3 단어 20개, 오답 단어 3회 쓰기" oninput="saveGlobalDetails()"></textarea>
-          </div>
-          <div>
-            <label for="globalReadingDetail">리딩수업 내용</label>
-            <textarea id="globalReadingDetail" placeholder="예: Reading Town p.14 지문 해석, 핵심 문장 표시" oninput="saveGlobalDetails()"></textarea>
-          </div>
-          <div>
-            <label for="globalGrammarDetail">문법내용</label>
-            <textarea id="globalGrammarDetail" placeholder="예: 일반동사 과거형, did 부정문, 어순 배열" oninput="saveGlobalDetails()"></textarea>
-          </div>
-          <div>
-            <label for="globalLectureDetail">인강내용</label>
-            <textarea id="globalLectureDetail" placeholder="예: 관계대명사 핵심 정리 1강 시청" oninput="saveGlobalDetails()"></textarea>
-          </div>
-          <div class="bulk-wide">
-            <label for="globalTeacherFeedback">전체 공통 선생님 피드백</label>
-            <textarea id="globalTeacherFeedback" class="teacher-feedback" placeholder="예: 오늘은 전체적으로 리딩 집중도가 좋았고, 문법 숙제는 시제 표시를 한 번 더 확인하도록 지도했습니다." oninput="saveGlobalDetails()"></textarea>
-          </div>
-        </div>
-        <div class="feedback-actions">
-          <button class="blue" onclick="applyGlobalDetails('visible')">보이는 학생에게 적용</button>
-          <button class="blue" onclick="applyGlobalDetails('all')">전체 학생에게 적용</button>
-          <button onclick="clearGlobalDetails()">입력칸 비우기</button>
-        </div>
-      </section>
-
-      <section class="panel" style="margin-bottom:14px">
-        <div class="toolbar">
-          <h2>날짜별 숙제 및 인강 체크표</h2>
-          <div class="actions">
-            <button onclick="markAll(true)">보이는 학생 전체 완료</button>
-            <button onclick="markAll(false)">보이는 학생 전체 해제</button>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr id="recordHead"></tr>
-            </thead>
-            <tbody id="recordRows"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="panel" style="margin-bottom:14px">
-        <div class="toolbar">
-          <h2>선택 학생 상세 피드백</h2>
           <span id="selectedStudentLabel" class="badge">학생 미선택</span>
+        </div>
+        <div class="detail-grid" style="margin-bottom:12px">
+          <div>
+            <label for="bulkTargetStudent">작성 대상 학생</label>
+            <select id="bulkTargetStudent" onchange="selectStudent(this.value)"></select>
+          </div>
+          <div>
+            <label>작성 방식</label>
+            <div class="notice" style="padding:9px 10px">아래 내용은 선택한 학생 기록에 바로 저장되고 발송문 미리보기에 즉시 반영됩니다.</div>
+          </div>
         </div>
         <div class="feedback-grid">
           <div class="feedback-left">
@@ -261,6 +218,24 @@
               <button class="amber" onclick="sendSelected('kakao')">카카오톡 발송</button>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section class="panel" style="margin-bottom:14px">
+        <div class="toolbar">
+          <h2>날짜별 숙제 및 인강 체크표</h2>
+          <div class="actions">
+            <button onclick="markAll(true)">보이는 학생 전체 완료</button>
+            <button onclick="markAll(false)">보이는 학생 전체 해제</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr id="recordHead"></tr>
+            </thead>
+            <tbody id="recordRows"></tbody>
+          </table>
         </div>
       </section>
 
@@ -623,11 +598,17 @@
 
     function saveGlobalDetails() {
       const details = currentGlobalDetails();
-      details.vocab = document.getElementById("globalVocabDetail").value.trim();
-      details.reading = document.getElementById("globalReadingDetail").value.trim();
-      details.grammar = document.getElementById("globalGrammarDetail").value.trim();
-      details.lecture = document.getElementById("globalLectureDetail").value.trim();
-      details.teacherFeedback = document.getElementById("globalTeacherFeedback").value.trim();
+      const vocabInput = document.getElementById("globalVocabDetail");
+      const readingInput = document.getElementById("globalReadingDetail");
+      const grammarInput = document.getElementById("globalGrammarDetail");
+      const lectureInput = document.getElementById("globalLectureDetail");
+      const teacherInput = document.getElementById("globalTeacherFeedback");
+      if (!vocabInput || !readingInput || !grammarInput || !lectureInput || !teacherInput) return;
+      details.vocab = vocabInput.value.trim();
+      details.reading = readingInput.value.trim();
+      details.grammar = grammarInput.value.trim();
+      details.lecture = lectureInput.value.trim();
+      details.teacherFeedback = teacherInput.value.trim();
       details.updatedAt = new Date().toISOString();
       localStorage.setItem(GLOBAL_DETAIL_STORAGE_KEY, JSON.stringify(globalDetails));
     }
@@ -666,7 +647,7 @@
       globalDetails[key] = blankGlobalDetails(key);
       localStorage.setItem(GLOBAL_DETAIL_STORAGE_KEY, JSON.stringify(globalDetails));
       renderGlobalDetails();
-      setStatus("전체 공통 학습내용 입력칸을 비웠습니다.", "ok");
+      setStatus("상세 피드백 입력칸을 비웠습니다.", "ok");
     }
 
     function renderStudentList() {
