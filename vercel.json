@@ -18,7 +18,7 @@
     {"source": "/daily-report-cbt", "destination": "/daily_cbt.html"},
     {"source": "/whole-student-daily", "destination": "/whole_student_daily.html"},
     {"source": "/daily-management", "destination": "/whole_student_daily.html"},
-    {"source": "/restore-august-daily", "destination": "/restore_august_daily.html"}
+    {"source": "/restore-august-daily", "destination": "/restore_august_direct.html"}
   ],
   "functions": {
     "api/**/*.js": {
