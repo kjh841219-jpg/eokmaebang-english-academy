@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>벌교미래엔영어 8월 DAILY 원본 복구</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;font-family:"Malgun Gothic",Arial,sans-serif;background:#f2f8ee;color:#183312}.wrap{width:min(760px,calc(100% - 28px));margin:36px auto}.card{background:#fff;border:1px solid #dbe8d4;border-radius:22px;padding:28px;box-shadow:0 18px 50px rgba(49,95,22,.1)}.mark{display:inline-flex;padding:7px 11px;border-radius:999px;background:#e9f5df;color:#315f16;font-weight:900;font-size:12px}h1{margin:14px 0 9px;font-size:30px;letter-spacing:-.04em}.sub{color:#64765d;line-height:1.7}.status{margin:22px 0;padding:18px;border-radius:16px;background:#f8fbf6;border:1px solid #dfe9da;line-height:1.7}.status strong{display:block;font-size:25px;color:#315f16}.status.warn{background:#fff8e7;border-color:#efddb1;color:#73500d}.status.ok{background:#edf8e8;border-color:#c9e2bc}.actions{display:flex;gap:10px;flex-wrap:wrap}.actions button,.actions a{min-height:48px;padding:0 18px;border:0;border-radius:13px;font:inherit;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.primary{background:#315f16;color:#fff}.secondary{background:#edf5e8;color:#315f16}.help{margin-top:22px;padding-top:18px;border-top:1px solid #e3ebdf;color:#6b7965;font-size:13px;line-height:1.75}.privacy{margin-top:12px;font-size:12px;color:#7b8975}@media(max-width:560px){.card{padding:21px}.actions>*{width:100%}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <span class="mark">AUGUST DAILY RECOVERY</span>
+      <h1>8월 미니데일리 원본 찾기</h1>
+      <p class="sub">이 페이지는 예전에 DAILY 미니테스트를 관리하던 <b>같은 PC·같은 브라우저</b>에 남아 있는 로컬 복사본만 확인합니다. 서버의 학생명단이나 다른 자료는 읽지 않습니다.</p>
+      <div id="status" class="status">브라우저 저장본을 확인하고 있습니다.</div>
+      <div class="actions">
+        <button id="download" class="primary" type="button" disabled>8월 DAILY 복구 파일 저장</button>
+        <button id="rescan" class="secondary" type="button">다시 확인</button>
+        <a class="secondary" href="/">이전 학원 프로그램으로</a>
+      </div>
+      <div class="help">
+        <b>복구 순서</b><br>
+        ① 이 화면에서 발견된 8월 기록 수를 확인합니다.<br>
+        ② ‘8월 DAILY 복구 파일 저장’을 누릅니다.<br>
+        ③ 현재 벌교미래엔영어 관리자페이지의 ‘월간 누적평가’에서 저장한 JSON 파일을 불러옵니다.
+      </div>
+      <p class="privacy">복구 파일은 사용자의 기기에서 직접 만들어지며, 이 페이지가 학생 기록을 외부로 자동 전송하지 않습니다.</p>
+    </section>
+  </main>
+  <script>
+    const AUGUST = "2026-08";
+    const DASHBOARD_KEY = "beolgyo-academy-dashboard-state-v2";
+    const OFFLINE_KEY = "beolgyo-daily-cbt-submissions";
+    let recovered = [];
+
+    function parse(value, fallback) {
+      try { return value ? JSON.parse(value) : fallback; } catch { return fallback; }
+    }
+
+    function recordKey(record) {
+      return [
+        record.date || record.testDate || "",
+        record.time || "",
+        record.studentId || "",
+        record.name || record.studentName || "",
+        String(record.phone || "").replace(/\D/g, ""),
+        record.level || record.levelLabel || "",
+        record.typeKey || record.type || "",
+        record.correct ?? "",
+        record.total ?? "",
+        record.score ?? ""
+      ].join("|");
+    }
+
+    function isAugust(record) {
+      const date = String(record?.date || record?.testDate || "");
+      return date.startsWith(AUGUST);
+    }
+
+    function scan() {
+      const dashboard = parse(localStorage.getItem(DASHBOARD_KEY), null);
+      const dashboardRecords = Array.isArray(dashboard?.dailyMiniTests) ? dashboard.dailyMiniTests : [];
+      const offlineRecords = parse(localStorage.getItem(OFFLINE_KEY), []);
+      const all = [...dashboardRecords, ...(Array.isArray(offlineRecords) ? offlineRecords : [])].filter(isAugust);
+      const map = new Map();
+      all.forEach(record => map.set(recordKey(record), record));
+      recovered = [...map.values()].sort((a,b) => String(a.date || "").localeCompare(String(b.date || "")) || String(a.time || "").localeCompare(String(b.time || "")));
+
+      const status = document.getElementById("status");
+      const button = document.getElementById("download");
+      if (recovered.length) {
+        const dates = new Set(recovered.map(item => String(item.date || item.testDate || "")).filter(Boolean));
+        status.className = "status ok";
+        status.innerHTML = `<strong>8월 원본 ${recovered.length}건 발견</strong>${dates.size}일치 DAILY 미니테스트 기록이 이 브라우저에 남아 있습니다. 아래 버튼으로 복구 파일을 저장해 주세요.`;
+        button.disabled = false;
+      } else {
+        status.className = "status warn";
+        status.innerHTML = `<strong>이 브라우저에서는 8월 기록을 찾지 못했습니다.</strong>8월에 실제 관리자 프로그램 또는 DAILY CBT를 사용했던 다른 브라우저(예: Edge/Chrome)나 다른 PC가 있다면 그 환경에서 이 페이지를 열어 확인해 주세요.`;
+        button.disabled = true;
+      }
+    }
+
+    function download() {
+      if (!recovered.length) return;
+      const payload = {
+        type: "beolgyo_august_daily_recovery",
+        month: AUGUST,
+        exportedAt: new Date().toISOString(),
+        records: recovered
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json;charset=utf-8"});
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `벌교미래엔영어_8월_DAILY_원본복구_${recovered.length}건.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById("download").addEventListener("click", download);
+    document.getElementById("rescan").addEventListener("click", scan);
+    scan();
+  </script>
+</body>
+</html>
