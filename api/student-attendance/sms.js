@@ -1,5 +1,5 @@
 import {readPersistentState, writePersistentState} from "../../lib/dashboard-state.js";
-import {handleOptions, readJson, sendJson} from "../../lib/solapi.js";
+import {handleOptions, readJson, sendJson, sendSolapiMessages} from "../../lib/solapi.js";
 import {attendanceMessage, parentPhone, validSmsSignature} from "../../lib/attendance.js";
 
 function escapeHtml(value) {
@@ -26,6 +26,19 @@ export default async function handler(req, res) {
     const phone = parentPhone(student);
     if (!record || !student || phone.length < 10) return sendJson(res, 404, {ok: false, error: "등록된 학부모 전화번호가 없습니다."});
     if (req.method === "POST") {
+      if (body.action === "send-solapi") {
+        if (record.smsStatus === "solapi-sent") return sendJson(res, 409, {ok: false, sent: true, error: "이미 솔라피로 발송된 출결 문자입니다."});
+        const [, month, day] = String(record.date).split("-");
+        const message = attendanceMessage(student, record.statusCode, {displayDate: `${Number(month)}월 ${Number(day)}일`, time: record.time}, state.attendanceSettings);
+        const result = await sendSolapiMessages(phone, message);
+        record.smsStatus = "solapi-sent";
+        record.parentSent = "솔라피 문자 발송 완료";
+        record.smsSentAt = new Date().toISOString();
+        record.solapiGroupId = String(result?.groupInfo?.groupId || result?.groupId || "");
+        record.updatedAt = record.smsSentAt;
+        await writePersistentState({...state, attendanceRecords: records});
+        return sendJson(res, 200, {ok: true, message: "학부모님께 출결 문자를 발송했습니다."});
+      }
       const opened = body.status === "opened";
       record.smsStatus = opened ? "opened" : "skipped";
       record.parentSent = opened ? "문자 앱 열기 완료" : "문자 보내지 않음";
@@ -78,7 +91,7 @@ export default async function handler(req, res) {
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("Cache-Control", "no-store");
     return res.end(html);
-  } catch {
-    return sendJson(res, 500, {ok: false, error: "문자 앱 연결에 실패했습니다."});
+  } catch (error) {
+    return sendJson(res, 500, {ok: false, error: error?.message || "문자 발송 처리에 실패했습니다."});
   }
 }
