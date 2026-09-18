@@ -56,7 +56,7 @@ export default async function handler(req, res) {
     }
     const [, month, day] = String(record.date).split("-");
     const message = attendanceMessage(student, record.statusCode, {displayDate: `${Number(month)}월 ${Number(day)}일`, time: record.time}, state.attendanceSettings);
-    const smsHref = `sms:${phone}?body=${encodeURIComponent(message)}`;
+    const smsHref = `smsto:${phone}?body=${encodeURIComponent(message)}`;
     const postBody = JSON.stringify({id, token: String(body.token || ""), status: "opened"});
     const nativePostBody = JSON.stringify({id, token: String(body.token || ""), status: "native-sent"});
     const html = `<!doctype html>
