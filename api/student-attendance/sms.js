@@ -39,6 +39,14 @@ export default async function handler(req, res) {
         await writePersistentState({...state, attendanceRecords: records});
         return sendJson(res, 200, {ok: true, message: "학부모님께 출결 문자를 발송했습니다."});
       }
+      if (body.status === "native-sent") {
+        record.smsStatus = "native-sent";
+        record.parentSent = "안드로이드 일반 문자 발송 완료";
+        record.smsSentAt = new Date().toISOString();
+        record.updatedAt = record.smsSentAt;
+        await writePersistentState({...state, attendanceRecords: records});
+        return sendJson(res, 200, {ok: true});
+      }
       const opened = body.status === "opened";
       record.smsStatus = opened ? "opened" : "skipped";
       record.parentSent = opened ? "문자 앱 열기 완료" : "문자 보내지 않음";
@@ -50,6 +58,7 @@ export default async function handler(req, res) {
     const message = attendanceMessage(student, record.statusCode, {displayDate: `${Number(month)}월 ${Number(day)}일`, time: record.time}, state.attendanceSettings);
     const smsHref = `sms:${phone}?body=${encodeURIComponent(message)}`;
     const postBody = JSON.stringify({id, token: String(body.token || ""), status: "opened"});
+    const nativePostBody = JSON.stringify({id, token: String(body.token || ""), status: "native-sent"});
     const html = `<!doctype html>
 <html lang="ko">
 <head>
@@ -69,7 +78,7 @@ export default async function handler(req, res) {
   <main>
     <h1>출결 문자 보내기</h1>
     <p><strong>${escapeHtml(student.name)}</strong> 학생의 학부모님께 보낼 문자입니다.</p>
-    <p class="notice">아래 버튼을 누르면 휴대폰의 기본 문자 앱이 열립니다. 문자 앱에서 <strong>전송 버튼을 한 번 더 눌러야</strong> 실제로 발송됩니다.</p>
+    <p class="notice" id="notice">아래 버튼을 누르면 휴대폰의 기본 문자 앱이 열립니다. 문자 앱에서 <strong>전송 버튼을 한 번 더 눌러야</strong> 실제로 발송됩니다.</p>
     <div class="message">${escapeHtml(message)}</div>
     <a class="primary" id="openSms" href="${escapeHtml(smsHref)}">문자 앱 열기</a>
     <button class="secondary" id="copyMessage" type="button">문자 내용 복사</button>
@@ -77,6 +86,22 @@ export default async function handler(req, res) {
   </main>
   <script>
     const message = ${JSON.stringify(message)};
+    const phone = ${JSON.stringify(phone)};
+    window.nativeSmsResult = async (ok, detail) => {
+      const notice = document.getElementById("notice");
+      if (!ok) {
+        notice.textContent = detail || "일반 문자 발송에 실패했습니다. SMS 권한을 확인해 주세요.";
+        return;
+      }
+      notice.textContent = "일반 문자를 발송했습니다. 출결 화면으로 돌아갑니다.";
+      await fetch("/api/student-attendance/sms", {method:"POST",headers:{"Content-Type":"application/json"},body:${JSON.stringify(nativePostBody)},keepalive:true}).catch(() => {});
+      setTimeout(() => location.href = "/student-attendance", 1200);
+    };
+    if (window.AcademySms && typeof window.AcademySms.send === "function") {
+      document.getElementById("notice").textContent = "휴대폰 일반 문자를 자동 발송하는 중입니다.";
+      document.getElementById("openSms").style.display = "none";
+      window.AcademySms.send(phone, message);
+    }
     document.getElementById("openSms").addEventListener("click", () => {
       fetch("/api/student-attendance/sms", {method:"POST",headers:{"Content-Type":"application/json"},body:${JSON.stringify(postBody)},keepalive:true}).catch(() => {});
     });
