@@ -1,202 +1,52 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0f5d41" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="벌교 출결" />
-  <link rel="manifest" href="/student-attendance.webmanifest" />
-  <link rel="icon" href="/attendance-icon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/attendance-icon.svg" />
-  <title>벌교미래엔영어 학생 출결체크</title>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f6848"><title>벌교미래엔영어 학생 출결 체크</title>
   <style>
-    :root {
-      --green: #0f5d41;
-      --green2: #17845f;
-      --bg: #f3faf7;
-      --line: #d5e8df;
-      --text: #16261e;
-      --muted: #66786e;
-      --red: #c2413b;
-      --white: #fff;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
-      background: linear-gradient(180deg, #e9f7f0 0%, var(--bg) 45%, #ffffff 100%);
-      color: var(--text);
-    }
-    .wrap { width: min(520px, 100%); margin: 0 auto; padding: 18px; }
-    .hero { padding: 28px 4px 18px; text-align: center; }
-    .badge {
-      display: inline-flex; padding: 6px 11px; border-radius: 999px;
-      background: #dff5eb; color: var(--green); font-weight: 900; font-size: 12px; margin-bottom: 12px;
-    }
-    h1 { margin: 0; font-size: 30px; letter-spacing: 0; line-height: 1.25; }
-    .sub { margin-top: 8px; color: var(--muted); font-size: 14px; line-height: 1.5; }
-    .card {
-      background: var(--white); border: 1px solid var(--line); border-radius: 18px;
-      padding: 18px; box-shadow: 0 10px 30px rgba(15, 93, 65, .12);
-    }
-    label { display: block; margin-bottom: 14px; color: #244437; font-weight: 900; font-size: 13px; }
-    input {
-      width: 100%; margin-top: 7px; border: 1px solid #c8ddd3; border-radius: 12px;
-      padding: 14px; font-size: 18px; background: #fbfffd; outline: none;
-    }
-    input:focus { border-color: var(--green2); box-shadow: 0 0 0 4px rgba(23, 132, 95, .12); }
-    .segmented { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; margin: 8px 0 16px; }
-    .segmented button {
-      border: 1px solid #bfdace; border-radius: 12px; background: #f7fcfa;
-      padding: 13px 4px; font-weight: 900; font-size: 15px; color: #23483a;
-    }
-    .segmented button.active { background: var(--green); border-color: var(--green); color: white; }
-    .submit {
-      width: 100%; border: 0; border-radius: 14px; background: linear-gradient(135deg, var(--green), var(--green2));
-      color: white; font-weight: 900; font-size: 18px; padding: 16px; box-shadow: 0 10px 18px rgba(15, 93, 65, .2);
-    }
-    .submit:disabled { opacity: .65; }
-    .result { display: none; margin-top: 14px; border-radius: 14px; padding: 13px; font-size: 14px; line-height: 1.65; }
-    .result.ok { display: block; border: 1px solid #b7e4c8; background: #effaf3; color: #115e35; }
-    .result.err { display: block; border: 1px solid #fecaca; background: #fff1f2; color: var(--red); }
-    .notice { margin-top: 14px; padding: 12px; border-radius: 12px; background: #f8fbff; border: 1px solid #dbeafe; color: #23405f; font-size: 13px; line-height: 1.55; }
-    .choice-list { display: grid; gap: 8px; margin-top: 12px; }
-    .choice-list button { border: 1px solid #bdd9cd; border-radius: 12px; background: white; padding: 13px; text-align: left; color: var(--text); font-weight: 900; }
-    .choice-list small { display: block; margin-top: 3px; color: var(--muted); font-weight: 700; }
-    .footer { margin-top: 18px; text-align: center; color: #7a8a82; font-size: 12px; }
-    @media (max-width: 420px) { .segmented { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    :root{--green:#0f6848;--mint:#eaf7f1;--line:#cfe4da;--text:#18352a;--muted:#63766e;--orange:#d97706;--blue:#2563a9;--purple:#7c3fad;--red:#c2413b}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;background:#eff8f4;color:var(--text)}button,input{font:inherit}
+    .wrap{width:min(560px,100%);margin:auto;padding:18px 16px 36px}.hero{text-align:center;padding:18px 8px}.hero small{color:var(--green);font-weight:900}.hero h1{margin:8px 0 5px;font-size:28px}.hero p{margin:0;color:var(--muted)}
+    .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 10px 28px rgba(15,104,72,.1)}.hidden{display:none!important}
+    .pin{height:68px;border:2px solid var(--line);border-radius:12px;display:grid;place-items:center;font-size:32px;font-weight:900;letter-spacing:12px;background:#fbfffd;margin-bottom:14px}.pin.ready{border-color:var(--green)}
+    .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.key{min-height:66px;border:1px solid #bcd9cc;border-radius:12px;background:#fff;font-size:25px;font-weight:900;color:var(--text);box-shadow:0 3px 0 #dbeae3}.key:active{transform:translateY(2px);box-shadow:none}.key.action{font-size:15px;background:#f4f8f6}
+    .primary,.status-btn,.secondary{border:0;border-radius:12px;padding:15px;font-weight:900;cursor:pointer}.primary{width:100%;margin-top:12px;background:var(--green);color:#fff;font-size:18px}.primary:disabled{opacity:.45}.secondary{background:#edf5f1;color:var(--green)}
+    .choices{display:grid;gap:10px}.student-choice{width:100%;text-align:left;border:1px solid var(--line);border-radius:12px;background:#fff;padding:15px;color:var(--text)}.student-choice strong{font-size:18px}.student-choice span{display:block;margin-top:5px;color:var(--muted)}
+    .confirm-box{text-align:center}.confirm-box h2{font-size:26px;margin:6px}.confirm-box p{color:var(--muted)}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .status-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.status-btn{min-height:70px;color:#fff;font-size:20px}.present{background:var(--green)}.late{background:var(--orange)}.makeup{background:var(--blue)}.leave{background:var(--purple)}
+    .message{margin-top:14px;padding:14px;border-radius:12px;line-height:1.6}.message.error{background:#fff1f1;color:#a12626;border:1px solid #f2bcbc}.message.info{background:#eff8ff;color:#1f4d73;border:1px solid #c7e1f5}
+    .done{text-align:center}.done .check{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;background:#dff5e9;color:var(--green);font-size:38px;margin:0 auto 14px}.done h2{font-size:25px}.done-actions{display:grid;gap:10px}.sms{background:#2563a9}.skip{background:#eef4f1;color:var(--text)}.copy{background:#fff;border:1px solid var(--line);color:var(--text)}
+    .loading{position:fixed;inset:0;background:rgba(12,34,25,.35);display:grid;place-items:center;z-index:10}.loading div{background:#fff;padding:18px 24px;border-radius:12px;font-weight:900}.pc-note{display:none;margin-top:10px;color:var(--muted);font-size:13px}@media(pointer:fine){.pc-note{display:block}}@media(max-width:380px){.key{min-height:60px}.wrap{padding:10px}.card{padding:14px}}
   </style>
 </head>
-<body>
-  <main class="wrap">
-    <section class="hero">
-      <div class="badge">벌교미래엔영어</div>
-      <h1>학생 출결체크</h1>
-      <div class="sub">휴대폰 번호 뒷자리 4자리만 입력하고 오늘 상태를 눌러 주세요.</div>
-    </section>
-
-    <section class="card">
-      <label>학생 휴대폰 또는 학부모 휴대폰 번호 뒷자리 4자리
-        <input id="last4" inputmode="numeric" maxlength="4" placeholder="예: 2588" autocomplete="one-time-code" />
-      </label>
-      <div class="segmented">
-        <button id="status-present" class="active" type="button" onclick="setStatus('present')">출석</button>
-        <button id="status-leave" type="button" onclick="setStatus('leave')">하원</button>
-        <button id="status-late" type="button" onclick="setStatus('late')">지각</button>
-        <button id="status-absent" type="button" onclick="setStatus('absent')">결석</button>
-        <button id="status-makeup" type="button" onclick="setStatus('makeup')">보강</button>
-      </div>
-
-      <button id="submitBtn" class="submit" type="button" onclick="submitAttendance()">출결 처리하기</button>
-      <div id="result" class="result"></div>
-
-      <div class="notice">
-        같은 뒷자리가 2명 이상이면 학생 이름을 선택하는 화면이 나옵니다.
-        처리 후 보호자에게 카카오 알림톡을 먼저 보내고, 실패 시 문자로 대체 발송합니다.
-      </div>
-    </section>
-
-    <div class="footer">Beolgyo MiraeN English Academy</div>
-  </main>
-
-  <script>
-    const PUBLIC_API_BASE = "https://beolgyo-miraen-growth-api.vercel.app";
-    const API_BASE = location.hostname.endsWith("vercel.app") ? "" : PUBLIC_API_BASE;
-    const statusLabels = {present: "출석", leave: "하원", late: "지각", absent: "결석", makeup: "보강"};
-    let selectedStatus = "present";
-
-    function apiUrl(path) {
-      return `${API_BASE}${path}`;
-    }
-
-    function setStatus(statusCode) {
-      selectedStatus = statusCode;
-      Object.keys(statusLabels).forEach(code => {
-        document.getElementById(`status-${code}`).classList.toggle("active", code === statusCode);
-      });
-    }
-
-    function setResult(type, html) {
-      const el = document.getElementById("result");
-      el.className = `result ${type}`;
-      el.innerHTML = html;
-    }
-
-    async function submitAttendance(studentId = 0) {
-      const last4 = document.getElementById("last4").value.replace(/[^0-9]/g, "").slice(0, 4);
-      document.getElementById("last4").value = last4;
-      if (last4.length !== 4) {
-        setResult("err", "휴대폰 번호 뒷자리 4자리를 입력해 주세요.");
-        return;
-      }
-
-      const button = document.getElementById("submitBtn");
-      button.disabled = true;
-      button.textContent = "처리 중입니다...";
-      try {
-        const res = await fetch(apiUrl("/api/student-attendance/check"), {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({last4, statusCode: selectedStatus, studentId})
-        });
-        const data = await res.json();
-        if (!res.ok || !data.ok) throw new Error(data.error || "출결 처리에 실패했습니다.");
-        const result = data.result || data;
-        if (result.needsSelection || data.needsSelection || data.needSelect) {
-          renderChoices(result.choices ? result : data);
-          return;
-        }
-        const already = result.already ? "<br>이미 같은 상태였지만 보호자 알림은 다시 접수했습니다." : "";
-        const notice = attendanceNotice(result.notification);
-        setResult("ok", `<b>${escapeHtml(result.name)}</b> 학생 ${escapeHtml(result.status)} 처리 완료<br>${escapeHtml(result.date)} ${escapeHtml(result.time)}${already}${notice}`);
-      } catch (error) {
-        setResult("err", error.message || "출결 처리에 실패했습니다. 학원에 확인해 주세요.");
-      } finally {
-        button.disabled = false;
-        button.textContent = "출결 처리하기";
-      }
-    }
-
-    function renderChoices(result) {
-      const choices = result.choices || [];
-      const buttons = choices.map(choice => `
-        <button type="button" onclick="submitAttendance(${Number(choice.studentId || choice.id)})">
-          ${escapeHtml(choice.name)}
-          <small>${escapeHtml(choice.classGroup || "")}${choice.school ? " · " + escapeHtml(choice.school) : ""}</small>
-        </button>
-      `).join("");
-      setResult("ok", `
-        <b>같은 뒷자리 학생이 있습니다.</b><br>
-        본인 이름을 선택하면 ${escapeHtml(statusLabels[selectedStatus])} 처리합니다.
-        <div class="choice-list">${buttons}</div>
-      `);
-    }
-
-    function attendanceNotice(notification) {
-      if (!notification?.status) return "";
-      const detail = notification.error || notification.kakaoError || "";
-      return `<br>보호자 알림: ${escapeHtml(notification.status)}${detail ? `<br><small>${escapeHtml(detail)}</small>` : ""}`;
-    }
-
-    function escapeHtml(value) {
-      return String(value || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
-    }
-
-    document.getElementById("last4").addEventListener("input", event => {
-      event.target.value = event.target.value.replace(/[^0-9]/g, "").slice(0, 4);
-    });
-
-    if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
-      navigator.serviceWorker.register("/attendance-sw.js").catch(() => {});
-    }
-  </script>
-</body>
-</html>
+<body><main class="wrap">
+  <header class="hero"><small>벌교미래엔영어</small><h1>학생 출결 체크</h1><p>전화번호 뒷자리 4개를 입력해 주세요.</p></header>
+  <section class="card">
+    <div id="stepPin"><div id="pinDisplay" class="pin" aria-live="polite">○ ○ ○ ○</div><div id="keypad" class="keypad"></div><button id="findBtn" class="primary" disabled>확인</button></div>
+    <div id="stepChoice" class="hidden"><h2>본인이 맞나요?</h2><p>학생 이름과 학교·학년을 확인해 주세요.</p><div id="choices" class="choices"></div><button class="primary secondary" onclick="resetApp()">다시 입력</button></div>
+    <div id="stepConfirm" class="hidden confirm-box"><h2 id="confirmName"></h2><p id="confirmInfo"></p><div class="row"><button class="primary" onclick="showStatuses()">맞아요</button><button class="primary secondary" onclick="resetApp()">다시 입력</button></div></div>
+    <div id="stepStatus" class="hidden"><h2>출결 상태를 선택해 주세요.</h2><div class="status-grid"><button class="status-btn present" onclick="saveAttendance('present')">출석</button><button class="status-btn late" onclick="saveAttendance('late')">지각</button><button class="status-btn makeup" onclick="saveAttendance('makeup')">보강</button><button class="status-btn leave" onclick="saveAttendance('leave')">하원</button></div></div>
+    <div id="stepDone" class="hidden done"><div class="check">✓</div><h2 id="doneTitle"></h2><p id="doneMeta"></p><div id="noPhone" class="message error hidden">등록된 학부모 전화번호가 없습니다. 관리자에게 문의해 주세요.</div><div class="done-actions"><button id="smsBtn" class="primary sms">학부모님께 문자 보내기</button><button class="primary skip" onclick="finishWithoutSms()">문자 보내지 않고 완료</button><button id="copyBtn" class="primary copy">문자 내용 복사</button></div><div class="pc-note">문자 앱 연결은 안드로이드 휴대전화에서 이용해 주세요.</div></div>
+    <div id="errorBox" class="message error hidden"></div>
+  </section>
+  <div id="loading" class="loading hidden"><div>처리 중입니다...</div></div>
+</main>
+<script>
+  const API_BASE=location.hostname.endsWith("vercel.app")?"":"https://beolgyo-miraen-growth-api.vercel.app";let pin="",selectedStudent=null,lastResult=null,resetTimer=0,busy=false;
+  const $=id=>document.getElementById(id);const api=path=>`${API_BASE}${path}`;
+  function buildKeypad(){[1,2,3,4,5,6,7,8,9,"지우기",0,"전체 지우기"].forEach(value=>{const b=document.createElement("button");b.className=`key${typeof value==="string"?" action":""}`;b.textContent=value;b.onclick=()=>typeof value==="number"?addDigit(value):value==="지우기"?backspace():clearPin();$("keypad").appendChild(b)})}
+  function addDigit(n){if(pin.length<4)pin+=n;renderPin()}function backspace(){pin=pin.slice(0,-1);renderPin()}function clearPin(){pin="";renderPin()}
+  function renderPin(){$("pinDisplay").textContent=[0,1,2,3].map(i=>pin[i]||"○").join(" ");$("pinDisplay").classList.toggle("ready",pin.length===4);$("findBtn").disabled=pin.length!==4}
+  function showStep(id){["stepPin","stepChoice","stepConfirm","stepStatus","stepDone"].forEach(x=>$(x).classList.toggle("hidden",x!==id));$("errorBox").classList.add("hidden")}
+  function error(message){$("errorBox").textContent=message;$("errorBox").classList.remove("hidden")}function setBusy(v){busy=v;$("loading").classList.toggle("hidden",!v)}
+  async function request(body){const res=await fetch(api("/api/student-attendance/check"),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),cache:"no-store"});const data=await res.json().catch(()=>({}));if(!res.ok||!data.ok)throw new Error(data.error||"출결 저장에 실패했습니다. 다시 시도해 주세요.");return data}
+  async function findStudents(){if(busy||pin.length!==4)return;setBusy(true);try{const data=await request({action:"search",last4:pin});renderChoices(data.students||[])}catch(e){error(e.message)}finally{setBusy(false)}}
+  function renderChoices(students){if(students.length===1){choose(students[0]);return}$("choices").innerHTML=students.map((s,i)=>`<button class="student-choice" onclick="chooseByIndex(${i})"><strong>${esc(s.maskedName)}</strong><span>${esc(s.school)} · ${esc(s.grade)}</span></button>`).join("");window.choiceData=students;showStep("stepChoice")}
+  function chooseByIndex(i){choose(window.choiceData[i])}function choose(s){selectedStudent=s;$("confirmName").textContent=s.maskedName;$("confirmInfo").textContent=`${s.school} · ${s.grade}`;showStep("stepConfirm")}
+  function showStatuses(){showStep("stepStatus")}
+  async function saveAttendance(statusCode){if(busy||!selectedStudent)return;setBusy(true);document.querySelectorAll(".status-btn").forEach(b=>b.disabled=true);try{const data=await request({action:"record",last4:pin,studentId:selectedStudent.id,statusCode});lastResult=data.result;renderDone()}catch(e){error(e.message)}finally{setBusy(false);document.querySelectorAll(".status-btn").forEach(b=>b.disabled=false)}}
+  function renderDone(){$("doneTitle").textContent=`${lastResult.studentName} 학생의 출결 처리가 완료되었습니다.`;$("doneMeta").textContent=`${lastResult.date} ${lastResult.time} · ${lastResult.status}`;$("smsBtn").disabled=!lastResult.hasParentPhone;$("noPhone").classList.toggle("hidden",lastResult.hasParentPhone);$("smsBtn").onclick=()=>{sessionStorage.setItem("attendanceNeedsReset","1");location.href=api(lastResult.smsUrl)};$("copyBtn").onclick=()=>navigator.clipboard.writeText(lastResult.messagePreview).then(()=>alert("문자 내용을 복사했습니다."));showStep("stepDone");clearTimeout(resetTimer);resetTimer=setTimeout(resetApp,5000)}
+  async function finishWithoutSms(){if(lastResult?.smsToken){fetch(api("/api/student-attendance/sms"),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:lastResult.id,token:lastResult.smsToken})}).catch(()=>{})}resetApp()}function resetApp(){clearTimeout(resetTimer);pin="";selectedStudent=null;lastResult=null;renderPin();showStep("stepPin")}
+  function esc(v){return String(v||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden&&sessionStorage.getItem("attendanceNeedsReset")){sessionStorage.removeItem("attendanceNeedsReset");resetApp()}});$("findBtn").onclick=findStudents;buildKeypad();renderPin();
+</script></body></html>

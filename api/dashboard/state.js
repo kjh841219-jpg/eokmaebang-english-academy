@@ -70,7 +70,8 @@ export default async function handler(req, res) {
         academySchedules: mergeList(existing.academySchedules, data.academySchedules, 500),
         homeworkSubmissions: useHomeworkDb ? (Array.isArray(existing.homeworkSubmissions) ? existing.homeworkSubmissions : []) : mergeList(existing.homeworkSubmissions, data.homeworkSubmissions, 500),
         dailyMiniTests: mergeList(existing.dailyMiniTests, data.dailyMiniTests, 1000),
-        dailyMiniBank: data.dailyMiniBank && typeof data.dailyMiniBank === "object" ? data.dailyMiniBank : {}
+        dailyMiniBank: data.dailyMiniBank && typeof data.dailyMiniBank === "object" ? data.dailyMiniBank : {},
+        attendanceSettings: data.attendanceSettings && typeof data.attendanceSettings === "object" ? data.attendanceSettings : (existing.attendanceSettings || {})
       };
       const saved = await writePersistentState(state);
       if (useHomeworkDb) {

@@ -1784,6 +1784,7 @@
               <label>달력 월<input id="attendanceCalendarMonth" type="month" onchange="renderAttendanceCalendar()" /></label>
               <button class="btn secondary" onclick="setAttendanceCalendarToday()">오늘</button>
               <button class="btn blue" onclick="copyStudentAttendanceLink()">학생 출결 링크 복사</button>
+              <button class="btn secondary" onclick="window.open(location.protocol === 'file:' ? 'attendance_admin.html' : '/attendance-admin','_blank')">출결 관리자 화면</button>
               <button class="btn amber" onclick="sendStudentAttendanceLinkSms()">학생 출결 링크 문자발송</button>
               <button class="btn blue" onclick="sendStudentAttendanceLinkKakao()">학생 출결 링크 카카오발송</button>
             </div>
@@ -12694,6 +12695,7 @@ ${report.ai_generated_comment}
       s.parentName = document.getElementById("editParentName").value.trim() || "보호자";
       s.phone = document.getElementById("editParentPhone").value.trim();
       s.studentPhone = document.getElementById("editStudentPhone").value.trim();
+      s.studentPhoneLast4 = s.studentPhone.replace(/[^0-9]/g, "").slice(-4);
       s.status = normalizeStudentStatus(document.getElementById("editStudentStatus").value);
       s.type = document.getElementById("editStudentType").value;
       s.monthlyFee = Number(document.getElementById("editMonthlyFee").value || classFee(s.classGroup));
@@ -12759,6 +12761,7 @@ ${report.ai_generated_comment}
         grade: document.getElementById("newStudentGrade").value.trim(),
         phone: document.getElementById("newParentPhone").value.trim(),
         studentPhone: document.getElementById("newStudentPhone").value.trim(),
+        studentPhoneLast4: document.getElementById("newStudentPhone").value.replace(/[^0-9]/g, "").slice(-4),
         parentName: document.getElementById("newParentName").value.trim() || "보호자",
         classGroup: level,
         attendance: "출석",
