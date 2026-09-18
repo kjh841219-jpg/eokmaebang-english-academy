@@ -33,7 +33,7 @@ export default async function handler(req, res) {
     const parts = koreanParts(now);
     const id = recordId();
     const hasParentPhone = parentPhone(student).length >= 10;
-    const record = {id, studentId: student.id, name: student.name, date: parts.date, time: parts.time, status: STATUS_LABELS[statusCode], statusCode, reason: "학생 직접 출결", parentSent: hasParentPhone ? "문자 선택 대기" : "학부모 번호 없음", smsStatus: hasParentPhone ? "ready" : "no-phone", memo: "", createdAt: parts.createdAt, updatedAt: parts.createdAt};
+    const record = {id, studentId: student.id, name: student.name, date: parts.date, time: parts.time, status: STATUS_LABELS[statusCode], statusCode, reason: "학생 직접 출결", parentSent: hasParentPhone ? "문자 선택 대기" : "학부모 번호 없음", smsStatus: hasParentPhone ? "ready" : "no-phone", memo: "", previousAttendance: student.attendance || "미출석", previousAttendanceDate: student.attendanceDate || "", previousAttendanceTime: student.attendanceTime || "", createdAt: parts.createdAt, updatedAt: parts.createdAt};
     records.unshift(record);
     const students = (state.students || []).map(item => String(item.id) === String(student.id) ? {...item, studentPhoneLast4: studentLast4(item), attendance: record.status, attendanceDate: record.date, attendanceTime: record.time, parentSent: record.parentSent} : item);
     await writePersistentState({...state, students, attendanceRecords: records});

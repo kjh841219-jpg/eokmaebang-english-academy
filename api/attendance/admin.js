@@ -56,7 +56,7 @@ export default async function handler(req, res) {
       const student = students.find(item => String(item.id) === String(data.studentId));
       if (!student || !ADMIN_STATUS_CODES.has(data.statusCode)) return sendJson(res, 400, {ok: false, error: "학생과 출결 상태를 확인해 주세요."});
       const parts = koreanParts(data.dateTime ? new Date(data.dateTime) : new Date());
-      records.unshift({id: recordId(), studentId: student.id, name: student.name, date: data.date || parts.date, time: data.time || parts.time, status: STATUS_LABELS[data.statusCode], statusCode: data.statusCode, reason: "관리자 수동 등록", parentSent: parentPhone(student) ? "문자 선택 대기" : "학부모 번호 없음", smsStatus: parentPhone(student) ? "ready" : "no-phone", memo: String(data.memo || ""), createdAt: parts.createdAt, updatedAt: parts.createdAt});
+      records.unshift({id: recordId(), studentId: student.id, name: student.name, date: data.date || parts.date, time: data.time || parts.time, status: STATUS_LABELS[data.statusCode], statusCode: data.statusCode, reason: "관리자 수동 등록", parentSent: parentPhone(student) ? "문자 선택 대기" : "학부모 번호 없음", smsStatus: parentPhone(student) ? "ready" : "no-phone", memo: String(data.memo || ""), previousAttendance: student.attendance || "미출석", previousAttendanceDate: student.attendanceDate || "", previousAttendanceTime: student.attendanceTime || "", createdAt: parts.createdAt, updatedAt: parts.createdAt});
       state.attendanceRecords = records;
       state.students = students.map(item => String(item.id) === String(student.id) ? {...item, attendance: STATUS_LABELS[data.statusCode], attendanceDate: data.date || parts.date, attendanceTime: data.time || parts.time} : item);
     } else if (action === "update-record") {
@@ -72,7 +72,7 @@ export default async function handler(req, res) {
       state.attendanceRecords = records.filter(item => String(item.id) !== String(data.id));
       if (removed) {
         const latest = state.attendanceRecords.find(item => String(item.studentId) === String(removed.studentId));
-        state.students = students.map(item => String(item.id) === String(removed.studentId) ? {...item, attendance: latest?.status || "미출석", attendanceDate: latest?.date || "", attendanceTime: latest?.time || ""} : item);
+        state.students = students.map(item => String(item.id) === String(removed.studentId) ? {...item, attendance: latest?.status || removed.previousAttendance || "미출석", attendanceDate: latest?.date || removed.previousAttendanceDate || "", attendanceTime: latest?.time || removed.previousAttendanceTime || ""} : item);
       }
     } else {
       return sendJson(res, 400, {ok: false, error: "지원하지 않는 관리자 작업입니다."});
